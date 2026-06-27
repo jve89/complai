@@ -1,0 +1,150 @@
+// ComplAI — EU AI Act compliance platform
+// Prisma owns the schema and runs migrations against the Supabase Postgres DB.
+// Supabase Auth owns identity; `User.id` mirrors the Supabase auth user id.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  admin
+  manager
+  employee
+}
+
+enum AiRole {
+  provider
+  deployer
+}
+
+enum RiskLevel {
+  minimal
+  limited
+  high
+  unacceptable
+}
+
+enum ComplianceStatus {
+  compliant
+  open
+  in_progress
+}
+
+model Company {
+  id        String   @id @default(cuid())
+  name      String
+  size      String? // e.g. "1-10", "11-50", "51-250", "250+"
+  sector    String?
+  country   String   @default("NL")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  users           User[]
+  aiSystems       AiSystem[]
+  scanResults     ScanResult[]
+  documents       Document[]
+  employees       Employee[]
+  complianceItems ComplianceItem[]
+
+  @@map("companies")
+}
+
+model User {
+  id        String   @id // = Supabase auth uid
+  email     String   @unique
+  name      String?
+  role      Role     @default(admin)
+  companyId String?  @map("company_id")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  company      Company?     @relation(fields: [companyId], references: [id], onDelete: SetNull)
+  scanResults  ScanResult[]
+  employee     Employee?
+
+  @@index([companyId])
+  @@map("users")
+}
+
+model AiSystem {
+  id          String    @id @default(cuid())
+  companyId   String    @map("company_id")
+  name        String
+  description String?
+  vendor      String?
+  role        AiRole    @default(deployer)
+  riskLevel   RiskLevel @default(limited) @map("risk_level")
+  status      String    @default("active") // active | review | retired
+  createdAt   DateTime  @default(now()) @map("created_at")
+
+  company Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  @@index([companyId])
+  @@map("ai_systems")
+}
+
+model ScanResult {
+  id        String   @id @default(cuid())
+  companyId String?  @map("company_id")
+  userId    String?  @map("user_id")
+  score     Int
+  answers   Json
+  reportUrl String?  @map("report_url")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  company Company? @relation(fields: [companyId], references: [id], onDelete: SetNull)
+  user    User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([companyId])
+  @@map("scan_results")
+}
+
+model Document {
+  id        String   @id @default(cuid())
+  companyId String   @map("company_id")
+  type      String // ai_policy | risk_assessment | fria | transparency
+  version   Int      @default(1)
+  content   Json
+  pdfUrl    String?  @map("pdf_url")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  company Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  @@index([companyId, type])
+  @@map("documents")
+}
+
+model Employee {
+  id                String   @id @default(cuid())
+  companyId         String   @map("company_id")
+  userId            String?  @unique @map("user_id")
+  name              String
+  role              String // job/learning path: employee | manager | it
+  trainingCompleted Boolean  @default(false) @map("training_completed")
+  certificateUrl    String?  @map("certificate_url")
+  createdAt         DateTime @default(now()) @map("created_at")
+
+  company Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  user    User?   @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([companyId])
+  @@map("employees")
+}
+
+model ComplianceItem {
+  id        String           @id @default(cuid())
+  companyId String           @map("company_id")
+  article   String // e.g. "Art. 4"
+  title     String
+  status    ComplianceStatus @default(open)
+  deadline  DateTime?
+  updatedAt DateTime         @updatedAt @map("updated_at")
+
+  company Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  @@index([companyId])
+  @@map("compliance_items")
+}
