@@ -1,0 +1,75 @@
+import Link from "next/link";
+
+import { SiteLogo } from "@/components/site-logo";
+
+const columns = [
+  {
+    title: "Platform",
+    links: [
+      { href: "/scan", label: "Risicoscan" },
+      { href: "/#functies", label: "AI-register" },
+      { href: "/#functies", label: "Documenten" },
+      { href: "/#functies", label: "E-learning" },
+      { href: "/#functies", label: "Governance" },
+    ],
+  },
+  {
+    title: "Bedrijf",
+    links: [
+      { href: "/pricing", label: "Prijzen" },
+      { href: "/#hoe-het-werkt", label: "Hoe het werkt" },
+      { href: "/#faq", label: "Veelgestelde vragen" },
+      { href: "/login", label: "Inloggen" },
+    ],
+  },
+  {
+    title: "Juridisch",
+    links: [
+      { href: "#", label: "Privacyverklaring" },
+      { href: "#", label: "Algemene voorwaarden" },
+      { href: "#", label: "Verwerkersovereenkomst" },
+      { href: "#", label: "Cookiebeleid" },
+    ],
+  },
+];
+
+export function Footer() {
+  return (
+    <footer className="border-t border-white/10 bg-navy-950 text-white">
+      <div className="container grid gap-10 py-14 md:grid-cols-[1.5fr_1fr_1fr_1fr]">
+        <div className="space-y-4">
+          <SiteLogo className="text-white" />
+          <p className="max-w-xs text-sm text-white/60">
+            Het complete platform om compliant te worden met de EU AI Act —
+            van risicoscan tot governance.
+          </p>
+        </div>
+
+        {columns.map((col) => (
+          <div key={col.title} className="space-y-3">
+            <h4 className="text-sm font-semibold text-white">{col.title}</h4>
+            <ul className="space-y-2">
+              {col.links.map((link, i) => (
+                <li key={`${link.label}-${i}`}>
+                  <Link
+                    href={link.href}
+                    className="text-sm text-white/60 transition-colors hover:text-white"
+                  >
+                    {link.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+        ))}
+      </div>
+
+      <div className="border-t border-white/10">
+        <div className="container flex flex-col items-center justify-between gap-2 py-6 text-xs text-white/50 sm:flex-row">
+          <p>© 2026 ComplAI. Alle rechten voorbehouden.</p>
+          <p>Gemaakt in Nederland · Niet bedoeld als juridisch advies.</p>
+        </div>
+      </div>
+    </footer>
+  );
+}
