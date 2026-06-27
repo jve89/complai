@@ -30,6 +30,8 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 
+export const dynamic = "force-dynamic";
+
 const STATUS_SCORE: Record<ArticleStatus, number> = {
   compliant: 100,
   in_progress: 50,
