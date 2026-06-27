@@ -73,16 +73,18 @@ async function main() {
     data: {
       companyId: company.id,
       userId: ADMIN_ID,
-      score: 58,
+      // Answer keys match the question ids in lib/scan/questions.ts so the
+      // scoring engine reproduces this result (score ≈ 50, "gemiddeld").
+      score: 50,
       answers: {
         size: "11-50",
-        sector: "Zakelijke dienstverlening",
-        usesAiTools: true,
-        aiTools: ["ChatGPT", "CV-screening"],
+        sector: "zakelijke-dienstverlening",
+        usesAi: true,
+        aiCategories: ["generatief", "werving"],
+        highRisk: true,
         staffTrained: false,
-        hasAiPolicy: false,
-        hasAiRegister: true,
-        usesHighRiskAi: true,
+        hasPolicy: false,
+        hasRegister: true,
         informsUsers: false,
         hasOversight: true,
       },
