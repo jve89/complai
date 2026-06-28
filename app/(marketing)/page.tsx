@@ -25,33 +25,33 @@ import { Faq } from "@/components/marketing/faq";
 import { PLANS } from "@/lib/stripe";
 
 const steps = [
-  { icon: Search, title: "Scan", text: "Breng uw AI-risico's in 5 minuten in kaart." },
-  { icon: ClipboardList, title: "Registreer", text: "Leg al uw AI-systemen vast in één register." },
-  { icon: Layers, title: "Classificeer", text: "Bepaal automatisch het risiconiveau per systeem." },
-  { icon: FileText, title: "Documenteer", text: "Genereer beleid, FRIA en beoordelingen met één klik." },
-  { icon: GraduationCap, title: "Train", text: "Borg AI-geletterdheid met e-learning en certificaten." },
-  { icon: Activity, title: "Monitor", text: "Bewaak deadlines en blijf continu compliant." },
+  { icon: Search, title: "Scan", text: "Ontdek in vijf minuten waar uw organisatie staat." },
+  { icon: ClipboardList, title: "Registreer", text: "Verzamel al uw AI-toepassingen op één plek." },
+  { icon: Layers, title: "Classificeer", text: "Laat het risiconiveau per systeem automatisch bepalen." },
+  { icon: FileText, title: "Documenteer", text: "Maak beleid, FRIA en beoordelingen met één druk op de knop." },
+  { icon: GraduationCap, title: "Train", text: "Maak uw team AI-vaardig met e-learning en certificaten." },
+  { icon: Activity, title: "Monitor", text: "Houd deadlines in het oog en blijf doorlopend compliant." },
 ];
 
 const pains = [
   {
     icon: AlertTriangle,
-    title: "De wet is complex",
-    text: "Honderden pagina's juridische tekst, risicocategorieën en uitzonderingen. Waar begint u?",
+    title: "Onontwarbare regels",
+    text: "Honderden pagina's wetstekst, risicoklassen en uitzonderingen. Waar moet u beginnen?",
   },
   {
     icon: Clock,
-    title: "Deadlines lopen",
-    text: "De verplichtingen worden gefaseerd ingevoerd. Te laat zijn kan flinke boetes betekenen.",
+    title: "De klok tikt",
+    text: "De regels gaan stap voor stap in. Te laat handelen kan uitlopen op stevige boetes.",
   },
   {
     icon: Euro,
-    title: "Consultants zijn duur",
-    text: "Een extern adviestraject kost al snel duizenden euro's — terwijl het meeste herhaalbaar is.",
+    title: "Advies kost een vermogen",
+    text: "Een extern traject loopt zo in de duizenden euro's — voor werk dat grotendeels herhaalbaar is.",
   },
   {
     icon: FileText,
-    title: "Geen overzicht",
+    title: "Niemand weet wat er draait",
     text: "Welke AI gebruikt uw organisatie eigenlijk? En wie is waarvoor verantwoordelijk?",
   },
 ];
@@ -60,32 +60,32 @@ const features = [
   {
     icon: Database,
     title: "AI-register",
-    text: "Centraal overzicht van al uw AI-systemen met automatische risicoclassificatie op basis van Annex III.",
+    text: "Al uw AI-systemen overzichtelijk bij elkaar, met automatische risico-indeling volgens Annex III.",
   },
   {
     icon: FileText,
     title: "Documentgenerator",
-    text: "AI-beleid, risicobeoordeling, FRIA en transparantieverklaring — automatisch gevuld met uw gegevens.",
+    text: "Beleid, risicobeoordeling, FRIA en transparantieverklaring — direct gevuld met uw eigen gegevens.",
   },
   {
     icon: GraduationCap,
     title: "E-learning",
-    text: "Rolgerichte leerpaden met quizzen en certificaten om AI-geletterdheid (Art. 4) aantoonbaar te borgen.",
+    text: "Leerpaden per rol met toetsen en certificaten, zodat AI-geletterdheid (Art. 4) aantoonbaar wordt.",
   },
   {
     icon: ShieldCheck,
     title: "Compliance-dashboard",
-    text: "Eén score, status per AI Act-artikel, openstaande acties en deadline-alerts in één oogopslag.",
+    text: "Uw score, de status per AI Act-artikel, openstaande acties en deadlines in één overzicht.",
   },
   {
     icon: BarChart3,
     title: "Governance",
-    text: "Kwartaalchecks, signalen voor verlopen documenten en ontbrekende certificaten — continu in control.",
+    text: "Kwartaalchecks en signalen bij verlopen documenten of ontbrekende certificaten. Doorlopend grip.",
   },
   {
     icon: Sparkles,
     title: "Altijd actueel",
-    text: "Het platform groeit mee met de gefaseerde invoering van de AI Act, zodat u niets mist.",
+    text: "Het platform beweegt mee met de gefaseerde invoering van de wet, zodat u nooit iets mist.",
   },
 ];
 
@@ -118,16 +118,17 @@ export default function LandingPage() {
         <div className="container relative grid gap-12 py-20 lg:grid-cols-2 lg:items-center lg:py-28">
           <div className="space-y-7">
             <Badge variant="navy" className="border border-brand-500/40 bg-brand-500/10 text-brand-400">
-              EU AI Act · compliance voor het mkb
+              AI Act-compliance voor het mkb
             </Badge>
             <h1 className="text-4xl font-bold leading-tight tracking-tight sm:text-5xl lg:text-6xl">
-              Grip op uw AI.<br />
-              <span className="text-brand-400">Klaar voor de AI Act.</span>
+              Word AI Act-compliant<br />
+              <span className="text-brand-400">zonder advieskosten.</span>
             </h1>
             <p className="max-w-xl text-lg text-white/70">
-              ComplAI vertaalt de Europese AI-wetgeving naar concrete acties.
-              Scan uw risico's, registreer uw AI-systemen, genereer de juiste
-              documenten en train uw team — alles in één platform.
+              ComplAI maakt van de Europese AI-wetgeving een afvinkbaar
+              stappenplan: scan uw risico's, leg uw AI-systemen vast, genereer de
+              verplichte documenten en maak uw team AI-vaardig — vanuit één
+              omgeving.
             </p>
             <div className="flex flex-col gap-3 sm:flex-row">
               <Button asChild size="lg">
@@ -146,7 +147,7 @@ export default function LandingPage() {
               </Button>
             </div>
             <p className="text-sm text-white/50">
-              Geen account nodig · Direct een PDF-rapport · 5 minuten
+              In 5 minuten · zonder account · met PDF-rapport
             </p>
           </div>
 
@@ -156,7 +157,7 @@ export default function LandingPage() {
               <div className="rounded-xl bg-white p-5 text-navy-900">
                 <div className="mb-4 flex items-center justify-between">
                   <span className="text-sm font-semibold">Compliance-score</span>
-                  <Badge variant="warning">In ontwikkeling</Badge>
+                  <Badge variant="warning">Voorbeeld</Badge>
                 </div>
                 <div className="flex items-center gap-5">
                   <div className="relative grid h-24 w-24 place-items-center">
@@ -208,11 +209,11 @@ export default function LandingPage() {
         <div className="container">
           <div className="mx-auto mb-14 max-w-2xl text-center">
             <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">
-              Compliant in zes stappen
+              Zo werkt het — in zes stappen
             </h2>
             <p className="mt-4 text-lg text-muted-foreground">
-              Van eerste scan tot continue monitoring — ComplAI begeleidt u door
-              het hele traject.
+              Van de eerste scan tot doorlopende bewaking: ComplAI loodst u door
+              elke stap.
             </p>
           </div>
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
@@ -240,10 +241,10 @@ export default function LandingPage() {
         <div className="container">
           <div className="mx-auto mb-14 max-w-2xl text-center">
             <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">
-              Herkenbaar?
+              Klinkt dit bekend?
             </h2>
             <p className="mt-4 text-lg text-muted-foreground">
-              De AI Act roept vooral vragen op. ComplAI geeft antwoorden.
+              De AI Act levert vooral kopzorgen op. ComplAI ruimt ze op.
             </p>
           </div>
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
@@ -265,11 +266,11 @@ export default function LandingPage() {
         <div className="container">
           <div className="mx-auto mb-14 max-w-2xl text-center">
             <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">
-              Eén platform, alle verplichtingen
+              Alles op één plek
             </h2>
             <p className="mt-4 text-lg text-muted-foreground">
-              Alles wat u nodig heeft om aan de AI Act te voldoen — en aantoonbaar
-              in control te blijven.
+              Elke verplichting uit de AI Act afgedekt — en aantoonbaar onder
+              controle.
             </p>
           </div>
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
@@ -294,11 +295,11 @@ export default function LandingPage() {
         <div className="container">
           <div className="mx-auto mb-14 max-w-2xl text-center">
             <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">
-              Zelf doen, consultant of ComplAI?
+              Zelf uitzoeken, inhuren of ComplAI?
             </h2>
             <p className="mt-4 text-lg text-muted-foreground">
-              Dezelfde compliance, zonder de kosten en doorlooptijd van een
-              adviestraject.
+              Hetzelfde resultaat — zonder de rekening en de wachttijd van een
+              adviesbureau.
             </p>
           </div>
 
@@ -342,10 +343,10 @@ export default function LandingPage() {
         <div className="container">
           <div className="mx-auto mb-14 max-w-2xl text-center">
             <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">
-              Een plan voor elke organisatie
+              Voor elke organisatie een passend plan
             </h2>
             <p className="mt-4 text-lg text-muted-foreground">
-              Begin gratis. Schaal mee wanneer u er klaar voor bent.
+              Start kosteloos en groei mee op uw eigen tempo.
             </p>
           </div>
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
@@ -407,10 +408,10 @@ export default function LandingPage() {
       <section className="bg-navy-900 text-white">
         <div className="container py-20 text-center">
           <h2 className="mx-auto max-w-2xl text-3xl font-bold tracking-tight sm:text-4xl">
-            Weet binnen 5 minuten waar u staat
+            Binnen vijf minuten weet u waar u staat
           </h2>
           <p className="mx-auto mt-4 max-w-xl text-lg text-white/70">
-            Doe de gratis risicoscan en ontvang direct uw compliance-score met
+            Start de gratis risicoscan en ontvang meteen uw compliance-score met
             concrete vervolgstappen.
           </p>
           <Button asChild size="lg" className="mt-8">

@@ -6,7 +6,7 @@ import { PricingTable } from "@/components/marketing/pricing-table";
 export const metadata: Metadata = {
   title: "Prijzen",
   description:
-    "Transparante prijzen voor AI Act-compliance. Begin gratis en schaal mee met Starter, Professional of Corporate.",
+    "Heldere prijzen voor AI Act-compliance. Start gratis en groei mee met Starter, Professional of Corporate.",
 };
 
 const COLUMNS = ["Gratis", "Starter", "Professional", "Corporate"];
@@ -38,11 +38,11 @@ export default function PricingPage() {
       <section className="border-b bg-navy-900 py-16 text-center text-white">
         <div className="container">
           <h1 className="text-4xl font-bold tracking-tight sm:text-5xl">
-            Eenvoudige, eerlijke prijzen
+            Heldere prijzen, geen verrassingen
           </h1>
           <p className="mx-auto mt-4 max-w-2xl text-lg text-white/70">
-            Begin gratis met de risicoscan. Upgrade wanneer u klaar bent voor het
-            volledige compliance-platform.
+            Begin kosteloos met de risicoscan en stap over op het volledige
+            platform zodra u eraan toe bent.
           </p>
         </div>
       </section>

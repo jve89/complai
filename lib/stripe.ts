@@ -37,7 +37,7 @@ export const PLANS: Plan[] = [
     name: "Gratis",
     monthly: 0,
     yearly: 0,
-    tagline: "Voor een eerste indruk van uw AI-compliance.",
+    tagline: "Proef het platform en ken uw uitgangspunt.",
     features: [
       "Gratis risicoscan",
       "Compliance-score & rapport (PDF)",
@@ -52,7 +52,7 @@ export const PLANS: Plan[] = [
     yearly: 499,
     priceIdMonthly: process.env.STRIPE_PRICE_STARTER_MONTHLY,
     priceIdYearly: process.env.STRIPE_PRICE_STARTER_YEARLY,
-    tagline: "Voor kleine organisaties die starten met de AI Act.",
+    tagline: "Voor kleine teams die net beginnen met de AI Act.",
     features: [
       "Alles uit Gratis",
       "Onbeperkt AI-register",
@@ -68,7 +68,7 @@ export const PLANS: Plan[] = [
     yearly: 999,
     priceIdMonthly: process.env.STRIPE_PRICE_PRO_MONTHLY,
     priceIdYearly: process.env.STRIPE_PRICE_PRO_YEARLY,
-    tagline: "Voor organisaties die volledig in control willen zijn.",
+    tagline: "Voor organisaties die volledig grip willen houden.",
     highlighted: true,
     features: [
       "Alles uit Starter",
@@ -85,7 +85,7 @@ export const PLANS: Plan[] = [
     yearly: 2499,
     priceIdMonthly: process.env.STRIPE_PRICE_CORP_MONTHLY,
     priceIdYearly: process.env.STRIPE_PRICE_CORP_YEARLY,
-    tagline: "Voor grotere organisaties met meerdere afdelingen.",
+    tagline: "Voor grotere organisaties met meerdere vestigingen.",
     features: [
       "Alles uit Professional",
       "Onbeperkt gebruikers",

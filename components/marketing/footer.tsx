@@ -40,8 +40,8 @@ export function Footer() {
         <div className="space-y-4">
           <SiteLogo className="text-white" />
           <p className="max-w-xs text-sm text-white/60">
-            Het complete platform om compliant te worden met de EU AI Act —
-            van risicoscan tot governance.
+            Eén werkomgeving om aan de EU AI Act te voldoen — van de eerste
+            risicoscan tot doorlopende governance.
           </p>
         </div>
 

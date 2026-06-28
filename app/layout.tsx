@@ -11,16 +11,16 @@ const inter = Inter({
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000"),
   title: {
-    default: "ComplAI — Grip op uw AI. Klaar voor de AI Act.",
+    default: "ComplAI — Word AI Act-compliant zonder advieskosten",
     template: "%s · ComplAI",
   },
   description:
-    "ComplAI helpt Nederlandse organisaties om compliant te worden met de EU AI Act: risicoscan, AI-register, documentgeneratie, e-learning en governance in één platform.",
+    "ComplAI helpt Nederlandse mkb-organisaties stap voor stap voldoen aan de EU AI Act: risicoscan, AI-register, documenten, e-learning en governance vanuit één omgeving.",
   keywords: ["EU AI Act", "AI compliance", "AI-register", "risicoscan", "FRIA", "AI governance"],
   openGraph: {
-    title: "ComplAI — Klaar voor de AI Act",
+    title: "ComplAI — Word AI Act-compliant zonder advieskosten",
     description:
-      "Risicoscan, AI-register, documenten, e-learning en governance. Word compliant met de EU AI Act.",
+      "Scan uw risico's, leg uw AI-systemen vast, genereer de verplichte documenten en maak uw team AI-vaardig — alles op één plek.",
     locale: "nl_NL",
     type: "website",
   },
