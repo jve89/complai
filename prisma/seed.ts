@@ -31,6 +31,18 @@ async function main() {
     },
   });
 
+  // A couple of extra team members so the settings team table is populated.
+  for (const member of [
+    { id: "demo-user-tom", email: "tom@demobedrijf.nl", name: "Tom Bakker", role: "employee" as const },
+    { id: "demo-user-priya", email: "priya@demobedrijf.nl", name: "Priya Sharma", role: "manager" as const },
+  ]) {
+    await prisma.user.upsert({
+      where: { id: member.id },
+      update: {},
+      create: { ...member, companyId: company.id },
+    });
+  }
+
   // Reset child collections so the demo set stays exactly as described.
   await prisma.aiSystem.deleteMany({ where: { companyId: company.id } });
   await prisma.aiSystem.createMany({

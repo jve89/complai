@@ -41,6 +41,7 @@ model Company {
   size      String? // e.g. "1-10", "11-50", "51-250", "250+"
   sector    String?
   country   String   @default("NL")
+  logoUrl   String?  @map("logo_url")
   createdAt DateTime @default(now()) @map("created_at")
 
   users               User[]
