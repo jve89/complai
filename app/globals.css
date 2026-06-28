@@ -5,33 +5,33 @@
 @layer base {
   :root {
     --background: 0 0% 100%;
-    --foreground: 222 47% 11%;
+    --foreground: 257 24% 14%;
 
     --card: 0 0% 100%;
-    --card-foreground: 222 47% 11%;
+    --card-foreground: 257 24% 14%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 222 47% 11%;
+    --popover-foreground: 257 24% 14%;
 
-    /* Emerald brand as primary */
-    --primary: 160 84% 39%;
+    /* Indigo brand as primary */
+    --primary: 239 84% 67%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 210 40% 96%;
-    --secondary-foreground: 222 47% 11%;
+    --secondary: 250 60% 97%;
+    --secondary-foreground: 257 24% 14%;
 
-    --muted: 210 40% 96%;
-    --muted-foreground: 215 16% 47%;
+    --muted: 250 40% 96%;
+    --muted-foreground: 250 8% 46%;
 
-    --accent: 152 76% 96%;
-    --accent-foreground: 161 94% 24%;
+    --accent: 252 100% 97%;
+    --accent-foreground: 245 58% 51%;
 
     --destructive: 0 72% 51%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 214 32% 91%;
-    --input: 214 32% 91%;
-    --ring: 160 84% 39%;
+    --border: 250 30% 91%;
+    --input: 250 30% 91%;
+    --ring: 239 84% 67%;
 
     --radius: 0.6rem;
   }

@@ -113,18 +113,22 @@ export default function LandingPage() {
   return (
     <>
       {/* Hero */}
-      <section className="relative overflow-hidden bg-navy-900 text-white">
-        <div className="absolute inset-0 bg-[radial-gradient(60%_60%_at_50%_0%,rgba(16,185,129,0.18),transparent)]" />
-        <div className="container relative grid gap-12 py-20 lg:grid-cols-2 lg:items-center lg:py-28">
+      <section className="relative overflow-hidden border-b bg-white">
+        <div className="pointer-events-none absolute inset-0 -z-10">
+          <div className="absolute left-1/2 top-[-15%] h-[520px] w-[860px] -translate-x-1/2 rounded-full bg-[radial-gradient(closest-side,rgba(124,58,237,0.16),rgba(99,102,241,0.10),transparent)] blur-2xl" />
+        </div>
+        <div className="container relative grid gap-14 py-20 lg:grid-cols-2 lg:items-center lg:py-32">
           <div className="space-y-7">
-            <Badge variant="navy" className="border border-brand-500/40 bg-brand-500/10 text-brand-400">
+            <Badge variant="secondary" className="bg-accent text-accent-foreground">
               AI Act-compliance voor het mkb
             </Badge>
-            <h1 className="text-4xl font-bold leading-tight tracking-tight sm:text-5xl lg:text-6xl">
-              Word AI Act-compliant<br />
-              <span className="text-brand-400">zonder advieskosten.</span>
+            <h1 className="text-4xl font-bold leading-[1.05] tracking-tight sm:text-6xl lg:text-7xl">
+              Word AI Act-compliant{" "}
+              <span className="bg-gradient-to-r from-brand-600 to-violet-500 bg-clip-text text-transparent">
+                zonder advieskosten.
+              </span>
             </h1>
-            <p className="max-w-xl text-lg text-white/70">
+            <p className="max-w-xl text-lg text-muted-foreground sm:text-xl">
               ComplAI maakt van de Europese AI-wetgeving een afvinkbaar
               stappenplan: scan uw risico's, leg uw AI-systemen vast, genereer de
               verplichte documenten en maak uw team AI-vaardig — vanuit één
@@ -137,47 +141,45 @@ export default function LandingPage() {
                   <ArrowRight className="h-4 w-4" />
                 </Link>
               </Button>
-              <Button
-                asChild
-                size="lg"
-                variant="outline"
-                className="border-white/20 bg-transparent text-white hover:bg-white/10 hover:text-white"
-              >
+              <Button asChild size="lg" variant="outline">
                 <Link href="/#hoe-het-werkt">Bekijk hoe het werkt</Link>
               </Button>
             </div>
-            <p className="text-sm text-white/50">
+            <p className="text-sm text-muted-foreground">
               In 5 minuten · zonder account · met PDF-rapport
             </p>
           </div>
 
           {/* Dashboard mockup */}
           <div className="relative">
-            <div className="rounded-2xl border border-white/10 bg-white/5 p-4 shadow-2xl backdrop-blur">
-              <div className="rounded-xl bg-white p-5 text-navy-900">
-                <div className="mb-4 flex items-center justify-between">
+            <div className="absolute -inset-4 -z-10 rounded-[28px] bg-gradient-to-br from-brand-500/15 to-violet-500/15 blur-2xl" />
+            <div className="rounded-2xl border bg-white p-2 shadow-xl shadow-brand-500/10 ring-1 ring-black/5">
+              <div className="rounded-xl border bg-card p-6">
+                <div className="mb-5 flex items-center justify-between">
                   <span className="text-sm font-semibold">Compliance-score</span>
-                  <Badge variant="warning">Voorbeeld</Badge>
+                  <Badge variant="secondary" className="bg-accent text-accent-foreground">
+                    Voorbeeld
+                  </Badge>
                 </div>
-                <div className="flex items-center gap-5">
-                  <div className="relative grid h-24 w-24 place-items-center">
-                    <svg className="h-24 w-24 -rotate-90" viewBox="0 0 100 100">
-                      <circle cx="50" cy="50" r="42" fill="none" stroke="#e2e8f0" strokeWidth="10" />
+                <div className="flex items-center gap-6">
+                  <div className="relative grid h-28 w-28 place-items-center">
+                    <svg className="h-28 w-28 -rotate-90" viewBox="0 0 100 100">
+                      <circle cx="50" cy="50" r="42" fill="none" stroke="#ede9fe" strokeWidth="10" />
                       <circle
                         cx="50"
                         cy="50"
                         r="42"
                         fill="none"
-                        stroke="#10b981"
+                        stroke="#6366f1"
                         strokeWidth="10"
                         strokeLinecap="round"
                         strokeDasharray={`${2 * Math.PI * 42}`}
                         strokeDashoffset={`${2 * Math.PI * 42 * (1 - 0.58)}`}
                       />
                     </svg>
-                    <span className="absolute text-xl font-bold">58</span>
+                    <span className="absolute text-2xl font-bold">58</span>
                   </div>
-                  <div className="space-y-2 text-sm">
+                  <div className="space-y-2.5 text-sm">
                     {[
                       ["Art. 4 · AI-geletterdheid", "open"],
                       ["Art. 5 · Verboden praktijken", "ok"],
@@ -187,7 +189,7 @@ export default function LandingPage() {
                         <span
                           className={
                             status === "ok"
-                              ? "h-2 w-2 rounded-full bg-brand-500"
+                              ? "h-2 w-2 rounded-full bg-emerald-500"
                               : status === "bezig"
                                 ? "h-2 w-2 rounded-full bg-amber-500"
                                 : "h-2 w-2 rounded-full bg-red-500"

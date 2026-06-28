@@ -10,7 +10,7 @@ import type { ScanReport } from "@/lib/scan/scoring";
 import { STATUS_COLOR, STATUS_LABEL } from "@/lib/scan/status";
 
 const NAVY = "#0f172a";
-const EMERALD = "#10b981";
+const EMERALD = "#6366f1"; // brand indigo
 const MUTED = "#64748b";
 
 const styles = StyleSheet.create({

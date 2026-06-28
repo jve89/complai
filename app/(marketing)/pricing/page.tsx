@@ -6,10 +6,10 @@ import { PricingTable } from "@/components/marketing/pricing-table";
 export const metadata: Metadata = {
   title: "Prijzen",
   description:
-    "Heldere prijzen voor AI Act-compliance. Start gratis en groei mee met Starter, Professional of Corporate.",
+    "Heldere prijzen voor AI Act-compliance. Start gratis en groei mee met Starter, Groei of Schaal.",
 };
 
-const COLUMNS = ["Gratis", "Starter", "Professional", "Corporate"];
+const COLUMNS = ["Gratis", "Starter", "Groei", "Schaal"];
 
 const COMPARISON: { feature: string; values: (string | boolean)[] }[] = [
   { feature: "Risicoscan + PDF-rapport", values: [true, true, true, true] },
@@ -71,7 +71,7 @@ export default function PricingPage() {
                     <th
                       key={col}
                       className={
-                        col === "Professional"
+                        col === "Groei"
                           ? "p-4 text-center text-sm font-semibold text-brand-700"
                           : "p-4 text-center text-sm font-medium"
                       }
@@ -89,7 +89,7 @@ export default function PricingPage() {
                       <td
                         key={i}
                         className={
-                          COLUMNS[i] === "Professional"
+                          COLUMNS[i] === "Groei"
                             ? "bg-brand-50/50 p-4 text-center"
                             : "p-4 text-center"
                         }
