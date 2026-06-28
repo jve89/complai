@@ -43,12 +43,13 @@ model Company {
   country   String   @default("NL")
   createdAt DateTime @default(now()) @map("created_at")
 
-  users           User[]
-  aiSystems       AiSystem[]
-  scanResults     ScanResult[]
-  documents       Document[]
-  employees       Employee[]
-  complianceItems ComplianceItem[]
+  users               User[]
+  aiSystems           AiSystem[]
+  scanResults         ScanResult[]
+  documents           Document[]
+  employees           Employee[]
+  complianceItems     ComplianceItem[]
+  trainingCompletions TrainingCompletion[]
 
   @@map("companies")
 }
@@ -127,11 +128,28 @@ model Employee {
   certificateUrl    String?  @map("certificate_url")
   createdAt         DateTime @default(now()) @map("created_at")
 
-  company Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
-  user    User?   @relation(fields: [userId], references: [id], onDelete: SetNull)
+  company             Company              @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  user                User?                @relation(fields: [userId], references: [id], onDelete: SetNull)
+  trainingCompletions TrainingCompletion[]
 
   @@index([companyId])
   @@map("employees")
+}
+
+model TrainingCompletion {
+  id          String   @id @default(cuid())
+  companyId   String   @map("company_id")
+  employeeId  String   @map("employee_id")
+  moduleId    String   @map("module_id")
+  score       Int // correct answers out of total
+  completedAt DateTime @default(now()) @map("completed_at")
+
+  company  Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  employee Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+
+  @@unique([employeeId, moduleId])
+  @@index([companyId])
+  @@map("training_completions")
 }
 
 model ComplianceItem {
