@@ -25,10 +25,10 @@ const columns = [
   {
     title: "Juridisch",
     links: [
-      { href: "#", label: "Privacyverklaring" },
-      { href: "#", label: "Algemene voorwaarden" },
-      { href: "#", label: "Verwerkersovereenkomst" },
-      { href: "#", label: "Cookiebeleid" },
+      { href: "/privacy", label: "Privacyverklaring" },
+      { href: "/voorwaarden", label: "Algemene voorwaarden" },
+      { href: "/verwerkersovereenkomst", label: "Verwerkersovereenkomst" },
+      { href: "/cookies", label: "Cookiebeleid" },
     ],
   },
 ];
