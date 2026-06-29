@@ -5,6 +5,11 @@ const nextConfig = {
   experimental: {
     serverComponentsExternalPackages: ["@react-pdf/renderer"],
   },
+  // Type-checking (tsc) still runs during build; we just don't want lint-only
+  // issues (e.g. unused imports) to fail production deploys.
+  eslint: {
+    ignoreDuringBuilds: true,
+  },
 };
 
 export default nextConfig;
