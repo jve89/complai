@@ -1,4 +1,4 @@
-import { Award, CheckCircle2, Circle, Download, GraduationCap, Users } from "lucide-react";
+import { Award, CheckCircle2, Circle, Download, Users } from "lucide-react";
 
 import { prisma } from "@/lib/prisma";
 import { getActiveCompany } from "@/lib/auth";
