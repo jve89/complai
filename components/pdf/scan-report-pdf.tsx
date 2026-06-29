@@ -1,17 +1,26 @@
-import {
-  Document,
-  Page,
-  Text,
-  View,
-  StyleSheet,
-} from "@react-pdf/renderer";
+import { Document, Page, Text, View, StyleSheet } from "@react-pdf/renderer";
 
-import type { ScanReport } from "@/lib/scan/scoring";
-import { STATUS_COLOR, STATUS_LABEL } from "@/lib/scan/status";
+import type { ComplianceProfile } from "@/lib/compliance/types";
 
 const NAVY = "#0f172a";
-const EMERALD = "#6366f1"; // brand indigo
+const BRAND = "#6366f1"; // indigo
 const MUTED = "#64748b";
+
+const HEADLINE_LABEL: Record<ComplianceProfile["headline"], string> = {
+  prohibited: "Verboden praktijk",
+  high_risk: "Hoog risico",
+  limited_risk: "Beperkt risico",
+  out_of_scope: "Buiten de reikwijdte",
+  excluded: "Uitgesloten",
+  minimal: "Minimaal risico",
+};
+
+const TIER_LABEL: Record<string, string> = {
+  gratis: "Gratis",
+  starter: "Starter",
+  groei: "Groei",
+  schaal: "Schaal",
+};
 
 const styles = StyleSheet.create({
   page: { padding: 40, fontSize: 11, color: NAVY, fontFamily: "Helvetica" },
@@ -20,61 +29,36 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     alignItems: "center",
     borderBottomWidth: 2,
-    borderBottomColor: EMERALD,
+    borderBottomColor: BRAND,
     paddingBottom: 12,
     marginBottom: 20,
   },
   brand: { fontSize: 18, fontFamily: "Helvetica-Bold" },
-  brandAi: { color: EMERALD },
+  brandAi: { color: BRAND },
   metaLabel: { fontSize: 9, color: MUTED, textAlign: "right" },
   h1: { fontSize: 20, fontFamily: "Helvetica-Bold", marginBottom: 4 },
-  intro: { color: MUTED, marginBottom: 20, lineHeight: 1.5 },
+  intro: { color: MUTED, marginBottom: 18, lineHeight: 1.5 },
   scoreBox: {
     flexDirection: "row",
     alignItems: "center",
     backgroundColor: "#f1f5f9",
     borderRadius: 8,
-    padding: 20,
-    marginBottom: 24,
+    padding: 18,
+    marginBottom: 22,
   },
-  scoreNumber: { fontSize: 44, fontFamily: "Helvetica-Bold", color: EMERALD },
-  scoreOutOf: { fontSize: 16, color: MUTED },
-  scoreSummary: { flex: 1, marginLeft: 20, lineHeight: 1.5 },
-  sectionTitle: {
-    fontSize: 13,
-    fontFamily: "Helvetica-Bold",
-    marginBottom: 10,
-    marginTop: 8,
-  },
-  articleRow: {
-    flexDirection: "row",
-    alignItems: "center",
+  scoreNumber: { fontSize: 40, fontFamily: "Helvetica-Bold", color: BRAND },
+  scoreSummary: { flex: 1, marginLeft: 18, lineHeight: 1.5 },
+  sectionTitle: { fontSize: 13, fontFamily: "Helvetica-Bold", marginBottom: 8, marginTop: 8 },
+  row: {
     borderBottomWidth: 1,
     borderBottomColor: "#e2e8f0",
-    paddingVertical: 8,
-  },
-  dot: { width: 8, height: 8, borderRadius: 4, marginRight: 8 },
-  articleName: { width: 150, fontFamily: "Helvetica-Bold" },
-  articleSummary: { flex: 1, color: MUTED, paddingRight: 8 },
-  statusTag: { width: 90, textAlign: "right", fontFamily: "Helvetica-Bold" },
-  action: {
+    paddingVertical: 7,
     flexDirection: "row",
-    marginBottom: 12,
   },
-  actionNum: {
-    width: 22,
-    height: 22,
-    borderRadius: 11,
-    backgroundColor: NAVY,
-    color: "#ffffff",
-    textAlign: "center",
-    paddingTop: 5,
-    fontSize: 10,
-    fontFamily: "Helvetica-Bold",
-    marginRight: 10,
-  },
-  actionTitle: { fontFamily: "Helvetica-Bold", marginBottom: 2 },
-  actionDesc: { color: MUTED, lineHeight: 1.4 },
+  rowMain: { flex: 1, paddingRight: 8 },
+  rowTitle: { fontFamily: "Helvetica-Bold" },
+  rowDesc: { color: MUTED, fontSize: 9, marginTop: 1 },
+  status: { width: 60, textAlign: "right", fontSize: 9, fontFamily: "Helvetica-Bold" },
   footer: {
     position: "absolute",
     bottom: 30,
@@ -89,82 +73,93 @@ const styles = StyleSheet.create({
   },
 });
 
+function statusLabel(status: string) {
+  if (status === "compliant" || status === "done") return "Op orde";
+  if (status === "in_progress") return "Bezig";
+  return "Te doen";
+}
+
 export function ScanReportPdf({
-  report,
+  profile,
   date,
 }: {
-  report: ScanReport;
+  profile: ComplianceProfile;
   date: string;
 }) {
+  const required = profile.obligations.filter((o) => o.required);
+  const advisory = profile.obligations.filter((o) => !o.required);
+
   return (
-    <Document title="ComplAI risicoscan-rapport" author="ComplAI">
+    <Document title="ComplAI compliance-rapport" author="ComplAI">
       <Page size="A4" style={styles.page}>
         <View style={styles.header}>
           <Text style={styles.brand}>
             Compl<Text style={styles.brandAi}>AI</Text>
           </Text>
           <View>
-            <Text style={styles.metaLabel}>EU AI Act risicoscan</Text>
+            <Text style={styles.metaLabel}>EU AI Act compliance-rapport</Text>
             <Text style={styles.metaLabel}>{date}</Text>
           </View>
         </View>
 
         <Text style={styles.h1}>Uw compliance-rapport</Text>
         <Text style={styles.intro}>
-          Dit rapport geeft op basis van uw antwoorden een indicatie van uw
-          status ten opzichte van de EU AI Act. Het is bedoeld als startpunt en
-          niet als juridisch advies.
+          Op basis van uw antwoorden. Dit is beslissingsondersteuning, geen juridisch advies en
+          geen garantie op naleving.
         </Text>
 
         <View style={styles.scoreBox}>
-          <View style={{ alignItems: "center", width: 120 }}>
-            <Text style={styles.scoreNumber}>{report.score}</Text>
-            <Text style={styles.scoreOutOf}>van de 100</Text>
+          <View style={{ alignItems: "center", width: 110 }}>
+            <Text style={styles.scoreNumber}>{profile.score}</Text>
+            <Text style={{ fontSize: 10, color: MUTED }}>gereedheid /100</Text>
           </View>
-          <Text style={styles.scoreSummary}>{report.summary}</Text>
+          <View style={styles.scoreSummary}>
+            <Text style={{ fontFamily: "Helvetica-Bold", marginBottom: 2 }}>
+              {HEADLINE_LABEL[profile.headline]}
+            </Text>
+            <Text>
+              Aanbevolen plan: {TIER_LABEL[profile.recommendedTier] ?? profile.recommendedTier}
+            </Text>
+          </View>
         </View>
 
-        <Text style={styles.sectionTitle}>Status per AI Act-artikel</Text>
-        {report.articles.map((a) => (
-          <View key={a.article} style={styles.articleRow}>
-            <View
-              style={[styles.dot, { backgroundColor: STATUS_COLOR[a.status] }]}
-            />
-            <Text style={styles.articleName}>
-              {a.article} · {a.title}
-            </Text>
-            <Text style={styles.articleSummary}>{a.summary}</Text>
-            <Text style={[styles.statusTag, { color: STATUS_COLOR[a.status] }]}>
-              {STATUS_LABEL[a.status]}
-            </Text>
-          </View>
-        ))}
-
-        <Text style={[styles.sectionTitle, { marginTop: 24 }]}>
-          Uw belangrijkste vervolgstappen
-        </Text>
-        {report.priorityActions.length === 0 ? (
-          <Text style={{ color: MUTED }}>
-            U heeft de belangrijkste verplichtingen op orde. Houd uw compliance
-            actueel.
-          </Text>
+        <Text style={styles.sectionTitle}>Wat u moet doen ({required.length})</Text>
+        {required.length === 0 ? (
+          <Text style={{ color: MUTED }}>Geen verplichte acties gevonden.</Text>
         ) : (
-          report.priorityActions.map((action, i) => (
-            <View key={i} style={styles.action}>
-              <Text style={styles.actionNum}>{i + 1}</Text>
-              <View style={{ flex: 1 }}>
-                <Text style={styles.actionTitle}>
-                  {action.title} ({action.article})
+          required.map((o) => (
+            <View key={o.code} style={styles.row}>
+              <View style={styles.rowMain}>
+                <Text style={styles.rowTitle}>
+                  {o.title} ({o.article})
                 </Text>
-                <Text style={styles.actionDesc}>{action.description}</Text>
+                <Text style={styles.rowDesc}>{o.description}</Text>
               </View>
+              <Text style={styles.status}>{statusLabel(o.status)}</Text>
             </View>
           ))
         )}
 
+        {advisory.length > 0 && (
+          <>
+            <Text style={[styles.sectionTitle, { marginTop: 18 }]}>
+              Aanbevolen ({advisory.length})
+            </Text>
+            {advisory.map((o) => (
+              <View key={o.code} style={styles.row}>
+                <View style={styles.rowMain}>
+                  <Text style={styles.rowTitle}>
+                    {o.title} ({o.article})
+                  </Text>
+                  <Text style={styles.rowDesc}>{o.description}</Text>
+                </View>
+              </View>
+            ))}
+          </>
+        )}
+
         <Text style={styles.footer}>
-          Gegenereerd door ComplAI · Dit rapport is een indicatie en geen
-          juridisch advies · complai.nl
+          Gegenereerd door ComplAI · Beslissingsondersteuning, geen juridisch advies · complai.nl
         </Text>
       </Page>
     </Document>

@@ -4,29 +4,50 @@ import type { Prisma } from "@prisma/client";
 
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/auth";
-import { scoreScan } from "@/lib/scan/scoring";
-import type { ScanAnswers } from "@/lib/scan/questions";
+import { buildProfile } from "@/lib/compliance/profile";
+import { buildEvidence } from "@/lib/compliance/evidence";
+import { materializeComplianceItems } from "@/lib/compliance/materialize";
+import type { ScanAnswers } from "@/lib/compliance/questions";
 
 /**
- * Persists a completed risk scan and returns its id. Works anonymously
- * (company/user null) so pre-signup scans are kept; if the visitor is logged
- * in the result is linked to their company.
+ * Persists a completed scan: computes the compliance profile, stores it on the
+ * scan result, and — if the visitor is logged in — writes the profile onto the
+ * company and materialises one compliance item per obligation (so the dashboard
+ * and governance reflect the scan).
  */
 export async function submitScan(
   answers: ScanAnswers
 ): Promise<{ id: string }> {
-  const { score } = scoreScan(answers);
-
   const user = await getCurrentUser().catch(() => null);
+  const companyId = user?.company?.id ?? null;
+
+  const evidence = companyId ? await buildEvidence(companyId) : undefined;
+  const profile = buildProfile(answers, evidence);
 
   const result = await prisma.scanResult.create({
     data: {
-      score,
-      answers: answers as Prisma.InputJsonValue,
-      companyId: user?.company?.id ?? null,
+      score: profile.score,
+      answers: answers as unknown as Prisma.InputJsonValue,
+      profile: profile as unknown as Prisma.InputJsonValue,
+      companyId,
       userId: user?.id ?? null,
     },
   });
+
+  if (companyId) {
+    await prisma.company.update({
+      where: { id: companyId },
+      data: {
+        size: answers.size ?? undefined,
+        sector: answers.sector ?? undefined,
+        plan: profile.recommendedTier,
+        entityRoles: profile.entityRoles,
+        riskTiers: profile.riskTiers,
+        profileJson: profile as unknown as Prisma.InputJsonValue,
+      },
+    });
+    await materializeComplianceItems(companyId, profile);
+  }
 
   return { id: result.id };
 }
