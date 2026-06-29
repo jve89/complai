@@ -192,3 +192,40 @@ These were caught in review and **must** be applied:
    now or keep stubbed?
 7. Pricing numbers — actual €/month per tier + SME framing.
 8. Legal sign-off — a jurist reviews the Dutch template library before launch.
+
+---
+
+## Build progress / resume here
+
+**Decisions locked (user):** build phase by phase; **defer GPAI** provider
+paperwork to v2 (detect + inform only); Art. 6(3) carve-out = **self-select with
+generated record**.
+
+**Done — Phase 1 core (commit `ef02dac`, NOT yet pushed):** the additive
+`lib/compliance/*` engine — `types`, `questions` (grounded answer shape +
+options), `timeline`, `obligations` (catalogue), `engine.ts` (`classify()` with
+all 14 fact-check corrections), `resolve.ts`, `profile.ts` (`buildProfile()`).
+`tsc` clean; smoke-tested across 5 scenarios (high-risk, credit→FRIA, chatbot
+advisory, out-of-scope, prohibited-overrides-high-risk) — all correct. Nothing
+imports it yet, so the running app + live deploy are unchanged.
+
+**Next — finish Phase 1 wiring (task 16), then Phase 2:**
+1. **Schema** (additive, nullable): `Company.{plan,entityRoles[],riskTiers[],profileJson Json?}`,
+   `ScanResult.profile Json?`, `ComplianceItem.{code String?, required Boolean?, deadline DateTime?}`.
+   `prisma migrate dev` locally; apply to Supabase prod via the Supabase MCP
+   (`apply_migration`) at deploy time.
+2. **New wizard (Phase 2)** — the scan must collect the new `ScanAnswers` shape
+   (`lib/compliance/questions.ts`), branching per Section A. (Phase 1 wiring is
+   only meaningful with these inputs — the old 10 questions don't carry roles /
+   Annex III areas / etc.)
+3. **Wire `app/scan/actions.ts`** — `buildProfile(answers, evidence)`; persist
+   `scan_results.{answers,profile}`; if company known, write `Company` fields and
+   **upsert one `ComplianceItem` per obligation** (this lights up dashboard +
+   governance, which already read `ComplianceItem`).
+4. **Rewire** `app/dashboard/page.tsx` + `lib/governance/score.ts` to read the
+   profile / materialised items instead of seeded data. Build evidence via a
+   `lib/compliance/evidence.ts` helper (documents/training/register counts).
+5. Verify (`tsc` + dev-server scenario), commit, then push to deploy.
+
+**Discipline:** commit clean units; do NOT push until a phase is verified
+(keeps `complai-tau.vercel.app` safe). A mid-edit cutoff → `git checkout .`.
