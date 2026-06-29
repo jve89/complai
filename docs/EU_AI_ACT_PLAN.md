@@ -229,3 +229,27 @@ imports it yet, so the running app + live deploy are unchanged.
 
 **Discipline:** commit clean units; do NOT push until a phase is verified
 (keeps `complai-tau.vercel.app` safe). A mid-edit cutoff → `git checkout .`.
+
+---
+
+## ✅ Phase 1 COMPLETE (commits `ef02dac` → `356608a`, NOT pushed)
+
+Scan → compliance profile → results/PDF + dashboard, all profile-driven and
+regulation-grounded. New branching wizard collects the grounded answers; logged-in
+scans write `Company.profileJson` + materialise `compliance_items`; the resolver
+reflects real company data (docs/training/register). `tsc` clean; verified
+end-to-end in demo mode. Live site untouched (not pushed).
+
+**Small follow-ups (not blocking):**
+- `lib/governance/score.ts` still checks fixed articles (Art. 4/5/50/6) — light
+  rewire to read the profile/obligations generically (renders fine meanwhile).
+- `lib/scan/{questions,scoring,status}.ts` are now unused — safe to delete.
+- Documents/e-learning could consume `profile.documents`/`profile.training`
+  (Phase 4) to show required-vs-advised.
+
+**To DEPLOY Phase 1 (when ready):**
+1. Apply the `compliance_profile` migration to **prod Supabase** via the Supabase
+   MCP `apply_migration` (Company.{plan,entity_roles,risk_tiers,profile_json},
+   scan_results.profile, compliance_items.{code,required}).
+2. `git push origin main` → Vercel redeploys.
+3. Re-run the scan on the live site to populate the new profile.
