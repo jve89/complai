@@ -42,6 +42,12 @@ model Company {
   sector    String?
   country   String   @default("NL")
   logoUrl   String?  @map("logo_url")
+  // Compliance profile (Phase 1): recommended tier, derived roles/tiers, and the
+  // full ComplianceProfile snapshot the dashboard reads.
+  plan        String?  // recommended/active tier: gratis|starter|groei|schaal
+  entityRoles String[] @map("entity_roles")
+  riskTiers   String[] @map("risk_tiers")
+  profileJson Json?    @map("profile_json")
   createdAt DateTime @default(now()) @map("created_at")
 
   users               User[]
@@ -94,6 +100,7 @@ model ScanResult {
   userId    String?  @map("user_id")
   score     Int
   answers   Json
+  profile   Json? // computed ComplianceProfile snapshot
   reportUrl String?  @map("report_url")
   createdAt DateTime @default(now()) @map("created_at")
 
@@ -159,6 +166,8 @@ model ComplianceItem {
   article   String // e.g. "Art. 4"
   title     String
   status    ComplianceStatus @default(open)
+  code      String? // obligation code from lib/compliance/obligations.ts
+  required  Boolean          @default(true) // false = advisory ("aanbevolen")
   deadline  DateTime?
   updatedAt DateTime         @updatedAt @map("updated_at")
 
