@@ -90,7 +90,7 @@ const features = [
 ];
 
 const comparisonRows = [
-  { label: "Kosten", self: "Gratis (veel tijd)", consultant: "€ 5.000+", complai: "Vanaf € 49/mnd" },
+  { label: "Kosten", self: "Gratis (veel tijd)", consultant: "€ 5.000+", complai: "Vanaf € 29/mnd" },
   { label: "Doorlooptijd", self: "Weken", consultant: "Weken tot maanden", complai: "Dezelfde dag" },
   { label: "AI-register", self: false, consultant: true, complai: true },
   { label: "Automatische classificatie", self: false, consultant: false, complai: true },
@@ -120,19 +120,19 @@ export default function LandingPage() {
         <div className="container relative grid gap-14 py-20 lg:grid-cols-2 lg:items-center lg:py-32">
           <div className="space-y-7">
             <Badge variant="secondary" className="bg-accent text-accent-foreground">
-              AI Act-compliance voor het mkb
+              Van kracht sinds 2 februari 2025
             </Badge>
             <h1 className="text-4xl font-bold leading-[1.05] tracking-tight sm:text-6xl lg:text-7xl">
-              Word AI Act-compliant{" "}
+              Weet binnen 5 minuten{" "}
               <span className="bg-gradient-to-r from-brand-600 to-violet-500 bg-clip-text text-transparent">
-                zonder advieskosten.
-              </span>
+                waar u staat
+              </span>{" "}
+              met de AI-wet.
             </h1>
             <p className="max-w-xl text-lg text-muted-foreground sm:text-xl">
-              ComplAI maakt van de Europese AI-wetgeving een afvinkbaar
-              stappenplan: scan uw risico's, leg uw AI-systemen vast, genereer de
-              verplichte documenten en maak uw team AI-vaardig — vanuit één
-              omgeving.
+              De EU AI-wet is al van kracht. Doe de gratis scan en ontdek meteen uw
+              risicocategorie, uw rol en de deadlines die voor u gelden — met een
+              afvinkbaar stappenplan. Geen account, geen advieskosten.
             </p>
             <div className="flex flex-col gap-3 sm:flex-row">
               <Button asChild size="lg">
@@ -202,6 +202,81 @@ export default function LandingPage() {
                 </div>
               </div>
             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Trust strip */}
+      <section className="border-b bg-secondary/40">
+        <div className="container flex flex-wrap items-center justify-center gap-x-6 gap-y-2 py-4 text-center text-xs text-muted-foreground sm:text-sm">
+          <span className="flex items-center gap-1.5">
+            <Scale className="h-4 w-4 text-brand-500" /> Gebouwd op Verordening (EU) 2024/1689
+          </span>
+          <span className="hidden text-muted-foreground/40 sm:inline">·</span>
+          <span>Digital Omnibus-voorstel gesignaleerd (nog niet aangenomen)</span>
+          <span className="hidden text-muted-foreground/40 sm:inline">·</span>
+          <span>In het Nederlands</span>
+          <span className="hidden text-muted-foreground/40 sm:inline">·</span>
+          <span>Uw antwoorden blijven in de EU</span>
+        </div>
+      </section>
+
+      {/* Urgency */}
+      <section className="border-b bg-navy-900 text-white">
+        <div className="container py-16 sm:py-20">
+          <div className="mx-auto mb-12 max-w-2xl text-center">
+            <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">
+              De wet wacht niet op u
+            </h2>
+            <p className="mt-4 text-lg text-white/70">
+              De AI Act gaat gefaseerd in — en de eerste verplichtingen gelden al.
+              Wie nu begint, is op tijd.
+            </p>
+          </div>
+          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+            {[
+              {
+                icon: GraduationCap,
+                title: "Al verplicht",
+                text: "AI-geletterdheid (Art. 4) is verplicht sinds 2 februari 2025 voor iedereen die met AI werkt.",
+              },
+              {
+                icon: AlertTriangle,
+                title: "Al verboden",
+                text: "De verboden praktijken uit Art. 5 zijn sinds 2 februari 2025 niet meer toegestaan.",
+              },
+              {
+                icon: Clock,
+                title: "Vanaf augustus 2026",
+                text: "De grote hoog-risico- en transparantieplichten (Annex III, Art. 50) worden van kracht.",
+              },
+              {
+                icon: Scale,
+                title: "Forse boetes",
+                text: "Bij ernstige overtredingen tot € 35 miljoen of 7% van de wereldwijde jaaromzet.",
+              },
+            ].map((item) => (
+              <div
+                key={item.title}
+                className="rounded-xl border border-white/10 bg-white/5 p-6"
+              >
+                <item.icon className="h-7 w-7 text-brand-400" />
+                <p className="mt-4 font-semibold">{item.title}</p>
+                <p className="mt-1.5 text-sm text-white/70">{item.text}</p>
+              </div>
+            ))}
+          </div>
+          <div className="mt-10 flex flex-col items-center gap-3">
+            <Button asChild size="lg">
+              <Link href="/scan">
+                Doe nu de gratis scan <ArrowRight className="h-4 w-4" />
+              </Link>
+            </Button>
+            <p className="max-w-2xl text-center text-xs text-white/50">
+              Toepassingsdata volgens Art. 113. Een Digital Omnibus-voorstel kan
+              sommige data uitstellen; tot het is aangenomen blijven de huidige data
+              leidend. Dit is beslissingsondersteuning, geen juridisch advies.
+            </p>
           </div>
         </div>
       </section>
