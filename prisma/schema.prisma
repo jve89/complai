@@ -176,3 +176,17 @@ model ComplianceItem {
   @@index([companyId])
   @@map("compliance_items")
 }
+
+/// Leads from the public contact form. Not tied to a company/account.
+model ContactMessage {
+  id        String   @id @default(cuid())
+  name      String
+  email     String
+  company   String?
+  subject   String?
+  message   String
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@index([createdAt])
+  @@map("contact_messages")
+}

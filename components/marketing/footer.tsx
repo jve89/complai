@@ -4,22 +4,31 @@ import { SiteLogo } from "@/components/site-logo";
 
 const columns = [
   {
-    title: "Platform",
+    title: "Product",
     links: [
       { href: "/scan", label: "Risicoscan" },
       { href: "/#functies", label: "AI-register" },
       { href: "/#functies", label: "Documenten" },
       { href: "/#functies", label: "E-learning" },
       { href: "/#functies", label: "Governance" },
+      { href: "/pricing", label: "Prijzen" },
+    ],
+  },
+  {
+    title: "Hulpbronnen",
+    links: [
+      { href: "/#hoe-het-werkt", label: "Hoe het werkt" },
+      { href: "/#faq", label: "Veelgestelde vragen" },
+      { href: "/scan", label: "Gratis risicoscan" },
+      { href: "/contact", label: "Contact" },
     ],
   },
   {
     title: "Bedrijf",
     links: [
-      { href: "/pricing", label: "Prijzen" },
-      { href: "/#hoe-het-werkt", label: "Hoe het werkt" },
-      { href: "/#faq", label: "Veelgestelde vragen" },
+      { href: "/contact", label: "Contact" },
       { href: "/login", label: "Inloggen" },
+      { href: "/signup", label: "Gratis starten" },
     ],
   },
   {
@@ -36,7 +45,7 @@ const columns = [
 export function Footer() {
   return (
     <footer className="border-t border-white/10 bg-navy-950 text-white">
-      <div className="container grid gap-10 py-14 md:grid-cols-[1.5fr_1fr_1fr_1fr]">
+      <div className="container grid gap-10 py-14 sm:grid-cols-2 md:grid-cols-[1.5fr_1fr_1fr_1fr_1fr]">
         <div className="space-y-4">
           <SiteLogo className="text-white" />
           <p className="max-w-xs text-sm text-white/60">
