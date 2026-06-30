@@ -253,3 +253,45 @@ end-to-end in demo mode. Live site untouched (not pushed).
    scan_results.profile, compliance_items.{code,required}).
 2. `git push origin main` → Vercel redeploys.
 3. Re-run the scan on the live site to populate the new profile.
+
+---
+
+## Backlog (post-launch-readiness, not strictly a numbered phase)
+
+### Full working demo dashboard (`/demo`)
+**Problem:** `/demo` is today a single static overview page. The module row
+(Overzicht · AI-register · Schaduw-AI · Documenten · E-learning · Governance ·
+Kennisbank) is decorative **chips, not links** — clicking them does nothing.
+
+**Goal:** make `/demo` a **fully navigable, read-only** dashboard that is
+**visually identical to the real `/dashboard`** (same layout, components, sidebar,
+styling), populated with **fictional but realistic** data for "Demo Recruitment
+B.V." Every tab should actually open its own page (demo AI-register with sample
+systems, demo Schaduw-AI, demo Documenten, demo E-learning, demo Governance), so a
+visitor experiences the real product before signing up. The "U bekijkt een demo
+met voorbeelddata" banner stays persistent; all mutating actions are disabled.
+
+**Approach (decide at build time):**
+- **Option A — `/demo/*` route group reusing the real dashboard components** with
+  a demo data source (a fixed fictional company built via `buildProfile` + sample
+  `AiSystem`/`Document`/`Employee` fixtures), no auth, read-only. Cleanest
+  separation; no risk to the real auth-protected dashboard.
+- **Option B — public "demo mode" on the real dashboard** for a seeded fictional
+  company, bypassing middleware for `/demo`. Less duplication but riskier (must
+  guarantee no writes + no real-company data leaks).
+- Lean Option A. Extract the dashboard page bodies into shared components that take
+  data as props, so both `/dashboard/*` (real, from `getActiveCompany`) and
+  `/demo/*` (fictional fixtures) render the same UI from different data.
+- Read-only enforcement: hide/disable every form, generate, delete and checkout
+  action; the demo never touches the DB.
+
+**Why it matters:** the competitor's demo is a real clickable dashboard; ours must
+be too. It's the highest-credibility "see the product" moment before payment.
+
+### Phase 4 guardrails to bake into the document generator (decided with user)
+Generated documents are **editable concept-scaffolds**, never finished legal
+instruments: stamp every output "concept — zelfverklaard, vul aan en laat toetsen,
+geen juridisch advies / geen garantie op naleving." Inputs are self-declared; no
+lawyer-client relationship. The one thing that still needs a real legal pass is the
+company's **own Terms of Service + liability disclaimer** (protects us), not the
+compliance templates themselves.
