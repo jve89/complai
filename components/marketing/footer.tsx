@@ -17,9 +17,10 @@ const columns = [
   {
     title: "Hulpbronnen",
     links: [
+      { href: "/kennisbank", label: "Kennisbank" },
+      { href: "/demo", label: "Demo bekijken" },
       { href: "/#hoe-het-werkt", label: "Hoe het werkt" },
       { href: "/#faq", label: "Veelgestelde vragen" },
-      { href: "/scan", label: "Gratis risicoscan" },
       { href: "/contact", label: "Contact" },
     ],
   },

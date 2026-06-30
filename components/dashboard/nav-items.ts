@@ -1,9 +1,11 @@
 import {
   BarChart3,
+  BookOpen,
   Database,
   FileText,
   GraduationCap,
   LayoutDashboard,
+  ScanSearch,
   Settings,
   type LucideIcon,
 } from "lucide-react";
@@ -29,6 +31,12 @@ export const DASHBOARD_NAV: NavItem[] = [
     icon: Database,
   },
   {
+    href: "/dashboard/schaduw-ai",
+    label: "Schaduw-AI",
+    description: "Spoor ongeregistreerd AI-gebruik op",
+    icon: ScanSearch,
+  },
+  {
     href: "/dashboard/documents",
     label: "Documenten",
     description: "Genereer beleid, FRIA en beoordelingen",
@@ -45,6 +53,12 @@ export const DASHBOARD_NAV: NavItem[] = [
     label: "Governance",
     description: "Kwartaalchecks en signalen",
     icon: BarChart3,
+  },
+  {
+    href: "/kennisbank",
+    label: "Kennisbank",
+    description: "De AI Act helder uitgelegd",
+    icon: BookOpen,
   },
   {
     href: "/dashboard/settings",

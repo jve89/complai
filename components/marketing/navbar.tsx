@@ -9,9 +9,9 @@ import { SiteLogo } from "@/components/site-logo";
 
 const links = [
   { href: "/#hoe-het-werkt", label: "Hoe het werkt" },
-  { href: "/#functies", label: "Functies" },
+  { href: "/demo", label: "Demo" },
   { href: "/pricing", label: "Prijzen" },
-  { href: "/#faq", label: "FAQ" },
+  { href: "/kennisbank", label: "Kennisbank" },
   { href: "/contact", label: "Contact" },
 ];
 
