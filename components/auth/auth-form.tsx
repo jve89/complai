@@ -20,9 +20,11 @@ function SubmitButton({ label }: { label: string }) {
 export function AuthForm({
   mode,
   redirectTo,
+  scanId,
 }: {
   mode: "login" | "signup";
   redirectTo?: string;
+  scanId?: string;
 }) {
   const action = mode === "login" ? login : signup;
   const [state, formAction] = useFormState<AuthState, FormData>(
@@ -75,6 +77,7 @@ export function AuthForm({
       </div>
 
       {redirectTo && <input type="hidden" name="redirect" value={redirectTo} />}
+      {scanId && <input type="hidden" name="scan" value={scanId} />}
 
       {state?.error && (
         <div className="flex items-start gap-2 rounded-md bg-red-50 p-3 text-sm text-red-700">

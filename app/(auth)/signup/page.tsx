@@ -12,17 +12,24 @@ import {
 
 export const metadata: Metadata = { title: "Account aanmaken" };
 
-export default function SignupPage() {
+export default function SignupPage({
+  searchParams,
+}: {
+  searchParams: { scan?: string };
+}) {
+  const scanId = searchParams.scan;
   return (
     <Card className="text-card-foreground">
       <CardHeader>
         <CardTitle className="text-2xl">Start gratis</CardTitle>
         <CardDescription>
-          Maak een account aan en krijg direct grip op uw AI-compliance.
+          {scanId
+            ? "Maak een account aan — we zetten uw scanresultaat meteen klaar in uw dashboard."
+            : "Maak een account aan en krijg direct grip op uw AI-compliance."}
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
-        <AuthForm mode="signup" />
+        <AuthForm mode="signup" scanId={scanId} />
         <p className="text-center text-xs text-muted-foreground">
           Door te registreren gaat u akkoord met onze voorwaarden en
           privacyverklaring.

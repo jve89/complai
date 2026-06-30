@@ -7,6 +7,7 @@ import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
 import { prisma } from "@/lib/prisma";
 import { isSupabaseConfigured } from "@/lib/env";
+import { applyScanToCompany } from "@/lib/scan/claim";
 
 export type AuthState = { error?: string } | undefined;
 
@@ -42,6 +43,25 @@ export async function login(
   const { error } = await supabase.auth.signInWithPassword(parsed.data);
   if (error) {
     return { error: "Inloggen mislukt. Controleer uw gegevens." };
+  }
+
+  // Carry an anonymous scan into the just-authenticated account, if one was passed.
+  const scanId = formData.get("scan") as string | null;
+  if (scanId) {
+    try {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (user) {
+        const profile = await prisma.user.findUnique({
+          where: { id: user.id },
+          select: { companyId: true },
+        });
+        if (profile?.companyId) await applyScanToCompany(scanId, profile.companyId, user.id);
+      }
+    } catch (e) {
+      console.error("Scan koppelen bij inloggen mislukt:", e);
+    }
   }
 
   const redirectTo = (formData.get("redirect") as string) || "/dashboard";
@@ -91,6 +111,11 @@ export async function signup(
         companyId: company.id,
       },
     });
+
+    // Bridge: if they came from an anonymous scan, populate the new dashboard
+    // from it so the account opens with their profile + obligations already set.
+    const scanId = formData.get("scan") as string | null;
+    if (scanId) await applyScanToCompany(scanId, company.id, data.user.id);
   } catch (e) {
     console.error("Profiel aanmaken mislukt:", e);
     return {

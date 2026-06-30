@@ -121,7 +121,7 @@ export default async function DashboardPage() {
         description="Uw AI Act-status op basis van uw scan."
       >
         <Button asChild variant="outline">
-          <Link href="/scan">Scan opnieuw doen</Link>
+          <Link href="/scan">Scan bijwerken</Link>
         </Button>
       </PageHeader>
 

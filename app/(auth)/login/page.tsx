@@ -15,7 +15,7 @@ export const metadata: Metadata = { title: "Inloggen" };
 export default function LoginPage({
   searchParams,
 }: {
-  searchParams: { redirect?: string; registered?: string };
+  searchParams: { redirect?: string; registered?: string; scan?: string };
 }) {
   return (
     <Card className="text-card-foreground">
@@ -31,10 +31,17 @@ export default function LoginPage({
             Account aangemaakt. Bevestig eventueel uw e-mailadres en log in.
           </div>
         )}
-        <AuthForm mode="login" redirectTo={searchParams.redirect} />
+        <AuthForm
+          mode="login"
+          redirectTo={searchParams.redirect}
+          scanId={searchParams.scan}
+        />
         <p className="text-center text-sm text-muted-foreground">
           Nog geen account?{" "}
-          <Link href="/signup" className="font-medium text-primary hover:underline">
+          <Link
+            href={searchParams.scan ? `/signup?scan=${searchParams.scan}` : "/signup"}
+            className="font-medium text-primary hover:underline"
+          >
             Gratis starten
           </Link>
         </p>

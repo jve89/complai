@@ -363,14 +363,20 @@ export default async function ScanResultsPage({
           <Sparkles className="h-8 w-8 text-brand-400" />
           <h2 className="text-2xl font-bold">Zet uw resultaat om in actie</h2>
           <p className="max-w-lg text-white/70">
-            Maak een gratis account aan om uw profiel te bewaren, documenten te genereren en uw
-            verplichtingen af te vinken.
+            Maak een gratis account aan — dit resultaat staat dan meteen klaar in uw dashboard, met
+            uw verplichtingen om af te vinken en documenten om te genereren.
           </p>
           <Button asChild size="lg">
-            <Link href="/signup">
+            <Link href={`/signup?scan=${result.id}`}>
               Gratis account aanmaken <ArrowRight className="h-4 w-4" />
             </Link>
           </Button>
+          <p className="text-sm text-white/50">
+            Al een account?{" "}
+            <Link href={`/login?scan=${result.id}`} className="underline">
+              Inloggen
+            </Link>
+          </p>
         </CardContent>
       </Card>
     </div>
