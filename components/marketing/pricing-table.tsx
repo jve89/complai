@@ -77,7 +77,7 @@ export function PricingTable() {
           )}
         >
           Jaarlijks
-          <Badge variant="success">-15%</Badge>
+          <Badge variant="success">2 maanden gratis</Badge>
         </span>
       </div>
 
@@ -116,19 +116,22 @@ export function PricingTable() {
               </div>
               <p className="mt-1 min-h-[1.25rem] text-xs text-muted-foreground">
                 {plan.monthly === 0
-                  ? "Altijd gratis"
+                  ? "Geen account, geen abonnement"
                   : isYear
                     ? `€${plan.yearly}/jaar, jaarlijks gefactureerd`
                     : "Maandelijks opzegbaar"}
               </p>
+              <p className="mt-1 min-h-[1rem] text-xs font-medium text-brand-600">
+                {plan.freeFirstMonth ? "Eerste maand gratis" : " "}
+              </p>
 
-              <p className="mt-4 min-h-[2.5rem] text-sm text-muted-foreground">
+              <p className="mt-3 min-h-[2.5rem] text-sm text-muted-foreground">
                 {plan.tagline}
               </p>
 
               {plan.id === "free" ? (
                 <Button asChild variant="outline" className="mt-5 w-full">
-                  <Link href="/signup">Start gratis</Link>
+                  <Link href="/scan">Doe de gratis scan</Link>
                 </Button>
               ) : (
                 <Button

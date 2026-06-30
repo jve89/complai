@@ -73,26 +73,50 @@ export function classify(answers: ScanAnswers): ClassificationResult {
   const q = answers.prohibitedQualifiers ?? {};
   const prohibitedHits = (answers.prohibited ?? []).filter((p) => {
     if (p === "none") return false;
+
+    // Context-dependent practices: prohibited ONLY when an aggravating qualifier
+    // is affirmatively confirmed; otherwise flag for legal review (not a hard
+    // stop). This stops defensive ticks from producing false "Verboden" verdicts.
+    if (p === "manipulation") {
+      if (q.manipulationSeriousHarm) return true;
+      caveats.push("Manipulatieve technieken zijn alleen verboden bij aantoonbaar ernstige schade. Laat dit toetsen.");
+      return false;
+    }
+    if (p === "exploitation") {
+      if (q.exploitationHarm) return true;
+      caveats.push("Het uitbuiten van kwetsbaarheden is verboden wanneer dit tot schade leidt. Laat dit toetsen.");
+      return false;
+    }
+    if (p === "social_scoring") {
+      if (q.socialScoringUnrelatedContext) return true;
+      caveats.push("Sociale scoring is verboden bij nadelige behandeling in een onverwante context. Laat dit toetsen.");
+      return false;
+    }
     if (p === "predictive_policing") {
-      // Only prohibited if SOLELY profiling; otherwise possibly Annex III 6d.
-      if (!q.predictivePolicingSolelyProfiling) {
-        caveats.push(
-          "Voorspellend politiewerk is alleen verboden als het uitsluitend op profilering berust; anders mogelijk hoog-risico (Annex III 6d). Laat dit toetsen."
-        );
-        return false;
-      }
-      return true;
+      if (q.predictivePolicingSolelyProfiling) return true;
+      caveats.push("Voorspellend politiewerk is alleen verboden als het uitsluitend op profilering berust; anders mogelijk hoog-risico (Annex III 6d). Laat dit toetsen.");
+      return false;
     }
     if (p === "realtime_rbi") {
-      // Strict-necessity exceptions exist → not a flat prohibition.
-      if (q.rbiStrictNecessity) {
-        caveats.push(
-          "Real-time biometrische identificatie kan onder strikte uitzonderingen zijn toegestaan (met autorisatie) en valt dan onder hoog-risico, niet onder een verbod. Laat dit toetsen."
-        );
+      // Prohibited only when affirmatively real-time/public/law-enforcement AND
+      // not under a strict-necessity exception.
+      if (q.rbiRealtimePublicLE && !q.rbiStrictNecessity) return true;
+      caveats.push("Real-time biometrische identificatie is alleen onder strikte voorwaarden verboden; vaak valt het onder hoog-risico met autorisatie. Laat dit toetsen.");
+      return false;
+    }
+
+    // Emotion recognition at work/education is prohibited unless a medical/safety
+    // exception applies.
+    if (p === "emotion_work_edu") {
+      if (q.emotionMedicalSafetyException) {
+        caveats.push("Emotieherkenning op werk/onderwijs kan zijn toegestaan onder een medische- of veiligheidsuitzondering. Laat dit toetsen.");
         return false;
       }
       return true;
     }
+
+    // Specific prohibited acts (facial_scraping, biometric_categorisation):
+    // the narrowed label is the prohibited act itself → flag if ticked.
     return true;
   });
   const isProhibited = prohibitedHits.length > 0;

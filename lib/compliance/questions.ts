@@ -128,10 +128,38 @@ export const TRANSPARENCY_TYPES: Option[] = [
   { value: "none", label: "Geen van bovenstaande" },
 ];
 
+/** Readiness questions (Sectie 6) — the real input to the gereedheidsscore.
+ * `obligation` ties a readiness item to the obligation codes it satisfies, so we
+ * only ask what actually applies. `tri` answers map to evidence upstream. */
+export type Tri = "ja" | "deels" | "nee";
+
+export const READINESS_QUESTIONS: {
+  key: keyof NonNullable<ScanAnswers["readiness"]>;
+  label: string;
+  help: string;
+  /** Show only when at least one of these obligation/evidence keys is relevant. */
+  when: "always" | "highRisk" | "transparency" | "register" | "fria" | "provider";
+}[] = [
+  { key: "training", label: "Hebben uw medewerkers AI-geletterdheidstraining gehad?", help: "Art. 4 — verplicht voor iedereen die met AI werkt sinds 2 feb 2025.", when: "always" },
+  { key: "policy", label: "Heeft u een AI-beleid of gedragsregels voor AI-gebruik?", help: "Interne afspraken over verantwoord en veilig AI-gebruik.", when: "always" },
+  { key: "register", label: "Houdt u een register bij van de AI-systemen die u gebruikt?", help: "Een overzicht van welke AI u inzet, waarvoor en met welk risico.", when: "register" },
+  { key: "oversight", label: "Is er menselijk toezicht op beslissingen van uw AI?", help: "Art. 14/26 — een mens kan ingrijpen of beslissingen herzien.", when: "highRisk" },
+  { key: "transparency", label: "Maakt u aan gebruikers kenbaar dat zij met AI te maken hebben?", help: "Art. 50 — bv. melden dat een chatbot AI is of content AI-gegenereerd.", when: "transparency" },
+  { key: "logging", label: "Legt uw AI-systeem gebeurtenissen vast (logging)?", help: "Art. 12/26 — registratie van gebruik voor traceerbaarheid.", when: "highRisk" },
+  { key: "riskAssessment", label: "Heeft u een risicobeoordeling van uw AI-gebruik gedaan?", help: "Een inschatting van de risico's voor mensen en grondrechten.", when: "highRisk" },
+  { key: "fria", label: "Heeft u een grondrechteneffectbeoordeling (FRIA) uitgevoerd?", help: "Art. 27 — verplicht voor o.a. krediet, verzekering en publieke diensten.", when: "fria" },
+  { key: "techDoc", label: "Heeft u technische documentatie van uw AI-systeem?", help: "Art. 11 — beschrijving van werking, data en prestaties (aanbieders).", when: "provider" },
+];
+
 export interface ScanAnswers {
   // Section 0 — company basics
+  companyName?: string;
   size?: string;
   sector?: string;
+  // Section 1 — tools & use (friendly pre-fill; never auto-classified)
+  tools?: string[];
+  useCases?: string[];
+  decisionsAboutPeople?: Tri;
   // Section E — entity role
   roles: EntityRole[];
   modifications: string[];
@@ -150,7 +178,12 @@ export interface ScanAnswers {
   exclusions: string[];
   prohibited: string[];
   prohibitedQualifiers?: {
+    manipulationSeriousHarm?: boolean; // true → prohibited; default → caveat
+    exploitationHarm?: boolean;
+    socialScoringUnrelatedContext?: boolean;
     predictivePolicingSolelyProfiling?: boolean; // false → not Art. 5 (may be Annex III 6d)
+    emotionMedicalSafetyException?: boolean; // true → exception → not prohibited
+    rbiRealtimePublicLE?: boolean; // true (+ no strict necessity) → prohibited
     rbiStrictNecessity?: boolean; // true → exception applies → not a flat prohibition
   };
   transparency: string[];
@@ -159,4 +192,18 @@ export interface ScanAnswers {
     publicTextEditorialReview?: boolean; // disapplied if human editorial responsibility
   };
   publicBodyOrService?: boolean; // for FRIA (Art. 27)
+  // Section 6 — readiness (drives the gereedheidsscore). Self-reported, unverified.
+  readiness?: {
+    training?: Tri;
+    policy?: Tri;
+    register?: Tri;
+    oversight?: Tri;
+    transparency?: Tri;
+    logging?: Tri;
+    riskAssessment?: Tri;
+    fria?: Tri;
+    techDoc?: Tri;
+  };
+  // Section 7 — contact (optional; lead capture only)
+  email?: string;
 }

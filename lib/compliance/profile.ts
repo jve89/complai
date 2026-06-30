@@ -40,15 +40,20 @@ function recommendTier(
   tiers: string[],
   flags: { gpaiModelProvider: boolean },
   roles: string[],
+  requiredDocsCount: number,
   size?: string
 ): TierId {
   const has = (t: string) => tiers.includes(t);
   const isProvider = roles.includes("provider");
 
+  // Recommend a paid tier ONLY when a genuinely required *deliverable* exists.
+  // Required AI-literacy training is satisfied by the free e-learning and is not
+  // a document, so it never enters requiredDocsCount — an advisory-only chatbot
+  // (limited risk, no required docs) therefore stays on the free tier.
   let tier: TierId;
   if (flags.gpaiModelProvider || (has("high") && isProvider)) tier = "schaal";
-  else if (has("high") || has("high_notify")) tier = "groei";
-  else if (has("limited")) tier = "starter";
+  else if (has("high")) tier = "groei";
+  else if (has("high_notify") || requiredDocsCount > 0) tier = "starter";
   else tier = "gratis";
 
   // 250+ employees bump one tier for admin/seat needs.
@@ -114,18 +119,10 @@ export function buildProfile(
     });
   }
 
-  // Score = done required / total required (applicability-aware). Never "compliant".
-  const required = obligations.filter((o) => o.required);
-  const done = required.filter((o) => o.status === "done").length;
-  let score = required.length ? Math.round((done / required.length) * 100) : 100;
-
+  // ── Risk posture (headline) ───────────────────────────────────────────────
   const isProhibited = c.riskTiers.includes("prohibited");
   const isExcludedOrOut =
     c.riskTiers.includes("out_of_scope") || c.riskTiers.includes("excluded");
-  if (isProhibited) score = Math.min(score, 20);
-  if (isExcludedOrOut && !isProhibited && required.length === 0) score = 100;
-
-  const level = score >= 75 ? "laag" : score >= 45 ? "gemiddeld" : "hoog";
 
   const headline: ComplianceProfile["headline"] = isProhibited
     ? "prohibited"
@@ -139,10 +136,30 @@ export function buildProfile(
             ? "excluded"
             : "minimal";
 
+  // ── Gereedheidsscore ──────────────────────────────────────────────────────
+  // Weighted over applicable REQUIRED obligations with partial credit, lifted off
+  // a baseline floor so a fresh scan never reads a demotivating 0. The readiness
+  // answers (mapped into evidence upstream) move this: done = full credit,
+  // in_progress ("deels") = half. Minimal-risk paths start from a higher
+  // baseline; prohibited is capped low; out-of-scope/excluded is a clean 100.
+  const required = obligations.filter((o) => o.required);
+  const credit = (s: ObligationItem["status"]) =>
+    s === "done" ? 1 : s === "in_progress" ? 0.5 : 0;
+  const raw = required.length
+    ? required.reduce((sum, o) => sum + credit(o.status), 0) / required.length
+    : 1;
+  const baseline = headline === "minimal" ? 70 : 35;
+  let score = Math.round(baseline + (100 - baseline) * raw);
+  if (isProhibited) score = Math.min(score, 20);
+  if (isExcludedOrOut && !isProhibited) score = 100;
+
+  const level = score >= 75 ? "laag" : score >= 45 ? "gemiddeld" : "hoog";
+
   const recommendedTier = recommendTier(
     c.riskTiers,
     c.systemFlags,
     c.entityRoles,
+    requiredDocs.length,
     answers.size
   );
 

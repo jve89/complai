@@ -16,10 +16,10 @@ const HEADLINE_LABEL: Record<ComplianceProfile["headline"], string> = {
 };
 
 const TIER_LABEL: Record<string, string> = {
-  gratis: "Gratis",
-  starter: "Starter",
-  groei: "Groei",
-  schaal: "Schaal",
+  gratis: "Inzicht",
+  starter: "Actief",
+  groei: "Compliance-klaar",
+  schaal: "Audit-klaar",
 };
 
 const styles = StyleSheet.create({

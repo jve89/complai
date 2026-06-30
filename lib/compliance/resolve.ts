@@ -14,9 +14,10 @@ export function resolveStatus(
 
   switch (entry.evidenceKind) {
     case "document":
-      return entry.docSlug && evidence.documentSlugs.includes(entry.docSlug)
-        ? "done"
-        : "open";
+      if (entry.docSlug && evidence.documentSlugs.includes(entry.docSlug)) return "done";
+      if (entry.docSlug && evidence.partialDocumentSlugs?.includes(entry.docSlug))
+        return "in_progress";
+      return "open";
     case "training":
       // AI literacy is "done" when all (and at least one) employees are trained,
       // or the specific path is recorded as completed.

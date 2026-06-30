@@ -25,10 +25,10 @@ const HEADLINE: Record<
 };
 
 const TIER_LABEL: Record<string, string> = {
-  gratis: "Gratis",
-  starter: "Starter",
-  groei: "Groei",
-  schaal: "Schaal",
+  gratis: "Inzicht",
+  starter: "Actief",
+  groei: "Compliance-klaar",
+  schaal: "Audit-klaar",
 };
 
 function StatusBadge({ status }: { status: string }) {

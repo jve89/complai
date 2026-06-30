@@ -6,6 +6,10 @@ import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/auth";
 import { buildProfile } from "@/lib/compliance/profile";
 import { buildEvidence } from "@/lib/compliance/evidence";
+import {
+  evidenceFromAnswers,
+  mergeEvidence,
+} from "@/lib/compliance/evidence-from-answers";
 import { materializeComplianceItems } from "@/lib/compliance/materialize";
 import type { ScanAnswers } from "@/lib/compliance/questions";
 
@@ -21,7 +25,12 @@ export async function submitScan(
   const user = await getCurrentUser().catch(() => null);
   const companyId = user?.company?.id ?? null;
 
-  const evidence = companyId ? await buildEvidence(companyId) : undefined;
+  // The readiness answers are always the floor of evidence (works with no
+  // account); for logged-in companies we merge in real DB evidence (DB wins).
+  const answerEvidence = evidenceFromAnswers(answers);
+  const evidence = companyId
+    ? mergeEvidence(answerEvidence, await buildEvidence(companyId))
+    : answerEvidence;
   const profile = buildProfile(answers, evidence);
 
   const result = await prisma.scanResult.create({

@@ -96,7 +96,9 @@ export interface ComplianceProfile {
 
 /** Snapshot of company data the resolver checks obligations against. */
 export interface CompanyEvidence {
-  documentSlugs: string[]; // generated Document.type values
+  documentSlugs: string[]; // generated Document.type values (→ "done")
+  /** Slugs the company reports as partially in place (→ "in_progress", half credit). */
+  partialDocumentSlugs?: string[];
   systemsRegistered: number;
   employeesTotal: number;
   employeesTrained: number;

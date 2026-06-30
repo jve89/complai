@@ -11,6 +11,7 @@ import {
   EXCLUSIONS,
   GPAI_SYSTEMIC,
   PROHIBITED_PRACTICES,
+  READINESS_QUESTIONS,
   SCOPE_CRITERIA,
   TRANSPARENCY_TYPES,
   type Option,
@@ -37,10 +38,12 @@ export const SECTORS: Option[] = [
   { value: "anders", label: "Anders" },
 ];
 
-export type StepType = "single" | "multi" | "boolean";
+export type StepType = "single" | "multi" | "boolean" | "tri";
 
 export interface WizardStep {
   field: keyof ScanAnswers;
+  /** For `tri` readiness steps: which nested `answers.readiness` key to read/write. */
+  readinessKey?: keyof NonNullable<ScanAnswers["readiness"]>;
   section: string;
   title: string;
   help?: string;
@@ -54,7 +57,7 @@ export interface WizardStep {
 const hasReal = (arr?: string[]) =>
   Array.isArray(arr) && arr.some((v) => v && v !== "none");
 
-export const STEPS: WizardStep[] = [
+const CLASSIFICATION_STEPS: WizardStep[] = [
   { field: "size", section: "Uw organisatie", title: "Hoe groot is uw organisatie?", type: "single", options: SIZES },
   { field: "sector", section: "Uw organisatie", title: "In welke sector is uw organisatie actief?", type: "single", options: SECTORS },
   {
@@ -159,6 +162,65 @@ export const STEPS: WizardStep[] = [
     visible: (a) => a.scopeCriteria.includes("place_gpai_model"),
   },
 ];
+
+// ── Sectie 6 — readiness (drives the gereedheidsscore) ──────────────────────
+// Each readiness question is only shown when the obligation it measures actually
+// applies, so a low-risk org answers a handful and a high-risk one answers more.
+const readinessVisible: Record<string, (a: ScanAnswers) => boolean> = {
+  always: () => true,
+  register: () => true,
+  highRisk: (a) => hasReal(a.annexIII_areas),
+  transparency: (a) => hasReal(a.transparency),
+  provider: (a) => a.roles.includes("provider"),
+  fria: (a) =>
+    hasReal(a.annexIII_areas) &&
+    (a.annexIII_areas.includes("5") ||
+      a.publicBodyOrService === true ||
+      (a.annexIII_subareas ?? []).some((s) => s === "5b" || s === "5c")),
+};
+
+const READINESS_STEPS: WizardStep[] = READINESS_QUESTIONS.map((q, i) => ({
+  field: "readiness" as keyof ScanAnswers,
+  readinessKey: q.key,
+  section: "Gereedheid",
+  title: q.label,
+  help:
+    i === 0
+      ? `${q.help} Antwoord eerlijk — dit zijn uw eigen, onbevestigde opgaven en ze bepalen uw gereedheidsscore.`
+      : q.help,
+  type: "tri" as StepType,
+  visible: readinessVisible[q.when],
+}));
+
+export const STEPS: WizardStep[] = [...CLASSIFICATION_STEPS, ...READINESS_STEPS];
+
+export const TRI_OPTIONS: Option[] = [
+  { value: "ja", label: "Ja" },
+  { value: "deels", label: "Deels / mee bezig" },
+  { value: "nee", label: "Nee, nog niet" },
+];
+
+// Stable, ordered list of the sections in the flow — derived once from STEPS so
+// it never drifts. Progress is keyed off this, not the (branch-dependent) step
+// count, which is what made the bar jump (9 → 12).
+export const SECTION_ORDER: string[] = STEPS.reduce<string[]>((acc, s) => {
+  if (!acc.includes(s.section)) acc.push(s.section);
+  return acc;
+}, []);
+
+/** Progress 0–100 as a PURE function of the current step's static position
+ * (section index + position within its section). Because it ignores how many
+ * steps the current answers happen to reveal, it can only ever move forward. */
+export function scanProgress(step: WizardStep): number {
+  const sectionIdx = Math.max(0, SECTION_ORDER.indexOf(step.section));
+  const sectionSteps = STEPS.filter((s) => s.section === step.section);
+  const within = Math.max(
+    0,
+    sectionSteps.findIndex((s) => s.field === step.field && s.readinessKey === step.readinessKey)
+  );
+  const intra = (within + 1) / (sectionSteps.length + 1);
+  return ((sectionIdx + intra) / SECTION_ORDER.length) * 100;
+}
 
 export const EMPTY_ANSWERS: ScanAnswers = {
   roles: [],

@@ -348,7 +348,8 @@ export default function LandingPage() {
               Voor elke organisatie een passend plan
             </h2>
             <p className="mt-4 text-lg text-muted-foreground">
-              Start kosteloos en groei mee op uw eigen tempo.
+              De scan is gratis, zonder account. Elk betaald plan begint met een
+              gratis eerste maand.
             </p>
           </div>
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
@@ -370,6 +371,11 @@ export default function LandingPage() {
                   <span className="text-sm font-normal text-muted-foreground">
                     /mnd
                   </span>
+                </p>
+                <p className="mt-1 min-h-[1rem] text-xs font-medium text-brand-600">
+                  {plan.freeFirstMonth
+                    ? "Eerste maand gratis"
+                    : "Geen abonnement nodig"}
                 </p>
                 <p className="mt-2 min-h-[2.5rem] text-sm text-muted-foreground">
                   {plan.tagline}

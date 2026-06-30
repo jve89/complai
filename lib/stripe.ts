@@ -29,49 +29,53 @@ export interface Plan {
   tagline: string;
   features: string[];
   highlighted?: boolean;
+  /** Paid plans start with a free first month (Stripe trial); the scan is free without an account. */
+  freeFirstMonth?: boolean;
 }
 
 export const PLANS: Plan[] = [
   {
     id: "free",
-    name: "Gratis",
+    name: "Inzicht",
     monthly: 0,
     yearly: 0,
-    tagline: "Proef het platform en ken uw uitgangspunt.",
+    tagline: "Gratis scan + persoonlijk stappenplan. Geen account, geen abonnement nodig.",
     features: [
-      "Gratis risicoscan",
-      "Compliance-score & rapport (PDF)",
-      "1 gebruiker",
-      "Basis AI-register (max. 3 systemen)",
+      "Gratis risicoscan (zonder account)",
+      "Gereedheidsscore, risicocategorie & rol",
+      "Rapport met deadlines (PDF)",
+      "Stappenplan op maat",
     ],
   },
   {
     id: "starter",
-    name: "Starter",
-    monthly: 39,
-    yearly: 399,
+    name: "Actief",
+    monthly: 29,
+    yearly: 290,
     priceIdMonthly: process.env.STRIPE_PRICE_STARTER_MONTHLY,
     priceIdYearly: process.env.STRIPE_PRICE_STARTER_YEARLY,
-    tagline: "Voor kleine teams die net beginnen met de AI Act.",
+    tagline: "Voor wie nu de eerste verplichtingen wil regelen.",
+    freeFirstMonth: true,
     features: [
-      "Alles uit Gratis",
+      "Alles uit Inzicht",
       "Onbeperkt AI-register",
       "AI-beleid & transparantieverklaring",
+      "AI-geletterdheid e-learning",
       "Tot 5 gebruikers",
-      "E-mailondersteuning",
     ],
   },
   {
     id: "professional",
-    name: "Groei",
-    monthly: 89,
-    yearly: 899,
+    name: "Compliance-klaar",
+    monthly: 69,
+    yearly: 690,
     priceIdMonthly: process.env.STRIPE_PRICE_PRO_MONTHLY,
     priceIdYearly: process.env.STRIPE_PRICE_PRO_YEARLY,
-    tagline: "Voor organisaties die volledig grip willen houden.",
+    tagline: "Voor hoog-risico AI of een documentatieplicht.",
     highlighted: true,
+    freeFirstMonth: true,
     features: [
-      "Alles uit Starter",
+      "Alles uit Actief",
       "Alle documenten incl. FRIA & risicobeoordeling",
       "E-learning met certificaten",
       "Governance-dashboard",
@@ -80,20 +84,33 @@ export const PLANS: Plan[] = [
   },
   {
     id: "corporate",
-    name: "Schaal",
-    monthly: 199,
-    yearly: 1999,
+    name: "Audit-klaar",
+    monthly: 149,
+    yearly: 1490,
     priceIdMonthly: process.env.STRIPE_PRICE_CORP_MONTHLY,
     priceIdYearly: process.env.STRIPE_PRICE_CORP_YEARLY,
-    tagline: "Voor grotere organisaties met meerdere vestigingen.",
+    tagline: "Voor aanbieders en grotere organisaties die alles willen aantonen.",
+    freeFirstMonth: true,
     features: [
-      "Alles uit Groei",
-      "Onbeperkt gebruikers",
-      "Meerdere vestigingen",
+      "Alles uit Compliance-klaar",
+      "Onbeperkt gebruikers & vestigingen",
       "Audit-export & API-toegang",
+      "Bewijsdossier voor toezichthouder",
       "Persoonlijke onboarding",
     ],
   },
 ];
 
-export const YEARLY_DISCOUNT = 0.15;
+/** Annual billing = 2 months free (yearly = monthly × 10). */
+export const YEARLY_DISCOUNT = 1 / 6;
+
+/** Map the engine's needs-based TierId → the displayed Plan. */
+export function planForTier(tier: string): Plan {
+  const byTier: Record<string, PlanId> = {
+    gratis: "free",
+    starter: "starter",
+    groei: "professional",
+    schaal: "corporate",
+  };
+  return PLANS.find((p) => p.id === (byTier[tier] ?? "free")) ?? PLANS[0];
+}

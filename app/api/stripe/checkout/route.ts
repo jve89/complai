@@ -43,6 +43,8 @@ export async function POST(req: Request) {
     line_items: [{ price: priceId, quantity: 1 }],
     customer_email: user?.email || undefined,
     allow_promotion_codes: true,
+    // Free first month: 30-day trial, card collected up front, auto-converts.
+    subscription_data: plan.freeFirstMonth ? { trial_period_days: 30 } : undefined,
     success_url: `${env.appUrl}/dashboard?checkout=success`,
     cancel_url: `${env.appUrl}/pricing?checkout=cancel`,
     metadata: { planId: plan.id, companyId: user?.company?.id ?? "" },

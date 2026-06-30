@@ -5,7 +5,12 @@ import { useRouter } from "next/navigation";
 import { ArrowLeft, ArrowRight, Check, Loader2 } from "lucide-react";
 
 import type { Option, ScanAnswers } from "@/lib/compliance/questions";
-import { EMPTY_ANSWERS, visibleSteps } from "@/lib/scan/wizard";
+import {
+  EMPTY_ANSWERS,
+  TRI_OPTIONS,
+  scanProgress,
+  visibleSteps,
+} from "@/lib/scan/wizard";
 import { submitScan } from "@/app/scan/actions";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
@@ -26,9 +31,11 @@ export default function ScanWizard() {
   const steps = visibleSteps(answers);
   const total = steps.length;
   const step = steps[Math.min(index, total - 1)];
-  const current = (answers as unknown as Record<string, unknown>)[step.field];
   const isLast = index >= total - 1;
-  const progress = ((index + 1) / total) * 100;
+  const current = step.readinessKey
+    ? (answers.readiness ?? {})[step.readinessKey]
+    : (answers as unknown as Record<string, unknown>)[step.field];
+  const progress = isLast ? 100 : scanProgress(step);
 
   function update(field: string, value: unknown) {
     setAnswers((a) => ({ ...a, [field]: value }));
@@ -36,7 +43,13 @@ export default function ScanWizard() {
 
   function selectSingle(value: string) {
     if (step.type === "boolean") update(step.field, value === "true");
-    else update(step.field, value);
+    else if (step.type === "tri" && step.readinessKey) {
+      const key = step.readinessKey;
+      setAnswers((a) => ({
+        ...a,
+        readiness: { ...(a.readiness ?? {}), [key]: value },
+      }));
+    } else update(step.field, value);
   }
 
   function toggleMulti(value: string) {
@@ -65,6 +78,13 @@ export default function ScanWizard() {
     return current !== undefined && current !== "";
   }
 
+  const options =
+    step.type === "boolean"
+      ? BOOL_OPTIONS
+      : step.type === "tri"
+        ? TRI_OPTIONS
+        : step.options ?? [];
+
   function next() {
     setError(null);
     if (!isAnswered()) {
@@ -90,15 +110,11 @@ export default function ScanWizard() {
     setIndex((i) => Math.max(0, i - 1));
   }
 
-  const options = step.type === "boolean" ? BOOL_OPTIONS : step.options ?? [];
-
   return (
     <div className="container max-w-2xl py-10 sm:py-14">
       <div className="mb-8">
         <div className="mb-2 flex items-center justify-between text-sm text-muted-foreground">
-          <span>
-            {step.section} · vraag {index + 1} van {total}
-          </span>
+          <span>{step.section}</span>
           <span>{Math.round(progress)}%</span>
         </div>
         <Progress value={progress} />
