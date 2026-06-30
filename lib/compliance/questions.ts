@@ -29,6 +29,85 @@ export const MODIFICATIONS: Option[] = [
   { value: "none", label: "Geen van bovenstaande" },
 ];
 
+// ── Section 1 — AI-gebruik (friendly opener; pre-fills via mapTools) ─────────
+// Named tools so users recognise their own situation instead of legal terms.
+export const TOOL_GROUPS: { label: string; options: Option[] }[] = [
+  {
+    label: "Chatbots & assistenten",
+    options: [
+      { value: "chatgpt", label: "ChatGPT (OpenAI)" },
+      { value: "copilot", label: "Microsoft Copilot" },
+      { value: "gemini", label: "Google Gemini" },
+      { value: "claude", label: "Claude (Anthropic)" },
+      { value: "grok", label: "Grok (xAI)" },
+      { value: "mistral", label: "Mistral / Le Chat" },
+      { value: "meta", label: "Meta AI" },
+      { value: "deepseek", label: "DeepSeek" },
+      { value: "perplexity", label: "Perplexity" },
+    ],
+  },
+  {
+    label: "Beeld, audio & video",
+    options: [
+      { value: "midjourney", label: "Midjourney" },
+      { value: "dalle", label: "DALL·E / Sora" },
+      { value: "stable_diffusion", label: "Stable Diffusion" },
+      { value: "elevenlabs", label: "ElevenLabs (stem)" },
+      { value: "synthesia", label: "Synthesia / HeyGen (video)" },
+    ],
+  },
+  {
+    label: "AI in zakelijke software",
+    options: [
+      { value: "m365_copilot", label: "Microsoft 365 Copilot" },
+      { value: "workspace_gemini", label: "Google Workspace (Gemini)" },
+      { value: "hubspot_ai", label: "HubSpot AI" },
+      { value: "salesforce_einstein", label: "Salesforce Einstein" },
+      { value: "notion_ai", label: "Notion AI" },
+      { value: "canva_ai", label: "Canva AI" },
+    ],
+  },
+  {
+    label: "Ontwikkeling",
+    options: [
+      { value: "github_copilot", label: "GitHub Copilot" },
+      { value: "cursor", label: "Cursor" },
+    ],
+  },
+  {
+    label: "Eigen of branche-specifieke AI",
+    options: [
+      { value: "eigen_ontwikkeld", label: "Wij ontwikkelen zelf AI of modellen", help: "Bv. een eigen model of een AI-functie in uw product." },
+      { value: "branche_tool", label: "Branche-specifieke AI-tool" },
+    ],
+  },
+  {
+    label: "Anders",
+    options: [
+      { value: "geen", label: "Wij gebruiken (nog) geen AI" },
+      { value: "weet_niet", label: "Weet ik niet zeker" },
+      { value: "anders", label: "Anders / staat er niet bij" },
+    ],
+  },
+];
+
+// Plain-verb use-cases → silent role/transparency/Annex III hints (confirmed later).
+export const USE_CASES: Option[] = [
+  { value: "klantcontact", label: "Klantcontact of chatbot" },
+  { value: "content", label: "Teksten of e-mails opstellen" },
+  { value: "samenvatten", label: "Documenten samenvatten of doorzoeken" },
+  { value: "beeld_audio", label: "Beeld, audio of video genereren" },
+  { value: "code", label: "Software ontwikkelen (code)" },
+  { value: "data_analyse", label: "Data-analyse of voorspellingen" },
+  { value: "werving", label: "Sollicitanten beoordelen of rangschikken", help: "Bv. cv-screening of geautomatiseerde voorselectie." },
+  { value: "personeel", label: "Beslissingen over medewerkers", help: "Bv. beoordeling, promotie of roostering." },
+  { value: "krediet", label: "Krediet- of verzekeringsaanvragen beoordelen" },
+  { value: "biometrie", label: "Gezichts-, stem- of emotieherkenning" },
+  { value: "geen", label: "Algemeen gebruik / geen van deze" },
+];
+
+const NON_TOOL = ["geen", "weet_niet", "anders"];
+
 // ── Section HR — high-risk status (Art. 6/7, Annex I & III) ──────────────────
 // Annex I Section B (transport/aviation): governed largely by sectoral law; only
 // high-risk WITH third-party conformity assessment.
@@ -206,4 +285,47 @@ export interface ScanAnswers {
   };
   // Section 7 — contact (optional; lead capture only)
   email?: string;
+}
+
+/**
+ * Derives suggested defaults for the hard classification questions from the
+ * friendly tool/use-case answers, so most users only have to *confirm* the legal
+ * steps instead of figuring them out. These are PRE-FILLS, never final: the role,
+ * transparency and Annex III steps still render and can be changed — which is what
+ * keeps the tool-picker from silently over-classifying anyone.
+ */
+export function mapTools(answers: ScanAnswers): Partial<ScanAnswers> {
+  const tools = answers.tools ?? [];
+  const uses = answers.useCases ?? [];
+  const usesNamedTool = tools.some((t) => t && !NON_TOOL.includes(t));
+  const buildsOwn = tools.includes("eigen_ontwikkeld");
+  const out: Partial<ScanAnswers> = {};
+
+  const roles: EntityRole[] = [];
+  if (usesNamedTool) roles.push("deployer");
+  if (buildsOwn) roles.push("provider");
+  if (roles.length) out.roles = roles;
+
+  if (usesNamedTool || buildsOwn) out.scopeCriteria = ["established_eu"];
+
+  // Transparency: only the genuinely media-/chat-shaped uses (conservative).
+  const transparency: string[] = [];
+  if (uses.includes("klantcontact")) transparency.push("chatbot");
+  if (uses.includes("beeld_audio")) transparency.push("synthetic");
+  if (transparency.length) out.transparency = transparency;
+
+  // Candidate Annex III areas — only from use-cases that are decision-about-people
+  // shaped; the area step shows them pre-checked for explicit confirmation.
+  const areas: string[] = [];
+  const subareas: string[] = [];
+  if (uses.includes("werving") || uses.includes("personeel")) areas.push("4");
+  if (uses.includes("krediet")) {
+    areas.push("5");
+    subareas.push("5b");
+  }
+  if (uses.includes("biometrie")) areas.push("1");
+  if (areas.length) out.annexIII_areas = areas;
+  if (subareas.length) out.annexIII_subareas = subareas;
+
+  return out;
 }

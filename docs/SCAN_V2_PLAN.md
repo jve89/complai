@@ -88,8 +88,8 @@ shape; one guaranteed "win"; identity last; **editable review step**.
 2. ✅ **Scoring + recommender (Bug 1 & 3)** — `evidenceFromAnswers` + `mergeEvidence`; partial-credit score with baseline/minimal floor; `recommendTier` keyed on *required documents* (literacy excluded). 9-row regression test in `__tests__/profile.test.ts` (`npm run test`). `profile.ts`, `actions.ts`, `resolve.ts`, `types.ts`.
 3. ✅ **Readiness questions** — `READINESS_QUESTIONS` (Ja/Deels/Nee), obligation-gated Sectie-6 steps. `questions.ts`, `wizard.ts`, `app/scan/page.tsx`.
 4. ✅ **Progress-bar fix (Bug 4)** — `scanProgress()` is a pure function of the step's static section position → monotonic; dropped the "vraag X van Y" counter. `wizard.ts`, `app/scan/page.tsx`.
-5. ⬜ **Tool-picker + qualifier sub-steps + use-cases** — grouped multi-select UI, `mapTools()`. (Fields `tools`/`useCases`/`companyName`/`email` added to `ScanAnswers`; UI not built yet.)
-6. ⬜ **Results v2** — instant render, per-obligation bars by date bucket, dual-date note, "waarom?" expander, **editable review step**. `results/[id]/page.tsx`.
+5. ✅ **Tool-picker + company name + use-cases** — grouped multi-select tool picker, optional company-name `text` step, plain-verb use-cases, `mapTools()` pre-fills role/scope/transparency/candidate-AnnexIII into still-empty fields (confirmed, never auto-set). `questions.ts`, `wizard.ts`, `app/scan/page.tsx`. *(Per-tick Art.5 qualifier sub-steps still deferred — engine already de-escalates unqualified ticks.)*
+6. 🟡 **Results v2** — ✅ editable **review step** (`Controle` section: every answer, Aanpassen, edit-then-return). Still ⬜ per-obligation bars by date bucket, dual-date note, "waarom?" expander. `app/scan/page.tsx`, `results/[id]/page.tsx`.
 7. ✅ **Pricing + Stripe** — names Inzicht/Actief/Compliance-klaar/Audit-klaar; €0/29/69/149; free-first-month (`trial_period_days:30`); annual = 2 mnd gratis. `lib/stripe.ts`, pricing-table, checkout route, marketing teaser.
 8. ◻ **Marketing/positioning** — hero "waar u staat", urgency block, trust strip. (Pricing teaser done; hero/urgency/trust-strip pending.) `app/(marketing)/*`.
 

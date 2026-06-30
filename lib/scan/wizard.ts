@@ -13,7 +13,10 @@ import {
   PROHIBITED_PRACTICES,
   READINESS_QUESTIONS,
   SCOPE_CRITERIA,
+  TOOL_GROUPS,
   TRANSPARENCY_TYPES,
+  USE_CASES,
+  mapTools,
   type Option,
   type ScanAnswers,
 } from "@/lib/compliance/questions";
@@ -38,7 +41,7 @@ export const SECTORS: Option[] = [
   { value: "anders", label: "Anders" },
 ];
 
-export type StepType = "single" | "multi" | "boolean" | "tri";
+export type StepType = "single" | "multi" | "boolean" | "tri" | "text" | "review";
 
 export interface WizardStep {
   field: keyof ScanAnswers;
@@ -49,22 +52,54 @@ export interface WizardStep {
   help?: string;
   type: StepType;
   options?: Option[];
+  /** Grouped options for a `multi` step (rendered under group headers). */
+  groups?: { label: string; options: Option[] }[];
   visible?: (a: ScanAnswers) => boolean;
-  /** Multi-select that may be left empty (proceed without a choice). */
+  /** Multi-select that may be left empty, or a `text` step that may be skipped. */
   optional?: boolean;
+  /** Suggested pre-fills merged into still-empty downstream fields on advance. */
+  onAdvance?: (a: ScanAnswers) => Partial<ScanAnswers>;
+  /** Placeholder for `text` steps. */
+  placeholder?: string;
 }
 
 const hasReal = (arr?: string[]) =>
   Array.isArray(arr) && arr.some((v) => v && v !== "none");
 
 const CLASSIFICATION_STEPS: WizardStep[] = [
+  {
+    field: "companyName",
+    section: "Uw organisatie",
+    title: "Wat is de naam van uw organisatie?",
+    help: "Optioneel — hiermee personaliseren we uw rapport. U kunt dit overslaan.",
+    type: "text",
+    placeholder: "Bijv. Janssen Advies B.V.",
+    optional: true,
+  },
   { field: "size", section: "Uw organisatie", title: "Hoe groot is uw organisatie?", type: "single", options: SIZES },
   { field: "sector", section: "Uw organisatie", title: "In welke sector is uw organisatie actief?", type: "single", options: SECTORS },
+  {
+    field: "tools",
+    section: "AI-gebruik",
+    title: "Welke AI-tools gebruikt u?",
+    help: "Kies alles wat u herkent. Niet zeker? Kies gerust 'Weet ik niet zeker' — u hoeft geen expert te zijn.",
+    type: "multi",
+    groups: TOOL_GROUPS,
+  },
+  {
+    field: "useCases",
+    section: "AI-gebruik",
+    title: "Waarvoor gebruikt u AI?",
+    help: "Op basis hiervan vullen we de volgende vragen alvast voor u in. U controleert ze daarna zelf.",
+    type: "multi",
+    options: USE_CASES,
+    onAdvance: mapTools,
+  },
   {
     field: "roles",
     section: "Uw rol",
     title: "Welke rol(len) heeft uw organisatie ten opzichte van AI?",
-    help: "Selecteer alles wat van toepassing is.",
+    help: "We hebben dit op basis van uw tools alvast ingevuld — controleer of het klopt.",
     type: "multi",
     options: ENTITY_ROLES.map((r) => ({ value: r.value, label: r.label, help: r.help })),
   },
@@ -192,7 +227,20 @@ const READINESS_STEPS: WizardStep[] = READINESS_QUESTIONS.map((q, i) => ({
   visible: readinessVisible[q.when],
 }));
 
-export const STEPS: WizardStep[] = [...CLASSIFICATION_STEPS, ...READINESS_STEPS];
+// ── Sectie 7 — editable review (always last) ────────────────────────────────
+const REVIEW_STEP: WizardStep = {
+  field: "companyName", // placeholder; the review render ignores it
+  section: "Controle",
+  title: "Controleer uw antwoorden",
+  help: "Klopt alles? Pas gerust iets aan. Daarna stellen we direct uw rapport samen.",
+  type: "review",
+};
+
+export const STEPS: WizardStep[] = [
+  ...CLASSIFICATION_STEPS,
+  ...READINESS_STEPS,
+  REVIEW_STEP,
+];
 
 export const TRI_OPTIONS: Option[] = [
   { value: "ja", label: "Ja" },
@@ -220,6 +268,31 @@ export function scanProgress(step: WizardStep): number {
   );
   const intra = (within + 1) / (sectionSteps.length + 1);
   return ((sectionIdx + intra) / SECTION_ORDER.length) * 100;
+}
+
+/** Human-readable value of a step's current answer, for the review screen. */
+export function formatAnswer(step: WizardStep, answers: ScanAnswers): string {
+  const a = answers as unknown as Record<string, unknown>;
+  if (step.type === "text") {
+    const v = a[step.field];
+    return typeof v === "string" && v.trim() ? v : "—";
+  }
+  if (step.type === "boolean") {
+    const v = a[step.field];
+    return v === true ? "Ja" : v === false ? "Nee" : "—";
+  }
+  if (step.type === "tri" && step.readinessKey) {
+    const v = (answers.readiness ?? {})[step.readinessKey];
+    return TRI_OPTIONS.find((t) => t.value === v)?.label ?? "—";
+  }
+  const opts = step.groups ? step.groups.flatMap((g) => g.options) : step.options ?? [];
+  if (step.type === "single") {
+    return opts.find((x) => x.value === a[step.field])?.label ?? "—";
+  }
+  // multi
+  const arr = a[step.field];
+  if (!Array.isArray(arr) || arr.length === 0) return "—";
+  return arr.map((v) => opts.find((x) => x.value === v)?.label ?? String(v)).join(", ");
 }
 
 export const EMPTY_ANSWERS: ScanAnswers = {
