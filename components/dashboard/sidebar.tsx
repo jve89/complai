@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { type ReactNode, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Menu, X } from "lucide-react";
@@ -62,8 +62,15 @@ export function Sidebar({
   );
 }
 
-/** Hamburger menu shown on mobile only (the fixed sidebar is desktop-only). */
-export function MobileNav({ nav = "dashboard" }: { nav?: "dashboard" | "demo" }) {
+/** Hamburger menu shown on mobile only (the fixed sidebar is desktop-only).
+ * `actions` render at the bottom of the panel (e.g. Website / Uitloggen). */
+export function MobileNav({
+  nav = "dashboard",
+  actions,
+}: {
+  nav?: "dashboard" | "demo";
+  actions?: ReactNode;
+}) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
   const items = navFor(nav);
@@ -110,6 +117,14 @@ export function MobileNav({ nav = "dashboard" }: { nav?: "dashboard" | "demo" })
                 );
               })}
             </nav>
+            {actions && (
+              <div
+                className="flex flex-col gap-2 border-t p-3"
+                onClick={() => setOpen(false)}
+              >
+                {actions}
+              </div>
+            )}
           </div>
         </>
       )}

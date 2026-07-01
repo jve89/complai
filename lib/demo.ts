@@ -14,20 +14,22 @@ import type { ScanAnswers } from "@/lib/compliance/questions";
 
 export const DEMO_COMPANY_NAME = "Demo Recruitment B.V.";
 
-// A mid-size HR team deploying AI candidate screening (Annex III, hoog risico)
-// with some readiness in place — enough to make every module look alive.
+// A comprehensive case: an HR-tech company that BUILDS and DEPLOYS a high-risk AI
+// recruitment tool (Annex III), offers a GPAI model, and runs a chatbot — so the
+// demo exercises virtually the whole product (every document type, every module).
 const DEMO_ANSWERS = {
-  roles: ["deployer"],
+  roles: ["provider", "deployer"],
   modifications: ["none"],
   annexI_B: ["none"],
   annexI_A: [],
   annexIII_areas: ["4"],
   annexIII_subareas: [],
-  scopeCriteria: ["established_eu"],
-  gpaiSystemic: [],
+  scopeCriteria: ["place_system", "established_eu", "place_gpai_model"],
+  gpaiSystemic: ["none"],
   exclusions: [],
   prohibited: [],
-  transparency: ["chatbot"],
+  transparency: ["chatbot", "synthetic"],
+  publicBodyOrService: true,
   size: "51-250",
   sector: "hr",
   companyName: DEMO_COMPANY_NAME,
@@ -38,6 +40,9 @@ const DEMO_ANSWERS = {
     oversight: "deels",
     riskAssessment: "nee",
     transparency: "deels",
+    logging: "deels",
+    fria: "nee",
+    techDoc: "deels",
   },
 } as ScanAnswers;
 
@@ -47,8 +52,16 @@ export async function getDemoCompany(): Promise<Company> {
     where: { name: DEMO_COMPANY_NAME },
   });
   if (existing) {
-    await ensureDemoData(existing);
-    return existing;
+    // Self-heal: an older demo company (deployer-only, before the comprehensive
+    // profile) is rebuilt so the demo always reflects the current showcase.
+    if (existing.entityRoles.includes("provider")) {
+      await ensureDemoData(existing);
+      return existing;
+    }
+    // Users don't cascade on company delete (companyId is nullable) — remove them
+    // first so their emails free up for the rebuilt demo.
+    await prisma.user.deleteMany({ where: { companyId: existing.id } });
+    await prisma.company.delete({ where: { id: existing.id } });
   }
 
   const profile = buildProfile(DEMO_ANSWERS, evidenceFromAnswers(DEMO_ANSWERS));
@@ -114,15 +127,20 @@ export async function getDemoCompany(): Promise<Company> {
  * of generated documents — also back-fills demo companies created before these
  * were added, without touching a real customer's data. */
 async function ensureDemoData(company: Company): Promise<void> {
+  const demoUsers = [
+    { id: `${company.id}-u1`, email: "sanne@demo-recruitment.nl", name: "Sanne de Vries", role: "admin" as const },
+    { id: `${company.id}-u2`, email: "tom@demo-recruitment.nl", name: "Tom Bakker", role: "manager" as const },
+    { id: `${company.id}-u3`, email: "priya@demo-recruitment.nl", name: "Priya Sharma", role: "employee" as const },
+    { id: `${company.id}-u4`, email: "lars@demo-recruitment.nl", name: "Lars Jansen", role: "employee" as const },
+  ];
   const userCount = await prisma.user.count({ where: { companyId: company.id } });
   if (userCount === 0) {
+    // Clear any orphaned demo users (from an earlier rebuild) so emails are free.
+    await prisma.user.deleteMany({
+      where: { email: { in: demoUsers.map((u) => u.email) } },
+    });
     await prisma.user.createMany({
-      data: [
-        { id: `${company.id}-u1`, email: "sanne@demo-recruitment.nl", name: "Sanne de Vries", role: "admin", companyId: company.id },
-        { id: `${company.id}-u2`, email: "tom@demo-recruitment.nl", name: "Tom Bakker", role: "manager", companyId: company.id },
-        { id: `${company.id}-u3`, email: "priya@demo-recruitment.nl", name: "Priya Sharma", role: "employee", companyId: company.id },
-        { id: `${company.id}-u4`, email: "lars@demo-recruitment.nl", name: "Lars Jansen", role: "employee", companyId: company.id },
-      ],
+      data: demoUsers.map((u) => ({ ...u, companyId: company.id })),
     });
   }
 

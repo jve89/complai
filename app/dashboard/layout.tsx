@@ -14,6 +14,25 @@ export default async function DashboardLayout({
 }) {
   const { company, user, demo } = await getActiveCompany();
 
+  const websiteBtn = (
+    <Button asChild variant="outline" size="sm" className="w-full justify-start md:w-auto md:justify-center">
+      <a href="/">
+        <Globe className="h-4 w-4" /> Website
+      </a>
+    </Button>
+  );
+  const authBtn = user ? (
+    <form action={logout} className="w-full md:w-auto">
+      <Button variant="outline" size="sm" className="w-full justify-start md:w-auto md:justify-center">
+        Uitloggen
+      </Button>
+    </form>
+  ) : (
+    <Button asChild variant="outline" size="sm" className="w-full justify-start md:w-auto md:justify-center">
+      <a href="/login">Inloggen</a>
+    </Button>
+  );
+
   return (
     <div className="min-h-screen bg-secondary/30">
       <Sidebar />
@@ -22,7 +41,6 @@ export default async function DashboardLayout({
         <header className="sticky top-0 z-20 border-b bg-background/95 backdrop-blur">
           <div className="flex h-16 items-center justify-between px-4 sm:px-6">
             <div className="flex items-center gap-2 sm:gap-3">
-              <MobileNav />
               <span className="md:hidden">
                 <SiteLogo href="/dashboard" />
               </span>
@@ -39,23 +57,19 @@ export default async function DashboardLayout({
             </div>
 
             <div className="flex items-center gap-3">
-              {demo && <Badge variant="warning">Demo-modus</Badge>}
-              <Button asChild variant="ghost" size="sm">
-                <a href="/">
-                  <Globe className="h-4 w-4" /> Website
-                </a>
-              </Button>
-              {user ? (
-                <form action={logout}>
-                  <Button variant="outline" size="sm">
-                    Uitloggen
-                  </Button>
-                </form>
-              ) : (
-                <Button asChild variant="outline" size="sm">
-                  <a href="/login">Inloggen</a>
-                </Button>
-              )}
+              {demo && <Badge variant="warning" className="hidden sm:inline-flex">Demo-modus</Badge>}
+              <div className="hidden items-center gap-3 md:flex">
+                {websiteBtn}
+                {authBtn}
+              </div>
+              <MobileNav
+                actions={
+                  <>
+                    {websiteBtn}
+                    {authBtn}
+                  </>
+                }
+              />
             </div>
           </div>
         </header>

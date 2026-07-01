@@ -4,11 +4,25 @@ import { ArrowRight, Globe } from "lucide-react";
 import { Sidebar, MobileNav } from "@/components/dashboard/sidebar";
 import { SiteLogo } from "@/components/site-logo";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 
 export const dynamic = "force-dynamic";
 
 export default function DemoLayout({ children }: { children: React.ReactNode }) {
+  const websiteBtn = (
+    <Button asChild variant="outline" size="sm" className="w-full justify-start md:w-auto md:justify-center">
+      <Link href="/">
+        <Globe className="h-4 w-4" /> Website
+      </Link>
+    </Button>
+  );
+  const scanBtn = (
+    <Button asChild size="sm" className="w-full justify-start md:w-auto md:justify-center">
+      <Link href="/scan">
+        Start uw eigen scan <ArrowRight className="h-4 w-4" />
+      </Link>
+    </Button>
+  );
+
   return (
     <div className="min-h-screen bg-secondary/30">
       <Sidebar nav="demo" logoHref="/demo" />
@@ -17,23 +31,25 @@ export default function DemoLayout({ children }: { children: React.ReactNode }) 
         <header className="sticky top-0 z-20 border-b bg-background/95 backdrop-blur">
           <div className="flex h-16 items-center justify-between px-4 sm:px-6">
             <div className="flex items-center gap-2 sm:gap-3">
-              <MobileNav nav="demo" />
               <span className="md:hidden">
                 <SiteLogo href="/demo" />
               </span>
-              <Badge variant="warning">Demo — voorbeelddata</Badge>
+              <span className="hidden font-semibold sm:inline">Demo-omgeving</span>
             </div>
             <div className="flex items-center gap-3">
-              <Button asChild variant="ghost" size="sm">
-                <Link href="/">
-                  <Globe className="h-4 w-4" /> Website
-                </Link>
-              </Button>
-              <Button asChild size="sm">
-                <Link href="/scan">
-                  Start uw eigen scan <ArrowRight className="h-4 w-4" />
-                </Link>
-              </Button>
+              <div className="hidden items-center gap-3 md:flex">
+                {websiteBtn}
+                {scanBtn}
+              </div>
+              <MobileNav
+                nav="demo"
+                actions={
+                  <>
+                    {websiteBtn}
+                    {scanBtn}
+                  </>
+                }
+              />
             </div>
           </div>
         </header>
