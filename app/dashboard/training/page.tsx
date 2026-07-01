@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { getActiveCompany } from "@/lib/auth";
 import { getLearnerEmployee } from "@/lib/training/learner";
 import { MODULES, PATHS, getPath } from "@/lib/training/content";
+import type { ComplianceProfile, TrainingRequirement } from "@/lib/compliance/types";
 import { PageHeader } from "@/components/dashboard/page-header";
 import { ModuleQuiz } from "@/components/dashboard/training/module-quiz";
 import { Badge } from "@/components/ui/badge";
@@ -44,6 +45,15 @@ export default async function TrainingPage() {
   const learnerComplete = learnerDone >= MODULES.length;
   const learnerPath = getPath(learner.role)?.label ?? "Medewerker";
 
+  // Which learning paths this company's scan makes required vs recommended.
+  const profile = (company.profileJson as unknown as ComplianceProfile | null) ?? null;
+  const requiredPaths = new Map<string, TrainingRequirement>(
+    (profile?.training?.required ?? []).map((t) => [t.pathSlug, t])
+  );
+  const recommendedPaths = new Map<string, TrainingRequirement>(
+    (profile?.training?.recommended ?? []).map((t) => [t.pathSlug, t])
+  );
+
   return (
     <>
       <PageHeader
@@ -55,17 +65,31 @@ export default async function TrainingPage() {
       <div className="mb-8 grid gap-4 sm:grid-cols-3">
         {PATHS.map((path) => {
           const active = path.id === learner.role;
+          const req = requiredPaths.get(path.id);
+          const rec = recommendedPaths.get(path.id);
           return (
             <Card
               key={path.id}
               className={active ? "border-brand-500 ring-1 ring-brand-500" : ""}
             >
               <CardContent className="space-y-2 py-5">
-                <div className="flex items-center justify-between">
+                <div className="flex items-start justify-between gap-2">
                   <span className="font-semibold">{path.label}</span>
-                  {active && <Badge>Uw leerpad</Badge>}
+                  <div className="flex flex-wrap items-center justify-end gap-1.5">
+                    {req ? (
+                      <Badge variant="warning">Verplicht</Badge>
+                    ) : (
+                      rec && <Badge variant="secondary">Aanbevolen</Badge>
+                    )}
+                    {active && <Badge>Uw leerpad</Badge>}
+                  </div>
                 </div>
                 <p className="text-sm text-muted-foreground">{path.audience}</p>
+                {(req ?? rec) && (
+                  <p className="text-xs font-medium text-brand-700">
+                    {(req ?? rec)!.reason}
+                  </p>
+                )}
               </CardContent>
             </Card>
           );
