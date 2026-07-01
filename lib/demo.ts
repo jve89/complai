@@ -9,6 +9,7 @@ import { prisma } from "@/lib/prisma";
 import { buildProfile } from "@/lib/compliance/profile";
 import { evidenceFromAnswers } from "@/lib/compliance/evidence-from-answers";
 import { materializeComplianceItems } from "@/lib/compliance/materialize";
+import { buildDocument, type DocumentType } from "@/lib/documents/templates";
 import type { ScanAnswers } from "@/lib/compliance/questions";
 
 export const DEMO_COMPANY_NAME = "Demo Recruitment B.V.";
@@ -45,7 +46,10 @@ export async function getDemoCompany(): Promise<Company> {
   const existing = await prisma.company.findFirst({
     where: { name: DEMO_COMPANY_NAME },
   });
-  if (existing) return existing;
+  if (existing) {
+    await ensureDemoData(existing);
+    return existing;
+  }
 
   const profile = buildProfile(DEMO_ANSWERS, evidenceFromAnswers(DEMO_ANSWERS));
 
@@ -102,5 +106,38 @@ export async function getDemoCompany(): Promise<Company> {
   });
 
   await materializeComplianceItems(company.id, profile);
+  await ensureDemoData(company);
   return company;
+}
+
+/** Idempotently ensures the demo company has fictional team members and a couple
+ * of generated documents — also back-fills demo companies created before these
+ * were added, without touching a real customer's data. */
+async function ensureDemoData(company: Company): Promise<void> {
+  const userCount = await prisma.user.count({ where: { companyId: company.id } });
+  if (userCount === 0) {
+    await prisma.user.createMany({
+      data: [
+        { id: `${company.id}-u1`, email: "sanne@demo-recruitment.nl", name: "Sanne de Vries", role: "admin", companyId: company.id },
+        { id: `${company.id}-u2`, email: "tom@demo-recruitment.nl", name: "Tom Bakker", role: "manager", companyId: company.id },
+        { id: `${company.id}-u3`, email: "priya@demo-recruitment.nl", name: "Priya Sharma", role: "employee", companyId: company.id },
+        { id: `${company.id}-u4`, email: "lars@demo-recruitment.nl", name: "Lars Jansen", role: "employee", companyId: company.id },
+      ],
+    });
+  }
+
+  const docCount = await prisma.document.count({ where: { companyId: company.id } });
+  if (docCount === 0) {
+    const systems = await prisma.aiSystem.findMany({ where: { companyId: company.id } });
+    for (const type of ["ai_policy", "risk_assessment"] as DocumentType[]) {
+      await prisma.document.create({
+        data: {
+          companyId: company.id,
+          type,
+          version: 1,
+          content: buildDocument(type, company, systems) as unknown as Prisma.InputJsonValue,
+        },
+      });
+    }
+  }
 }

@@ -34,7 +34,7 @@ const ROLES = [
   { value: "employee", label: "Medewerker" },
 ];
 
-function NameCell({ user }: { user: User }) {
+function NameCell({ user, readOnly }: { user: User; readOnly?: boolean }) {
   const router = useRouter();
   const [value, setValue] = useState(user.name ?? "");
   const [isPending, startTransition] = useTransition();
@@ -60,26 +60,26 @@ function NameCell({ user }: { user: User }) {
         if (e.key === "Enter") e.currentTarget.blur();
       }}
       placeholder="Naam invullen"
-      disabled={isPending}
+      disabled={isPending || readOnly}
       className="h-9 w-[180px]"
     />
   );
 }
 
-function RoleSelect({ user }: { user: User }) {
+function RoleSelect({ user, readOnly }: { user: User; readOnly?: boolean }) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
 
   return (
     <Select
       defaultValue={user.role}
+      disabled={isPending || readOnly}
       onValueChange={(role) =>
         startTransition(async () => {
           await updateMemberRole(user.id, role);
           router.refresh();
         })
       }
-      disabled={isPending}
     >
       <SelectTrigger className="w-[150px]">
         <SelectValue />
@@ -95,7 +95,13 @@ function RoleSelect({ user }: { user: User }) {
   );
 }
 
-export function TeamSection({ members }: { members: User[] }) {
+export function TeamSection({
+  members,
+  readOnly = false,
+}: {
+  members: User[];
+  readOnly?: boolean;
+}) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [email, setEmail] = useState("");
@@ -134,14 +140,14 @@ export function TeamSection({ members }: { members: User[] }) {
             {members.map((member) => (
               <TableRow key={member.id}>
                 <TableCell>
-                  <NameCell user={member} />
+                  <NameCell user={member} readOnly={readOnly} />
                 </TableCell>
                 <TableCell className="text-sm text-muted-foreground">
                   {member.email}
                 </TableCell>
                 <TableCell className="text-right">
                   <div className="flex justify-end">
-                    <RoleSelect user={member} />
+                    <RoleSelect user={member} readOnly={readOnly} />
                   </div>
                 </TableCell>
               </TableRow>
@@ -150,7 +156,14 @@ export function TeamSection({ members }: { members: User[] }) {
         </Table>
       </div>
 
+      {readOnly && (
+        <p className="text-sm text-muted-foreground">
+          Uitnodigen en rollen beheren is beschikbaar in uw eigen omgeving.
+        </p>
+      )}
+
       {/* Invite */}
+      {!readOnly && (
       <form
         onSubmit={invite}
         className="rounded-lg border border-dashed bg-secondary/30 p-4"
@@ -206,6 +219,7 @@ export function TeamSection({ members }: { members: User[] }) {
           </p>
         )}
       </form>
+      )}
     </div>
   );
 }

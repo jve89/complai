@@ -16,7 +16,8 @@ export default function DemoLayout({ children }: { children: React.ReactNode }) 
       <div className="md:pl-64">
         <header className="sticky top-0 z-20 border-b bg-background/95 backdrop-blur">
           <div className="flex h-16 items-center justify-between px-4 sm:px-6">
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2 sm:gap-3">
+              <MobileNav nav="demo" />
               <span className="md:hidden">
                 <SiteLogo href="/demo" />
               </span>
@@ -35,7 +36,6 @@ export default function DemoLayout({ children }: { children: React.ReactNode }) 
               </Button>
             </div>
           </div>
-          <MobileNav nav="demo" />
         </header>
 
         <div className="border-b border-brand-200 bg-brand-50 px-4 py-3 text-sm text-brand-900 sm:px-6">

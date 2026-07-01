@@ -299,7 +299,7 @@ export default function LandingPage() {
                 key={step.title}
                 className="relative rounded-xl border bg-card p-6 shadow-sm transition-shadow hover:shadow-md"
               >
-                <span className="absolute right-5 top-5 text-4xl font-bold text-muted/60">
+                <span className="absolute right-5 top-5 text-4xl font-bold text-brand-500/25">
                   {String(i + 1).padStart(2, "0")}
                 </span>
                 <div className="mb-4 inline-flex h-11 w-11 items-center justify-center rounded-lg bg-brand-50 text-brand-600">

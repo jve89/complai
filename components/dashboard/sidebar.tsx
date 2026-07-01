@@ -1,7 +1,9 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { Menu, X } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import { SiteLogo } from "@/components/site-logo";
@@ -60,30 +62,57 @@ export function Sidebar({
   );
 }
 
-/** Horizontally scrollable nav shown on mobile only. */
+/** Hamburger menu shown on mobile only (the fixed sidebar is desktop-only). */
 export function MobileNav({ nav = "dashboard" }: { nav?: "dashboard" | "demo" }) {
   const pathname = usePathname();
+  const [open, setOpen] = useState(false);
   const items = navFor(nav);
+
   return (
-    <nav className="flex gap-2 overflow-x-auto border-b bg-background px-4 py-2 md:hidden">
-      {items.map((item) => {
-        const active = isActive(pathname, item.href);
-        return (
-          <Link
-            key={item.href}
-            href={item.href}
-            className={cn(
-              "flex shrink-0 items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium",
-              active
-                ? "bg-navy-900 text-white"
-                : "bg-secondary text-muted-foreground"
-            )}
-          >
-            <item.icon className="h-4 w-4" />
-            {item.label}
-          </Link>
-        );
-      })}
-    </nav>
+    <div className="md:hidden">
+      <button
+        type="button"
+        onClick={() => setOpen((o) => !o)}
+        aria-label="Menu"
+        aria-expanded={open}
+        className="inline-flex h-9 w-9 items-center justify-center rounded-lg text-foreground hover:bg-secondary"
+      >
+        {open ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+      </button>
+
+      {open && (
+        <>
+          <button
+            type="button"
+            aria-label="Menu sluiten"
+            onClick={() => setOpen(false)}
+            className="fixed inset-x-0 bottom-0 top-16 z-30 bg-black/20"
+          />
+          <div className="absolute inset-x-0 top-16 z-40 border-b bg-background shadow-lg">
+            <nav className="flex flex-col gap-1 p-3">
+              {items.map((item) => {
+                const active = isActive(pathname, item.href);
+                return (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    onClick={() => setOpen(false)}
+                    className={cn(
+                      "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium",
+                      active
+                        ? "bg-navy-900 text-white"
+                        : "text-foreground hover:bg-secondary"
+                    )}
+                  >
+                    <item.icon className="h-5 w-5" />
+                    {item.label}
+                  </Link>
+                );
+              })}
+            </nav>
+          </div>
+        </>
+      )}
+    </div>
   );
 }

@@ -21,7 +21,8 @@ export default async function DashboardLayout({
       <div className="md:pl-64">
         <header className="sticky top-0 z-20 border-b bg-background/95 backdrop-blur">
           <div className="flex h-16 items-center justify-between px-4 sm:px-6">
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2 sm:gap-3">
+              <MobileNav />
               <span className="md:hidden">
                 <SiteLogo href="/dashboard" />
               </span>
@@ -57,7 +58,6 @@ export default async function DashboardLayout({
               )}
             </div>
           </div>
-          <MobileNav />
         </header>
 
         <main className="px-4 py-6 sm:px-6 lg:px-8">{children}</main>
