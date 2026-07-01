@@ -59,15 +59,13 @@ export function PricingTable() {
           aria-checked={interval === "year"}
           onClick={() => setInterval((i) => (i === "month" ? "year" : "month"))}
           className={cn(
-            "relative h-6 w-11 rounded-full transition-colors",
+            "relative h-6 w-11 shrink-0 cursor-pointer rounded-full transition-colors",
             interval === "year" ? "bg-primary" : "bg-muted-foreground/30"
           )}
         >
           <span
-            className={cn(
-              "absolute top-0.5 h-5 w-5 rounded-full bg-white shadow transition-transform",
-              interval === "year" ? "translate-x-[22px]" : "translate-x-0.5"
-            )}
+            className="pointer-events-none absolute top-0.5 block h-5 w-5 rounded-full bg-white shadow transition-all duration-200 ease-in-out"
+            style={{ left: interval === "year" ? 22 : 2 }}
           />
         </button>
         <span
