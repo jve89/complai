@@ -11,6 +11,7 @@ import {
   mergeEvidence,
 } from "@/lib/compliance/evidence-from-answers";
 import { materializeComplianceItems } from "@/lib/compliance/materialize";
+import { syncAiSystemsFromTools } from "@/lib/scan/claim";
 import type { ScanAnswers } from "@/lib/compliance/questions";
 
 /**
@@ -56,6 +57,7 @@ export async function submitScan(
       },
     });
     await materializeComplianceItems(companyId, profile);
+    await syncAiSystemsFromTools(companyId, answers);
   }
 
   return { id: result.id };

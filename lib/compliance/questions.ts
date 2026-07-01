@@ -108,6 +108,34 @@ export const USE_CASES: Option[] = [
 
 const NON_TOOL = ["geen", "weet_niet", "anders"];
 
+/** Named tools → an AI-register entry (name + vendor). Used to pre-load the
+ * register from the scan. Generic picks (eigen_ontwikkeld, branche_tool) and the
+ * non-tools are intentionally absent. */
+export const TOOL_META: Record<string, { name: string; vendor: string }> = {
+  chatgpt: { name: "ChatGPT", vendor: "OpenAI" },
+  copilot: { name: "Microsoft Copilot", vendor: "Microsoft" },
+  gemini: { name: "Google Gemini", vendor: "Google" },
+  claude: { name: "Claude", vendor: "Anthropic" },
+  grok: { name: "Grok", vendor: "xAI" },
+  mistral: { name: "Mistral / Le Chat", vendor: "Mistral AI" },
+  meta: { name: "Meta AI", vendor: "Meta" },
+  deepseek: { name: "DeepSeek", vendor: "DeepSeek" },
+  perplexity: { name: "Perplexity", vendor: "Perplexity AI" },
+  midjourney: { name: "Midjourney", vendor: "Midjourney" },
+  dalle: { name: "DALL·E / Sora", vendor: "OpenAI" },
+  stable_diffusion: { name: "Stable Diffusion", vendor: "Stability AI" },
+  elevenlabs: { name: "ElevenLabs", vendor: "ElevenLabs" },
+  synthesia: { name: "Synthesia / HeyGen", vendor: "Synthesia" },
+  m365_copilot: { name: "Microsoft 365 Copilot", vendor: "Microsoft" },
+  workspace_gemini: { name: "Google Workspace (Gemini)", vendor: "Google" },
+  hubspot_ai: { name: "HubSpot AI", vendor: "HubSpot" },
+  salesforce_einstein: { name: "Salesforce Einstein", vendor: "Salesforce" },
+  notion_ai: { name: "Notion AI", vendor: "Notion" },
+  canva_ai: { name: "Canva AI", vendor: "Canva" },
+  github_copilot: { name: "GitHub Copilot", vendor: "GitHub / Microsoft" },
+  cursor: { name: "Cursor", vendor: "Anysphere" },
+};
+
 // ── Section HR — high-risk status (Art. 6/7, Annex I & III) ──────────────────
 // Annex I Section B (transport/aviation): governed largely by sectoral law; only
 // high-risk WITH third-party conformity assessment.

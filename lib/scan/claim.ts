@@ -3,7 +3,40 @@ import type { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { materializeComplianceItems } from "@/lib/compliance/materialize";
 import type { ComplianceProfile } from "@/lib/compliance/types";
-import type { ScanAnswers } from "@/lib/compliance/questions";
+import { TOOL_META, type ScanAnswers } from "@/lib/compliance/questions";
+
+/**
+ * Pre-loads the AI-register from the tools picked in the scan: creates one
+ * AiSystem per recognised named tool that isn't already registered (deployer /
+ * limited risk by default — the user confirms/refines). So a company that ticked
+ * ChatGPT + Gemini + Claude sees them waiting in their register after signup.
+ */
+export async function syncAiSystemsFromTools(
+  companyId: string,
+  answers: ScanAnswers
+): Promise<void> {
+  const wanted = (answers.tools ?? [])
+    .map((slug) => TOOL_META[slug])
+    .filter(Boolean);
+  if (!wanted.length) return;
+
+  const existing = await prisma.aiSystem.findMany({
+    where: { companyId },
+    select: { name: true },
+  });
+  const seen = new Set(existing.map((e) => e.name.toLowerCase()));
+  const toCreate = wanted.filter((w) => !seen.has(w.name.toLowerCase()));
+  if (!toCreate.length) return;
+
+  await prisma.aiSystem.createMany({
+    data: toCreate.map((w) => ({
+      companyId,
+      name: w.name,
+      vendor: w.vendor,
+      description: "Toegevoegd op basis van uw scan. Controleer de rol en het risiconiveau.",
+    })),
+  });
+}
 
 /**
  * The bridge from a logged-out scan to the dashboard: attaches a scan to a
@@ -45,5 +78,6 @@ export async function applyScanToCompany(
   });
 
   await materializeComplianceItems(companyId, profile);
+  if (answers) await syncAiSystemsFromTools(companyId, answers);
   return true;
 }
