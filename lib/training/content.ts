@@ -22,8 +22,10 @@ export interface TrainingModule {
   quiz: QuizQuestion[];
 }
 
+export type PathId = "employee" | "manager" | "admin";
+
 export interface LearningPath {
-  id: "employee" | "manager" | "admin";
+  id: PathId;
   label: string;
   audience: string;
 }
@@ -461,10 +463,341 @@ const MODULE_LESSONS: Record<string, LessonSection[]> = {
   ],
 };
 
-export const MODULES: TrainingModule[] = BASE_MODULES.map((m) => ({
-  ...m,
-  lessons: MODULE_LESSONS[m.id] ?? [],
-}));
+// Role-specific modules on top of the shared core. Art. 4 requires AI literacy
+// "proportionate to the role and context", so managers get oversight/accountability
+// content and beheerders (technical roles) get risk-management/documentation content.
+const ROLE_MODULES: TrainingModule[] = [
+  // ---- Manager ----
+  {
+    id: "human-oversight",
+    title: "Menselijk toezicht inrichten (Art. 14)",
+    minutes: 12,
+    intro:
+      "Voor leidinggevenden: hoe u effectief menselijk toezicht organiseert op hoog-risico AI, zodat mensen beslissingen kunnen begrijpen, controleren en zo nodig overrulen of stoppen.",
+    lessons: [
+      {
+        heading: "Waarom menselijk toezicht?",
+        paragraphs: [
+          "Artikel 14 eist dat hoog-risico AI zó is ingericht dat mensen er effectief toezicht op kunnen houden, om risico's voor gezondheid, veiligheid en grondrechten te voorkomen of te beperken.",
+          "Als leidinggevende zorgt u dat de juiste mensen zijn aangewezen én toegerust om dat toezicht daadwerkelijk uit te oefenen.",
+        ],
+      },
+      {
+        heading: "Wat is effectief toezicht?",
+        paragraphs: [
+          "Wie toezicht houdt, moet de mogelijkheden én de grenzen van het systeem begrijpen, alert blijven op 'automation bias' (blind vertrouwen op AI), de output goed interpreteren, en kunnen besluiten het systeem niet te gebruiken, te overrulen of te stoppen.",
+          "Toezicht is pas effectief als de betrokkene tijd, kennis en mandaat heeft om in te grijpen.",
+        ],
+      },
+      {
+        heading: "Uw rol als leidinggevende",
+        paragraphs: [
+          "Wijs bekwame, getrainde mensen aan met de bevoegdheid om in te grijpen, en laat AI-beslissingen niet ongecontroleerd doorlopen — zeker niet bij beslissingen over mensen zoals werving of beoordeling.",
+        ],
+      },
+    ],
+    quiz: [
+      {
+        question: "Wat vereist Artikel 14?",
+        options: [
+          "Dat hoog-risico AI zo is ingericht dat mensen er effectief toezicht op kunnen houden",
+          "Dat AI volledig autonoom beslist",
+          "Dat er nooit een mens bij betrokken is",
+          "Dat AI verboden wordt",
+        ],
+        answer: 0,
+      },
+      {
+        question: "Wat is 'automation bias'?",
+        options: [
+          "Een technische storing in het model",
+          "De neiging om AI-output te blind te vertrouwen",
+          "Een vorm van cyberaanval",
+          "Een type trainingsdata",
+        ],
+        answer: 1,
+      },
+      {
+        question: "Wat moet iemand die toezicht houdt kunnen doen?",
+        options: [
+          "Alleen toekijken",
+          "De AI-uitkomst negeren, overrulen of het systeem stoppen",
+          "Het systeem sneller maken",
+          "De data verwijderen",
+        ],
+        answer: 1,
+      },
+      {
+        question: "Hoe zorgt u dat toezicht daadwerkelijk werkt?",
+        options: [
+          "Door niemand aan te wijzen",
+          "Door bekwame mensen aan te wijzen met tijd en mandaat om in te grijpen",
+          "Door de AI zichzelf te laten controleren",
+          "Door het toezicht uit te besteden aan de leverancier",
+        ],
+        answer: 1,
+      },
+      {
+        question: "Wanneer is menselijk toezicht extra belangrijk?",
+        options: [
+          "Bij een spellingcontrole",
+          "Nooit",
+          "Bij beslissingen met impact op mensen, zoals werving of beoordeling",
+          "Alleen bij hardware",
+        ],
+        answer: 2,
+      },
+    ],
+  },
+  {
+    id: "deployer-duties",
+    title: "Verantwoordelijkheden bij gebruik (Art. 26 & 27)",
+    minutes: 12,
+    intro:
+      "Als gebruiksverantwoordelijke ('deployer') gebruikt u AI van een leverancier. Deze module behandelt uw plichten: gebruik volgens de instructies, toezicht, logging bewaren en betrokkenen informeren.",
+    lessons: [
+      {
+        heading: "Gebruik volgens de gebruiksaanwijzing (Art. 26)",
+        paragraphs: [
+          "U bent 'gebruiksverantwoordelijke' als u een AI-systeem van een ander onder eigen gezag gebruikt. Gebruik een hoog-risico systeem volgens de gebruiksaanwijzing van de aanbieder.",
+          "Wijs het menselijk toezicht toe aan bekwame personen met de nodige bevoegdheid en ondersteuning.",
+        ],
+      },
+      {
+        heading: "Monitoren, loggen en melden",
+        paragraphs: [
+          "Houd de werking in de gaten en bewaar de automatisch gegenereerde logs.",
+          "Ziet u een ernstig risico of incident? Schort het gebruik op en informeer de aanbieder en, waar nodig, de toezichthouder.",
+        ],
+      },
+      {
+        heading: "Mensen informeren (Art. 26(7) & 27)",
+        paragraphs: [
+          "Informeer werknemers en hun vertegenwoordigers vóór u hoog-risico AI op de werkvloer inzet, en informeer betrokkenen dat zij aan een hoog-risico systeem worden onderworpen.",
+          "Sommige gebruiksverantwoordelijken (zoals overheidsinstanties en bepaalde diensten) moeten vooraf een grondrechtentoets (FRIA, Art. 27) uitvoeren.",
+        ],
+      },
+    ],
+    quiz: [
+      {
+        question: "Wat is een 'gebruiksverantwoordelijke' (deployer)?",
+        options: [
+          "De maker van het AI-systeem",
+          "Een organisatie die een AI-systeem van een ander gebruikt onder eigen gezag",
+          "De toezichthouder",
+          "De eindklant",
+        ],
+        answer: 1,
+      },
+      {
+        question: "Hoe moet u een hoog-risico systeem gebruiken?",
+        options: [
+          "Zoals u zelf wilt",
+          "Volgens de gebruiksaanwijzing van de aanbieder",
+          "Zonder toezicht",
+          "Alleen in het weekend",
+        ],
+        answer: 1,
+      },
+      {
+        question: "Wat doet u met de automatisch gegenereerde logs?",
+        options: ["Direct wissen", "Bewaren", "Publiceren", "Negeren"],
+        answer: 1,
+      },
+      {
+        question: "Wie moet u informeren vóór inzet van hoog-risico AI op de werkvloer?",
+        options: [
+          "Niemand",
+          "Alleen de directie",
+          "De betrokken werknemers en hun vertegenwoordigers",
+          "De concurrentie",
+        ],
+        answer: 2,
+      },
+      {
+        question: "Wat is een FRIA (Art. 27)?",
+        options: [
+          "Een financieel rapport",
+          "Een grondrechtentoets die sommige gebruiksverantwoordelijken vooraf moeten uitvoeren",
+          "Een softwarelicentie",
+          "Een type AI-model",
+        ],
+        answer: 1,
+      },
+    ],
+  },
+  // ---- Beheerder / technische rollen ----
+  {
+    id: "risk-management",
+    title: "Risicomanagement, logging & robuustheid (Art. 9, 12, 15)",
+    minutes: 14,
+    intro:
+      "Voor technische en beheerdersrollen: het opzetten van een risicomanagementsysteem, logging en traceerbaarheid, en het borgen van nauwkeurigheid, robuustheid en cyberbeveiliging van hoog-risico AI.",
+    lessons: [
+      {
+        heading: "Risicomanagementsysteem (Art. 9)",
+        paragraphs: [
+          "Hoog-risico AI vereist een doorlopend, iteratief risicomanagementproces over de hele levenscyclus: risico's voor gezondheid, veiligheid en grondrechten identificeren en beoordelen, maatregelen nemen en testen.",
+          "Het is geen eenmalige exercitie — u herhaalt en actualiseert het gedurende de hele levensduur van het systeem.",
+        ],
+      },
+      {
+        heading: "Logging en traceerbaarheid (Art. 12)",
+        paragraphs: [
+          "Hoog-risico systemen moeten technisch in staat zijn gebeurtenissen automatisch te registreren (logs), zodat de werking traceerbaar blijft gedurende de levenscyclus.",
+        ],
+      },
+      {
+        heading: "Nauwkeurigheid, robuustheid en cyberbeveiliging (Art. 15)",
+        paragraphs: [
+          "Systemen moeten een passend niveau van nauwkeurigheid, robuustheid en cyberbeveiliging halen en consistent presteren.",
+          "Denk aan weerbaarheid tegen fouten en tegen manipulatie zoals 'data poisoning' en 'adversarial' aanvallen.",
+        ],
+      },
+    ],
+    quiz: [
+      {
+        question: "Hoe vaak loopt het risicomanagementproces (Art. 9)?",
+        options: [
+          "Eenmalig bij de start",
+          "Doorlopend, gedurende de hele levenscyclus",
+          "Alleen bij een audit",
+          "Nooit",
+        ],
+        answer: 1,
+      },
+      {
+        question: "Waarvoor dient logging (Art. 12)?",
+        options: [
+          "Marketing",
+          "Traceerbaarheid van de werking van het systeem",
+          "Snellere verwerking",
+          "Reclame tonen",
+        ],
+        answer: 1,
+      },
+      {
+        question: "Wat eist Artikel 15?",
+        options: [
+          "Alleen een mooie interface",
+          "Nauwkeurigheid, robuustheid en cyberbeveiliging",
+          "Een lage prijs",
+          "Onbeperkte dataverzameling",
+        ],
+        answer: 1,
+      },
+      {
+        question: "Wat is 'data poisoning'?",
+        options: [
+          "Het versleutelen van data",
+          "Het manipuleren van trainingsdata om een model te misleiden",
+          "Een back-upmethode",
+          "Een vorm van dataminimalisatie",
+        ],
+        answer: 1,
+      },
+      {
+        question: "Wat is het doel van risicomanagement?",
+        options: [
+          "Risico's voor gezondheid, veiligheid en grondrechten beperken",
+          "Meer data verzamelen",
+          "Kosten verhogen",
+          "Toezicht vermijden",
+        ],
+        answer: 0,
+      },
+    ],
+  },
+  {
+    id: "technical-docs",
+    title: "Technische documentatie & datakwaliteit (Art. 10, 11, Annex IV)",
+    minutes: 12,
+    intro:
+      "Voor beheerders: welke technische documentatie een hoog-risico systeem nodig heeft, hoe u datakwaliteit en -governance borgt, en wat er geldt voor GPAI-modellen.",
+    lessons: [
+      {
+        heading: "Technische documentatie (Art. 11, Annex IV)",
+        paragraphs: [
+          "Voordat een hoog-risico systeem op de markt komt, moet er technische documentatie volgens Annex IV zijn — met o.a. een systeembeschrijving, ontwerp, monitoring en prestaties — en die houdt u actueel.",
+        ],
+      },
+      {
+        heading: "Data governance (Art. 10)",
+        paragraphs: [
+          "Trainings-, validatie- en testdata moeten aan kwaliteitseisen voldoen: relevant, voldoende representatief en zo foutloos mogelijk.",
+          "Onderzoek data actief op mogelijke bias (vertekening) en neem maatregelen om die te beperken.",
+        ],
+      },
+      {
+        heading: "GPAI-modellen",
+        paragraphs: [
+          "Aanbieders van general-purpose AI-modellen (GPAI) hebben eigen verplichtingen: technische documentatie, een samenvatting van de trainingsdata en een auteursrechtbeleid.",
+        ],
+      },
+    ],
+    quiz: [
+      {
+        question: "Wat beschrijft Annex IV?",
+        options: [
+          "De inhoud van de technische documentatie voor hoog-risico AI",
+          "De boetes",
+          "De prijslijst",
+          "De organisatiestructuur",
+        ],
+        answer: 0,
+      },
+      {
+        question: "Wanneer moet de technische documentatie klaar zijn?",
+        options: [
+          "Nooit",
+          "Pas na een klacht",
+          "Voordat het systeem op de markt komt, en bijgehouden daarna",
+          "Alleen bij verkoop",
+        ],
+        answer: 2,
+      },
+      {
+        question: "Welke eisen stelt Artikel 10 aan data?",
+        options: [
+          "Zo veel mogelijk data, ongeacht kwaliteit",
+          "Relevant, representatief en zo foutloos mogelijk",
+          "Alleen openbare data",
+          "Geen eisen",
+        ],
+        answer: 1,
+      },
+      {
+        question: "Waarop moet u data onderzoeken?",
+        options: ["Kleur", "Mogelijke bias (vertekening)", "Bestandsgrootte", "Populariteit"],
+        answer: 1,
+      },
+      {
+        question: "Wie heeft eigen documentatieplichten voor GPAI?",
+        options: [
+          "Alleen eindgebruikers",
+          "Aanbieders van general-purpose AI-modellen",
+          "De boekhouding",
+          "Niemand",
+        ],
+        answer: 1,
+      },
+    ],
+  },
+];
+
+export const MODULES: TrainingModule[] = [
+  ...BASE_MODULES.map((m) => ({ ...m, lessons: MODULE_LESSONS[m.id] ?? [] })),
+  ...ROLE_MODULES,
+];
+
+// Which modules make up each learning path. Everyone does the core five; managers
+// and beheerders add role-specific modules on top (Art. 4 proportionality).
+const CORE_IDS = BASE_MODULES.map((m) => m.id);
+export const PATH_MODULES: Record<PathId, string[]> = {
+  employee: CORE_IDS,
+  manager: [...CORE_IDS, "human-oversight", "deployer-duties"],
+  admin: [...CORE_IDS, "risk-management", "technical-docs"],
+};
 
 export function getModule(id: string): TrainingModule | undefined {
   return MODULES.find((m) => m.id === id);
@@ -472,4 +805,17 @@ export function getModule(id: string): TrainingModule | undefined {
 
 export function getPath(id: string): LearningPath | undefined {
   return PATHS.find((p) => p.id === id);
+}
+
+/** The ordered modules for a learning path (falls back to the core set). */
+export function modulesForPath(pathId: string): TrainingModule[] {
+  const ids = PATH_MODULES[pathId as PathId] ?? CORE_IDS;
+  return ids
+    .map((id) => getModule(id))
+    .filter((m): m is TrainingModule => Boolean(m));
+}
+
+/** How many modules a learning path requires (its completion denominator). */
+export function moduleCountForPath(pathId: string): number {
+  return (PATH_MODULES[pathId as PathId] ?? CORE_IDS).length;
 }

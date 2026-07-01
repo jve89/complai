@@ -2,7 +2,7 @@ import { renderToBuffer } from "@react-pdf/renderer";
 
 import { prisma } from "@/lib/prisma";
 import { getActiveCompany } from "@/lib/auth";
-import { getModule, getPath, MODULES } from "@/lib/training/content";
+import { getModule, getPath, moduleCountForPath } from "@/lib/training/content";
 import { CertificatePdf } from "@/components/pdf/certificate-pdf";
 
 export const runtime = "nodejs";
@@ -27,7 +27,8 @@ export async function GET(
     .filter((t): t is string => Boolean(t));
 
   const pathLabel = getPath(employee.role)?.label ?? "Medewerker";
-  const complete = employee.trainingCompletions.length >= MODULES.length;
+  const complete =
+    employee.trainingCompletions.length >= moduleCountForPath(employee.role);
 
   const latest = employee.trainingCompletions.reduce((a, b) =>
     a.completedAt > b.completedAt ? a : b

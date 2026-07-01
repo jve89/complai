@@ -3,7 +3,12 @@ import { Award, CheckCircle2, Circle, Download, Users } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { getActiveCompany } from "@/lib/auth";
 import { getLearnerEmployee } from "@/lib/training/learner";
-import { MODULES, PATHS, getPath } from "@/lib/training/content";
+import {
+  PATHS,
+  getPath,
+  modulesForPath,
+  moduleCountForPath,
+} from "@/lib/training/content";
 import type { ComplianceProfile, TrainingRequirement } from "@/lib/compliance/types";
 import { PageHeader } from "@/components/dashboard/page-header";
 import { ModuleQuiz } from "@/components/dashboard/training/module-quiz";
@@ -41,8 +46,10 @@ export default async function TrainingPage() {
   ]);
 
   const doneIds = new Set(learnerCompletions.map((c) => c.moduleId));
-  const learnerDone = doneIds.size;
-  const learnerComplete = learnerDone >= MODULES.length;
+  const learnerModules = modulesForPath(learner.role);
+  const learnerDone = learnerModules.filter((m) => doneIds.has(m.id)).length;
+  const learnerTotal = learnerModules.length;
+  const learnerComplete = learnerDone >= learnerTotal;
   const learnerPath = getPath(learner.role)?.label ?? "Medewerker";
 
   // Which learning paths this company's scan makes required vs recommended.
@@ -85,6 +92,9 @@ export default async function TrainingPage() {
                   </div>
                 </div>
                 <p className="text-sm text-muted-foreground">{path.audience}</p>
+                <p className="text-xs font-medium text-muted-foreground">
+                  {moduleCountForPath(path.id)} modules
+                </p>
                 {(req ?? rec) && (
                   <p className="text-xs font-medium text-brand-700">
                     {(req ?? rec)!.reason}
@@ -105,7 +115,7 @@ export default async function TrainingPage() {
                 Uw voortgang — {learner.name}
               </CardTitle>
               <p className="mt-1 text-sm text-muted-foreground">
-                Leerpad {learnerPath} · {learnerDone}/{MODULES.length} modules
+                Leerpad {learnerPath} · {learnerDone}/{learnerTotal} modules
                 afgerond
               </p>
             </div>
@@ -123,14 +133,14 @@ export default async function TrainingPage() {
           </div>
         </CardHeader>
         <CardContent>
-          <Progress value={(learnerDone / MODULES.length) * 100} />
+          <Progress value={(learnerDone / learnerTotal) * 100} />
         </CardContent>
       </Card>
 
       {/* Modules */}
       <h2 className="mb-4 text-lg font-semibold">Modules</h2>
       <div className="mb-10 space-y-3">
-        {MODULES.map((module, i) => {
+        {learnerModules.map((module, i) => {
           const done = doneIds.has(module.id);
           return (
             <Card key={module.id}>
@@ -186,9 +196,10 @@ export default async function TrainingPage() {
             </TableHeader>
             <TableBody>
               {employees.map((emp) => {
-                const completed = emp.trainingCompletions.length;
-                const pct = Math.round((completed / MODULES.length) * 100);
-                const complete = completed >= MODULES.length;
+                const empTotal = moduleCountForPath(emp.role);
+                const completed = Math.min(emp.trainingCompletions.length, empTotal);
+                const pct = Math.round((completed / empTotal) * 100);
+                const complete = completed >= empTotal;
                 return (
                   <TableRow key={emp.id}>
                     <TableCell className="font-medium">{emp.name}</TableCell>
@@ -199,7 +210,7 @@ export default async function TrainingPage() {
                       <div className="flex items-center gap-2">
                         <Progress value={pct} className="w-24" />
                         <span className="text-xs text-muted-foreground">
-                          {completed}/{MODULES.length}
+                          {completed}/{empTotal}
                         </span>
                       </div>
                     </TableCell>

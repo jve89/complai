@@ -5,7 +5,7 @@ import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { getActiveCompany } from "@/lib/auth";
 import { getLearnerEmployee } from "@/lib/training/learner";
-import { getModule, MODULES, PASS_THRESHOLD } from "@/lib/training/content";
+import { getModule, modulesForPath, PASS_THRESHOLD } from "@/lib/training/content";
 
 export type CompleteResult =
   | {
@@ -50,10 +50,13 @@ export async function completeModule(
       create: { companyId: company.id, employeeId: employee.id, moduleId, score },
     });
 
-    const count = await prisma.trainingCompletion.count({
+    // "All done" = every module in THIS learner's path is completed.
+    const completions = await prisma.trainingCompletion.findMany({
       where: { employeeId: employee.id },
+      select: { moduleId: true },
     });
-    const allDone = count >= MODULES.length;
+    const done = new Set(completions.map((c) => c.moduleId));
+    const allDone = modulesForPath(employee.role).every((m) => done.has(m.id));
     if (allDone && !employee.trainingCompleted) {
       await prisma.employee.update({
         where: { id: employee.id },
