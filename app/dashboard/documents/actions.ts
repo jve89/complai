@@ -16,6 +16,10 @@ const VALID_TYPES: DocumentType[] = [
   "risk_assessment",
   "fria",
   "transparency",
+  "tech_doc",
+  "doc_conformity",
+  "assessment_record",
+  "gpai_docs",
 ];
 
 export async function generateDocument(

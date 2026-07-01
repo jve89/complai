@@ -6,7 +6,11 @@ export type DocumentType =
   | "ai_policy"
   | "risk_assessment"
   | "fria"
-  | "transparency";
+  | "transparency"
+  | "tech_doc"
+  | "doc_conformity"
+  | "assessment_record"
+  | "gpai_docs";
 
 export interface DocSection {
   heading: string;
@@ -55,6 +59,32 @@ export const DOCUMENT_META: DocumentMeta[] = [
     name: "Transparantieverklaring",
     description:
       "Verklaring over transparantie richting gebruikers (Artikel 50).",
+  },
+  {
+    type: "tech_doc",
+    name: "Technische documentatie (Annex IV)",
+    description:
+      "Technisch dossier voor hoog-risico AI-systemen conform Artikel 11 en Annex IV.",
+    highRiskFocused: true,
+  },
+  {
+    type: "doc_conformity",
+    name: "EU-conformiteitsverklaring",
+    description:
+      "Verklaring van de aanbieder dat het systeem voldoet aan de AI Act (Artikel 47).",
+    highRiskFocused: true,
+  },
+  {
+    type: "assessment_record",
+    name: "Beoordelingsdossier (Art. 6(4))",
+    description:
+      "Vastlegging van uw Art. 6(3)-beoordeling dat een systeem niet hoog-risico is.",
+  },
+  {
+    type: "gpai_docs",
+    name: "GPAI-documentatie",
+    description:
+      "Modeldocumentatie voor AI-modellen voor algemene doeleinden (Artikel 53).",
   },
 ];
 
@@ -292,6 +322,208 @@ function buildTransparency(
   };
 }
 
+function highRiskSystems(systems: AiSystem[]): AiSystem[] {
+  return systems.filter(
+    (s) => s.riskLevel === "high" || s.riskLevel === "unacceptable"
+  );
+}
+
+function buildTechDoc(company: Company, systems: AiSystem[]): DocumentContent {
+  const high = highRiskSystems(systems);
+  return {
+    title: "Technische documentatie (Annex IV)",
+    subtitle: company.name,
+    intro: `Dit technisch dossier beschrijft de hoog-risico AI-systemen van ${company.name} conform Artikel 11 en Annex IV van de EU AI Act. Vul de onderdelen per systeem aan met uw eigen gegevens.`,
+    sections: [
+      {
+        heading: "1. Algemene beschrijving van het systeem",
+        paragraphs: high.length
+          ? ["De volgende hoog-risico systemen vallen onder dit dossier:"]
+          : ["[Beschrijf het systeem, het beoogde doel en de aanbieder. Er zijn nog geen hoog-risico systemen geregistreerd.]"],
+        table: high.length ? systemsTable(high) : undefined,
+      },
+      {
+        heading: "2. Ontwerp en ontwikkeling",
+        paragraphs: [
+          "[Beschrijf de architectuur, de gebruikte modellen/algoritmen, de belangrijkste ontwerpkeuzes en de logica achter het systeem.]",
+        ],
+      },
+      {
+        heading: "3. Data en datagovernance",
+        paragraphs: [
+          "[Beschrijf de trainings-, validatie- en testdata: herkomst, omvang, kwaliteit en de maatregelen tegen vertekening (bias), conform Artikel 10.]",
+        ],
+      },
+      {
+        heading: "4. Prestaties, nauwkeurigheid en robuustheid",
+        paragraphs: [
+          "[Beschrijf de nauwkeurigheidsmaatstaven, testresultaten, foutmarges en de bekende grenzen van het systeem (Artikel 15).]",
+        ],
+      },
+      {
+        heading: "5. Risicobeheersysteem",
+        paragraphs: [
+          "[Verwijs naar uw risicobeoordeling en FRIA en beschrijf de geïdentificeerde risico's en de mitigerende maatregelen (Artikel 9).]",
+        ],
+      },
+      {
+        heading: "6. Menselijk toezicht",
+        paragraphs: [
+          "[Beschrijf hoe menselijk toezicht is ingericht: wie grijpt in, hoe worden besluiten gecontroleerd en herzien (Artikel 14).]",
+        ],
+      },
+      {
+        heading: "7. Wijzigingsbeheer en toegepaste normen",
+        bullets: [
+          "Dit dossier wordt bijgewerkt bij elke substantiële wijziging aan het systeem.",
+          "[Noem de toegepaste geharmoniseerde normen of gemeenschappelijke specificaties.]",
+        ],
+      },
+    ],
+  };
+}
+
+function buildDocConformity(company: Company, systems: AiSystem[]): DocumentContent {
+  const high = highRiskSystems(systems);
+  return {
+    title: "EU-conformiteitsverklaring",
+    subtitle: company.name,
+    intro: `Deze verklaring wordt door de aanbieder opgesteld conform Artikel 47 van de EU AI Act. Vul de gegevens aan, controleer de inhoud en stel de verklaring formeel vast.`,
+    sections: [
+      {
+        heading: "1. Aanbieder",
+        paragraphs: [
+          `${company.name}, [adres], [KvK-nummer], [contactgegevens].`,
+        ],
+      },
+      {
+        heading: "2. Betreffend AI-systeem",
+        paragraphs: high.length
+          ? ["Deze verklaring heeft betrekking op:"]
+          : ["[Naam, versie en unieke identificatie van het hoog-risico AI-systeem.]"],
+        table: high.length ? systemsTable(high) : undefined,
+      },
+      {
+        heading: "3. Verklaring",
+        paragraphs: [
+          `${company.name} verklaart onder eigen verantwoordelijkheid dat het bovengenoemde hoog-risico AI-systeem voldoet aan de eisen van Hoofdstuk III, Sectie 2 van Verordening (EU) 2024/1689 (de AI Act).`,
+        ],
+      },
+      {
+        heading: "4. Toegepaste normen",
+        paragraphs: [
+          "[Noem de toegepaste geharmoniseerde normen (Artikel 40) of gemeenschappelijke specificaties (Artikel 41).]",
+        ],
+      },
+      {
+        heading: "5. Conformiteitsbeoordeling",
+        paragraphs: [
+          "[Beschrijf de gevolgde conformiteitsbeoordelingsprocedure (Artikel 43) en, indien van toepassing, de betrokken aangemelde instantie.]",
+        ],
+      },
+      {
+        heading: "6. Ondertekening",
+        paragraphs: [
+          `Namens ${company.name}: [naam], [functie], [plaats], [datum], [handtekening].`,
+        ],
+      },
+    ],
+  };
+}
+
+function buildAssessmentRecord(company: Company, systems: AiSystem[]): DocumentContent {
+  return {
+    title: "Beoordelingsdossier — niet-hoog-risico (Art. 6(3))",
+    subtitle: company.name,
+    intro: `Dit dossier legt vast waarom een AI-systeem dat onder een Annex III-gebied valt, volgens de beoordeling van ${company.name} geen significant risico vormt voor gezondheid, veiligheid of grondrechten (Artikel 6(3)). Leg deze beoordeling vast vóór ingebruikname (Artikel 6(4)).`,
+    sections: [
+      {
+        heading: "1. Systeem en toepassingsgebied",
+        paragraphs: [
+          "[Naam en beschrijving van het systeem en het Annex III-gebied waaronder het in beginsel valt.]",
+        ],
+      },
+      {
+        heading: "2. Grondslag voor de uitzondering (Art. 6(3))",
+        paragraphs: [
+          "Geef aan op welke van de volgende voorwaarden u zich beroept en onderbouw dit:",
+        ],
+        bullets: [
+          "Het systeem voert een beperkte procedurele taak uit.",
+          "Het verbetert slechts het resultaat van een eerder afgeronde menselijke activiteit.",
+          "Het detecteert besluitvormingspatronen en wijkt niet af zonder menselijke toetsing.",
+          "Het voert een voorbereidende taak uit voor een beoordeling.",
+          "[Onderbouwing: waarom is dit van toepassing op uw systeem?]",
+        ],
+      },
+      {
+        heading: "3. Geen profilering",
+        paragraphs: [
+          "Het systeem voert geen profilering van natuurlijke personen uit. [Bevestig en onderbouw — profilering maakt het systeem alsnog hoog-risico (Art. 6(3), laatste alinea).]",
+        ],
+      },
+      {
+        heading: "4. Conclusie",
+        paragraphs: [
+          "[Conclusie: het systeem is op basis van bovenstaande niet hoog-risico. Dit is een zelfbeoordeling — laat deze juridisch toetsen.]",
+        ],
+      },
+      {
+        heading: "5. Registratie",
+        paragraphs: [
+          "De aanbieder registreert het systeem in de EU-databank vóór ingebruikname (Artikel 49(2)).",
+        ],
+      },
+    ],
+  };
+}
+
+function buildGpaiDocs(company: Company): DocumentContent {
+  return {
+    title: "Documentatie AI-model voor algemene doeleinden (GPAI)",
+    subtitle: company.name,
+    intro: `Deze documentatie hoort bij een AI-model voor algemene doeleinden (GPAI) dat ${company.name} op de markt brengt, conform Artikel 53 en Annex XI/XII van de EU AI Act.`,
+    sections: [
+      {
+        heading: "1. Modelbeschrijving",
+        paragraphs: [
+          "[Naam, versie, architectuur, aantal parameters, modaliteiten (tekst/beeld/audio) en het beoogde gebruik van het model.]",
+        ],
+      },
+      {
+        heading: "2. Trainingsproces",
+        paragraphs: [
+          "[Beschrijf het trainingsproces, de gebruikte rekenkracht en de belangrijkste methoden.]",
+        ],
+      },
+      {
+        heading: "3. Samenvatting trainingsdata",
+        paragraphs: [
+          "[Publiek beschikbare samenvatting van de gebruikte trainingsdata (Artikel 53(1)(d)).]",
+        ],
+      },
+      {
+        heading: "4. Auteursrechtbeleid",
+        paragraphs: [
+          "De aanbieder hanteert een beleid om het auteursrecht en de naburige rechten te respecteren, inclusief de opt-out onder Artikel 4(3) van de DSM-richtlijn. [Beschrijf uw beleid.]",
+        ],
+      },
+      {
+        heading: "5. Capaciteiten en beperkingen",
+        paragraphs: [
+          "[Beschrijf de capaciteiten, de bekende beperkingen en de risico's van het model.]",
+        ],
+      },
+      {
+        heading: "6. Systeemrisico",
+        paragraphs: [
+          "[Indien de cumulatieve trainingsrekenkracht meer dan 10^25 FLOP bedraagt, gelden aanvullende verplichtingen onder Artikel 55, inclusief melding aan de Europese Commissie (Artikel 52).]",
+        ],
+      },
+    ],
+  };
+}
+
 const BUILDERS: Record<
   DocumentType,
   (company: Company, systems: AiSystem[]) => DocumentContent
@@ -300,6 +532,10 @@ const BUILDERS: Record<
   risk_assessment: buildRiskAssessment,
   fria: buildFria,
   transparency: buildTransparency,
+  tech_doc: buildTechDoc,
+  doc_conformity: buildDocConformity,
+  assessment_record: buildAssessmentRecord,
+  gpai_docs: (company) => buildGpaiDocs(company),
 };
 
 export function buildDocument(
