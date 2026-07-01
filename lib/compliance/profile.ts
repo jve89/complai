@@ -25,17 +25,6 @@ const EMPTY_EVIDENCE: CompanyEvidence = {
   completedTrainingPaths: [],
 };
 
-const DOC_LABELS: Record<string, string> = {
-  ai_policy: "AI-beleid",
-  transparency: "Transparantieverklaring",
-  fria: "FRIA (grondrechtentoets)",
-  risk_assessment: "Risicobeoordeling",
-  tech_doc: "Technische documentatie (Annex IV)",
-  doc_conformity: "EU-conformiteitsverklaring",
-  assessment_record: "Beoordelingsdossier (Art. 6(4))",
-  gpai_docs: "GPAI-documentatie",
-};
-
 function recommendTier(
   tiers: string[],
   flags: { gpaiModelProvider: boolean },
