@@ -11,6 +11,7 @@ import {
 import { prisma } from "@/lib/prisma";
 import { getActiveCompany } from "@/lib/auth";
 import { computeGovernance } from "@/lib/governance/score";
+import type { ComplianceProfile } from "@/lib/compliance/types";
 import { PageHeader } from "@/components/dashboard/page-header";
 import { ScoreRing } from "@/components/score-ring";
 import { Badge } from "@/components/ui/badge";
@@ -35,8 +36,10 @@ export default async function GovernancePage() {
     prisma.complianceItem.findMany({ where: { companyId: company.id } }),
   ]);
 
+  const profile = (company.profileJson as unknown as ComplianceProfile | null) ?? null;
+
   const report = computeGovernance(
-    { aiSystems, documents, employees, complianceItems },
+    { aiSystems, documents, employees, complianceItems, profile },
     new Date()
   );
 

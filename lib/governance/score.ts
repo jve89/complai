@@ -5,6 +5,9 @@ import type {
   Employee,
 } from "@prisma/client";
 
+import type { ComplianceProfile } from "@/lib/compliance/types";
+import { docLabel } from "@/lib/compliance/labels";
+
 export interface GovernanceCheck {
   id: string;
   label: string;
@@ -28,12 +31,21 @@ export interface GovernanceReport {
 
 /** Documents older than this are considered out of date and must be regenerated. */
 const DOC_VALID_MONTHS = 12;
+const DAY = 1000 * 60 * 60 * 24;
 
-const REQUIRED_DOCS: { type: string; label: string }[] = [
-  { type: "ai_policy", label: "AI-beleid" },
-  { type: "risk_assessment", label: "Risicobeoordeling" },
-  { type: "transparency", label: "Transparantieverklaring" },
-];
+/** Fallback required documents when the company has no profile yet (never scanned). */
+const FALLBACK_DOC_SLUGS = ["ai_policy", "risk_assessment", "transparency"];
+
+/** Minimal obligation shape governance reads, from the profile or materialised items. */
+interface Obl {
+  code: string;
+  title: string;
+  article: string;
+  status: string;
+  required: boolean;
+  evidenceKind?: string;
+  deadline?: string;
+}
 
 export function currentQuarter(now: Date): string {
   const q = Math.floor(now.getMonth() / 3) + 1;
@@ -46,138 +58,154 @@ function isFresh(date: Date, now: Date): boolean {
   return date >= cutoff;
 }
 
+const isDoneStatus = (s: string) => s === "compliant" || s === "done";
+
 export function computeGovernance(
   data: {
     aiSystems: AiSystem[];
     documents: Document[];
     employees: Employee[];
     complianceItems: ComplianceItem[];
+    profile: ComplianceProfile | null;
   },
   now: Date
 ): GovernanceReport {
-  const { aiSystems, documents, employees, complianceItems } = data;
+  const { aiSystems, documents, employees, complianceItems, profile } = data;
 
-  const highRisk = aiSystems.filter(
-    (s) => s.riskLevel === "high" || s.riskLevel === "unacceptable"
-  );
-  // FRIA is only required when there are high-risk systems.
-  const requiredDocs = highRisk.length
-    ? [...REQUIRED_DOCS, { type: "fria", label: "FRIA" }]
-    : REQUIRED_DOCS;
+  // Obligations come from the profile; fall back to the materialised items for a
+  // company that scanned before profileJson existed. No hardcoded articles.
+  const obligations: Obl[] =
+    profile?.obligations ??
+    complianceItems.map((i) => ({
+      code: i.code ?? i.id,
+      title: i.title,
+      article: i.article,
+      status: i.status as string,
+      required: i.required ?? true,
+      evidenceKind: undefined,
+      deadline: i.deadline ? i.deadline.toISOString() : undefined,
+    }));
+  const requiredObs = obligations.filter((o) => o.required);
 
-  // Latest version per document type, and whether it is still fresh.
+  // Live status per obligation code from the materialised items (authoritative).
+  const statusByCode = new Map(complianceItems.map((i) => [i.code ?? i.id, i.status as string]));
+  const obDone = (o: Obl) => isDoneStatus(statusByCode.get(o.code) ?? o.status);
+
+  // Latest version per document type/slug, and freshness.
   const latestByType = new Map<string, Document>();
   for (const doc of documents) {
     const prev = latestByType.get(doc.type);
     if (!prev || doc.createdAt > prev.createdAt) latestByType.set(doc.type, doc);
   }
-  const freshDocTypes = requiredDocs.filter((d) => {
-    const doc = latestByType.get(d.type);
+
+  const requiredDocSlugs = profile
+    ? profile.documents.required.map((d) => d.slug)
+    : FALLBACK_DOC_SLUGS;
+  const freshDocSlugs = requiredDocSlugs.filter((slug) => {
+    const doc = latestByType.get(slug);
     return doc && isFresh(doc.createdAt, now);
   });
 
+  const trainingRequired = profile ? profile.training.required.length > 0 : true;
   const trained = employees.filter((e) => e.trainingCompleted);
-  const openItems = complianceItems.filter((i) => i.status !== "compliant");
-  const art5 = complianceItems.find((i) => i.article === "Art. 5");
-  const highRiskInReview = highRisk.filter((s) => s.status === "review");
 
-  // ── Quarterly checks ────────────────────────────────────────────────────────
-  const checks: GovernanceCheck[] = [
-    {
-      id: "register",
-      label: "AI-register actueel",
-      detail: aiSystems.length
-        ? `${aiSystems.length} systemen geregistreerd en geclassificeerd.`
-        : "Er zijn nog geen AI-systemen geregistreerd.",
-      done: aiSystems.length > 0,
-      progress: aiSystems.length > 0 ? 1 : 0,
-    },
-    {
+  // ── Checks (only the ones that apply to this company's profile) ─────────────
+  const checks: GovernanceCheck[] = [];
+
+  checks.push({
+    id: "register",
+    label: "AI-register actueel",
+    detail: aiSystems.length
+      ? `${aiSystems.length} systemen geregistreerd en geclassificeerd.`
+      : "Er zijn nog geen AI-systemen geregistreerd.",
+    done: aiSystems.length > 0,
+    progress: aiSystems.length > 0 ? 1 : 0,
+  });
+
+  if (requiredDocSlugs.length > 0) {
+    checks.push({
       id: "documents",
       label: "Documenten up-to-date",
-      detail: `${freshDocTypes.length}/${requiredDocs.length} vereiste documenten actueel (< ${DOC_VALID_MONTHS} mnd).`,
-      done: freshDocTypes.length === requiredDocs.length,
-      progress: requiredDocs.length
-        ? freshDocTypes.length / requiredDocs.length
-        : 1,
-    },
-    {
+      detail: `${freshDocSlugs.length}/${requiredDocSlugs.length} vereiste documenten actueel (< ${DOC_VALID_MONTHS} mnd).`,
+      done: freshDocSlugs.length === requiredDocSlugs.length,
+      progress: freshDocSlugs.length / requiredDocSlugs.length,
+    });
+  }
+
+  if (trainingRequired) {
+    checks.push({
       id: "training",
-      label: "AI-geletterdheid geborgd",
+      label: "AI-geletterdheid geborgd (Art. 4)",
       detail: employees.length
         ? `${trained.length}/${employees.length} medewerkers hebben de training afgerond.`
         : "Er zijn nog geen medewerkers toegevoegd.",
       done: employees.length > 0 && trained.length === employees.length,
       progress: employees.length ? trained.length / employees.length : 0,
-    },
-    {
-      id: "prohibited",
-      label: "Verboden praktijken getoetst (Art. 5)",
-      detail:
-        art5?.status === "compliant"
-          ? "Getoetst en in orde."
-          : "Toets op verboden AI-praktijken is nog niet afgerond.",
-      done: art5?.status === "compliant",
-      progress: art5?.status === "compliant" ? 1 : 0,
-    },
-    {
-      id: "highrisk",
-      label: "Hoog-risico systemen beoordeeld",
-      detail: highRisk.length
-        ? highRiskInReview.length
-          ? `${highRiskInReview.length} hoog-risico systeem(en) nog in beoordeling.`
-          : "Alle hoog-risico systemen zijn beoordeeld."
-        : "Geen hoog-risico systemen in gebruik.",
-      done: highRiskInReview.length === 0,
-      progress: highRisk.length
-        ? (highRisk.length - highRiskInReview.length) / highRisk.length
-        : 1,
-    },
-  ];
+    });
+  }
 
-  const score = Math.round(
-    (checks.reduce((sum, c) => sum + c.progress, 0) / checks.length) * 100
-  );
+  if (requiredObs.length > 0) {
+    const doneObs = requiredObs.filter(obDone);
+    checks.push({
+      id: "obligations",
+      label: "Verplichtingen op orde",
+      detail: `${doneObs.length}/${requiredObs.length} verplichte acties uit uw scan afgerond.`,
+      done: doneObs.length === requiredObs.length,
+      progress: requiredObs.length ? doneObs.length / requiredObs.length : 1,
+    });
+  }
+
+  const score = checks.length
+    ? Math.round((checks.reduce((sum, c) => sum + c.progress, 0) / checks.length) * 100)
+    : 100;
 
   // ── Alerts ──────────────────────────────────────────────────────────────────
   const alerts: GovernanceAlert[] = [];
 
-  for (const d of requiredDocs) {
-    const doc = latestByType.get(d.type);
+  for (const slug of requiredDocSlugs) {
+    const doc = latestByType.get(slug);
     if (!doc) {
       alerts.push({
         severity: "warning",
-        message: `Document ontbreekt: ${d.label} is nog niet gegenereerd.`,
+        message: `Document ontbreekt: ${docLabel(slug)} is nog niet gegenereerd.`,
       });
     } else if (!isFresh(doc.createdAt, now)) {
       alerts.push({
         severity: "danger",
-        message: `Document verlopen: ${d.label} is ouder dan ${DOC_VALID_MONTHS} maanden.`,
+        message: `Document verlopen: ${docLabel(slug)} is ouder dan ${DOC_VALID_MONTHS} maanden.`,
       });
     }
   }
 
-  const untrained = employees.filter((e) => !e.trainingCompleted);
-  if (untrained.length) {
-    alerts.push({
-      severity: "warning",
-      message: `Certificaat ontbreekt voor ${untrained.length} medewerker(s): ${untrained
-        .map((e) => e.name)
-        .join(", ")}.`,
-    });
+  if (trainingRequired) {
+    const untrained = employees.filter((e) => !e.trainingCompleted);
+    if (untrained.length) {
+      alerts.push({
+        severity: "warning",
+        message: `Certificaat ontbreekt voor ${untrained.length} medewerker(s): ${untrained
+          .map((e) => e.name)
+          .join(", ")}.`,
+      });
+    }
   }
 
-  for (const item of openItems) {
+  // Open required obligations, deadline-aware.
+  for (const o of requiredObs) {
+    if (obDone(o)) continue;
+    const overdue = o.deadline ? new Date(o.deadline).getTime() < now.getTime() : false;
+    const soon = o.deadline
+      ? !overdue && new Date(o.deadline).getTime() - now.getTime() < 90 * DAY
+      : false;
+    const when = o.deadline
+      ? overdue
+        ? " — deadline verstreken"
+        : soon
+          ? ` — deadline nadert (${new Date(o.deadline).toLocaleDateString("nl-NL")})`
+          : ""
+      : "";
     alerts.push({
-      severity: item.status === "open" ? "danger" : "warning",
-      message: `Openstaand compliance-punt (${item.article}): ${item.title}.`,
-    });
-  }
-
-  for (const s of highRiskInReview) {
-    alerts.push({
-      severity: "danger",
-      message: `Hoog-risico systeem nog niet beoordeeld: ${s.name}.`,
+      severity: overdue ? "danger" : "warning",
+      message: `Openstaande verplichting (${o.article}): ${o.title}${when}.`,
     });
   }
 
