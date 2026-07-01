@@ -5,7 +5,11 @@ import { useRouter } from "next/navigation";
 import { Loader2, UserPlus } from "lucide-react";
 import type { User } from "@prisma/client";
 
-import { inviteMember, updateMemberRole } from "@/app/dashboard/settings/actions";
+import {
+  inviteMember,
+  updateMemberName,
+  updateMemberRole,
+} from "@/app/dashboard/settings/actions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -29,6 +33,38 @@ const ROLES = [
   { value: "manager", label: "Manager" },
   { value: "employee", label: "Medewerker" },
 ];
+
+function NameCell({ user }: { user: User }) {
+  const router = useRouter();
+  const [value, setValue] = useState(user.name ?? "");
+  const [isPending, startTransition] = useTransition();
+
+  function save() {
+    const next = value.trim();
+    if (next === (user.name ?? "") || next.length < 2) {
+      setValue(user.name ?? "");
+      return;
+    }
+    startTransition(async () => {
+      const res = await updateMemberName(user.id, next);
+      if (res.ok) router.refresh();
+    });
+  }
+
+  return (
+    <Input
+      value={value}
+      onChange={(e) => setValue(e.target.value)}
+      onBlur={save}
+      onKeyDown={(e) => {
+        if (e.key === "Enter") e.currentTarget.blur();
+      }}
+      placeholder="Naam invullen"
+      disabled={isPending}
+      className="h-9 w-[180px]"
+    />
+  );
+}
 
 function RoleSelect({ user }: { user: User }) {
   const router = useRouter();
@@ -97,8 +133,8 @@ export function TeamSection({ members }: { members: User[] }) {
           <TableBody>
             {members.map((member) => (
               <TableRow key={member.id}>
-                <TableCell className="font-medium">
-                  {member.name ?? "—"}
+                <TableCell>
+                  <NameCell user={member} />
                 </TableCell>
                 <TableCell className="text-sm text-muted-foreground">
                   {member.email}

@@ -70,6 +70,29 @@ export async function updateMemberRole(
   return { ok: true };
 }
 
+export async function updateMemberName(
+  userId: string,
+  name: string
+): Promise<ActionResult> {
+  const trimmed = name.trim();
+  if (trimmed.length < 2) return { ok: false, error: "Naam is te kort." };
+
+  const { company } = await getActiveCompany();
+  try {
+    const res = await prisma.user.updateMany({
+      where: { id: userId, companyId: company.id },
+      data: { name: trimmed },
+    });
+    if (res.count === 0) return { ok: false, error: "Teamlid niet gevonden." };
+    // Keep the linked employee (learning) record in sync.
+    await prisma.employee.updateMany({ where: { userId }, data: { name: trimmed } });
+  } catch {
+    return { ok: false, error: "Naam bijwerken mislukt." };
+  }
+  revalidatePath("/dashboard/team");
+  return { ok: true };
+}
+
 const inviteSchema = z.object({
   email: z.string().email("Voer een geldig e-mailadres in."),
   name: z.string().optional(),

@@ -14,20 +14,32 @@ export async function getLearnerEmployee(
   user: CurrentUser | null
 ): Promise<Employee> {
   if (user) {
+    // Employee's learning path mirrors their account role (employee/manager/admin),
+    // so it lines up with the invite roles and the PATHS ids.
+    const role = user.profile?.role ?? "employee";
+    const name = user.profile?.name ?? user.email ?? "Gebruiker";
+
     const existing = await prisma.employee.findUnique({
       where: { userId: user.id },
     });
-    if (existing) return existing;
+    if (existing) {
+      // Keep the learning path (and name) in sync with the current account role —
+      // older records may still carry a role from before the role unification.
+      if (existing.role !== role || (user.profile?.name && existing.name !== name)) {
+        return prisma.employee.update({
+          where: { id: existing.id },
+          data: { role, ...(user.profile?.name ? { name } : {}) },
+        });
+      }
+      return existing;
+    }
 
-    // Employee's learning path mirrors their account role (employee/manager/admin),
-    // so it lines up with the invite roles and the PATHS ids.
-    const path = user.profile?.role ?? "employee";
     return prisma.employee.create({
       data: {
         companyId: company.id,
         userId: user.id,
-        name: user.profile?.name ?? user.email ?? "Gebruiker",
-        role: path,
+        name,
+        role,
       },
     });
   }
