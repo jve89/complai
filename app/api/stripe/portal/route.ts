@@ -2,8 +2,8 @@ import { NextResponse } from "next/server";
 
 import { stripe } from "@/lib/stripe";
 import { prisma } from "@/lib/prisma";
-import { env } from "@/lib/env";
 import { getCurrentUser } from "@/lib/auth";
+import { baseUrlFrom } from "@/lib/request-url";
 
 export const runtime = "nodejs";
 
@@ -12,7 +12,7 @@ export const runtime = "nodejs";
  * cancel / invoices). Requires a stored Stripe customer id, which the checkout
  * flow sets. Returns a friendly message otherwise.
  */
-export async function POST() {
+export async function POST(req: Request) {
   if (!stripe) {
     return NextResponse.json({
       configured: false,
@@ -40,7 +40,7 @@ export async function POST() {
 
   const session = await stripe.billingPortal.sessions.create({
     customer: company.stripeCustomerId,
-    return_url: `${env.appUrl}/dashboard/settings`,
+    return_url: `${baseUrlFrom(req)}/dashboard/settings`,
   });
 
   return NextResponse.json({ url: session.url });

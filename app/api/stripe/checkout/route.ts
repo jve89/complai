@@ -2,9 +2,9 @@ import { NextResponse } from "next/server";
 
 import { stripe, PLANS, planIdToTier, priceIdFor } from "@/lib/stripe";
 import { prisma } from "@/lib/prisma";
-import { env } from "@/lib/env";
 import { getCurrentUser } from "@/lib/auth";
 import { ensureStripeCustomer } from "@/lib/billing";
+import { baseUrlFrom } from "@/lib/request-url";
 
 export const runtime = "nodejs";
 
@@ -21,7 +21,8 @@ type CheckoutResult =
  */
 async function createCheckout(
   planId: string | undefined,
-  interval: "month" | "year"
+  interval: "month" | "year",
+  appUrl: string
 ): Promise<CheckoutResult> {
   if (!stripe) {
     return {
@@ -52,8 +53,8 @@ async function createCheckout(
     allow_promotion_codes: true,
     // Free first month: 30-day trial, card collected up front, auto-converts.
     subscription_data: plan.freeFirstMonth ? { trial_period_days: 30 } : undefined,
-    success_url: `${env.appUrl}/dashboard?checkout=success`,
-    cancel_url: `${env.appUrl}/pricing?checkout=cancel`,
+    success_url: `${appUrl}/dashboard?checkout=success`,
+    cancel_url: `${appUrl}/pricing?checkout=cancel`,
     metadata: { companyId: company.id, tier: planIdToTier(plan.id) },
   });
 
@@ -66,7 +67,12 @@ export async function POST(req: Request) {
     planId?: string;
     interval?: "month" | "year";
   };
-  return NextResponse.json(await createCheckout(planId, interval === "year" ? "year" : "month"));
+  const result = await createCheckout(
+    planId,
+    interval === "year" ? "year" : "month",
+    baseUrlFrom(req)
+  );
+  return NextResponse.json(result);
 }
 
 /**
@@ -77,15 +83,16 @@ export async function GET(req: Request) {
   const url = new URL(req.url);
   const planId = url.searchParams.get("plan") ?? undefined;
   const interval = url.searchParams.get("interval") === "year" ? "year" : "month";
+  const appUrl = baseUrlFrom(req);
 
-  const result = await createCheckout(planId, interval);
+  const result = await createCheckout(planId, interval, appUrl);
   if ("url" in result) return NextResponse.redirect(result.url, 303);
   if ("needsAccount" in result) {
     return NextResponse.redirect(
-      `${env.appUrl}/signup?plan=${planId ?? ""}&interval=${interval}`,
+      `${appUrl}/signup?plan=${planId ?? ""}&interval=${interval}`,
       303
     );
   }
   // Stub / misconfigured — land in the dashboard rather than a dead end.
-  return NextResponse.redirect(`${env.appUrl}/dashboard?checkout=unavailable`, 303);
+  return NextResponse.redirect(`${appUrl}/dashboard?checkout=unavailable`, 303);
 }
