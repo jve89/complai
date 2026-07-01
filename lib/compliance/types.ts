@@ -51,7 +51,7 @@ export interface DocRequirement {
 }
 
 export interface TrainingRequirement {
-  pathSlug: string; // e.g. "employee", "manager", "it", "oversight"
+  pathSlug: string; // learning-path id: "employee" | "manager" | "admin"
   required: boolean;
   reason: string;
 }

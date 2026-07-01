@@ -157,7 +157,7 @@ async function main() {
       {
         companyId: company.id,
         name: "Priya Sharma",
-        role: "it",
+        role: "admin",
         trainingCompleted: false,
       },
     ],

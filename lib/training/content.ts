@@ -16,7 +16,7 @@ export interface TrainingModule {
 }
 
 export interface LearningPath {
-  id: "employee" | "manager" | "it";
+  id: "employee" | "manager" | "admin";
   label: string;
   audience: string;
 }
@@ -36,9 +36,9 @@ export const PATHS: LearningPath[] = [
     audience: "Voor leidinggevenden die verantwoordelijk zijn voor AI-gebruik in hun team.",
   },
   {
-    id: "it",
-    label: "IT",
-    audience: "Voor technische rollen die AI-systemen inrichten en beheren.",
+    id: "admin",
+    label: "Beheerder",
+    audience: "Voor beheerders en technische rollen die AI-systemen inrichten en beheren.",
   },
 ];
 

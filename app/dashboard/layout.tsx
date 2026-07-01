@@ -1,3 +1,5 @@
+import { Globe } from "lucide-react";
+
 import { getActiveCompany } from "@/lib/auth";
 import { logout } from "@/app/(auth)/actions";
 import { Sidebar, MobileNav } from "@/components/dashboard/sidebar";
@@ -37,6 +39,11 @@ export default async function DashboardLayout({
 
             <div className="flex items-center gap-3">
               {demo && <Badge variant="warning">Demo-modus</Badge>}
+              <Button asChild variant="ghost" size="sm">
+                <a href="/">
+                  <Globe className="h-4 w-4" /> Website
+                </a>
+              </Button>
               {user ? (
                 <form action={logout}>
                   <Button variant="outline" size="sm">

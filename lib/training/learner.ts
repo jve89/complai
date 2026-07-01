@@ -19,7 +19,9 @@ export async function getLearnerEmployee(
     });
     if (existing) return existing;
 
-    const path = user.profile?.role === "employee" ? "employee" : "manager";
+    // Employee's learning path mirrors their account role (employee/manager/admin),
+    // so it lines up with the invite roles and the PATHS ids.
+    const path = user.profile?.role ?? "employee";
     return prisma.employee.create({
       data: {
         companyId: company.id,

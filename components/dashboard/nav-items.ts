@@ -7,6 +7,7 @@ import {
   LayoutDashboard,
   ScanSearch,
   Settings,
+  Users,
   type LucideIcon,
 } from "lucide-react";
 
@@ -55,15 +56,21 @@ export const DASHBOARD_NAV: NavItem[] = [
     icon: BarChart3,
   },
   {
-    href: "/kennisbank",
+    href: "/dashboard/kennisbank",
     label: "Kennisbank",
     description: "De AI Act helder uitgelegd",
     icon: BookOpen,
   },
   {
+    href: "/dashboard/team",
+    label: "Medewerkers",
+    description: "Nodig collega's uit en beheer rollen",
+    icon: Users,
+  },
+  {
     href: "/dashboard/settings",
     label: "Instellingen",
-    description: "Bedrijfsprofiel, team en abonnement",
+    description: "Bedrijfsprofiel en abonnement",
     icon: Settings,
   },
 ];

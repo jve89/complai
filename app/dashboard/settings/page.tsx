@@ -1,8 +1,6 @@
-import { prisma } from "@/lib/prisma";
 import { getActiveCompany } from "@/lib/auth";
 import { PageHeader } from "@/components/dashboard/page-header";
 import { ProfileForm } from "@/components/dashboard/settings/profile-form";
-import { TeamSection } from "@/components/dashboard/settings/team-section";
 import { BillingSection } from "@/components/dashboard/settings/billing-section";
 import {
   Card,
@@ -17,16 +15,11 @@ export const dynamic = "force-dynamic";
 export default async function SettingsPage() {
   const { company } = await getActiveCompany();
 
-  const members = await prisma.user.findMany({
-    where: { companyId: company.id },
-    orderBy: { createdAt: "asc" },
-  });
-
   return (
     <>
       <PageHeader
         title="Instellingen"
-        description="Beheer uw bedrijfsprofiel, team en abonnement."
+        description="Beheer uw bedrijfsprofiel en abonnement."
       />
 
       <div className="space-y-6">
@@ -39,18 +32,6 @@ export default async function SettingsPage() {
           </CardHeader>
           <CardContent>
             <ProfileForm company={company} />
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base">Teamleden</CardTitle>
-            <CardDescription>
-              Beheer wie toegang heeft en welke rol zij hebben.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <TeamSection members={members} />
           </CardContent>
         </Card>
 
