@@ -6,6 +6,7 @@ import type { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { getActiveCompany } from "@/lib/auth";
 import { buildDocument, type DocumentType } from "@/lib/documents/templates";
+import { docUnlocked, TIER_LABEL, minTierFor } from "@/lib/plan";
 
 export type GenerateResult =
   | { ok: true; id: string }
@@ -30,6 +31,14 @@ export async function generateDocument(
   }
 
   const { company } = await getActiveCompany();
+
+  // The document package is what the plan buys — gate generation server-side.
+  if (!docUnlocked(company.plan, type)) {
+    return {
+      ok: false,
+      error: `Dit document is beschikbaar vanaf het ${TIER_LABEL[minTierFor(type)]}-plan.`,
+    };
+  }
 
   try {
     const systems = await prisma.aiSystem.findMany({

@@ -65,7 +65,8 @@ export async function applyScanToCompany(
     data: {
       size: answers?.size ?? undefined,
       sector: answers?.sector ?? undefined,
-      plan: profile.recommendedTier,
+      // `plan` = purchased plan (gates documents); recommendation lives in
+      // profileJson.recommendedTier. Don't overwrite the active plan here.
       entityRoles: profile.entityRoles,
       riskTiers: profile.riskTiers,
       profileJson: profile as unknown as Prisma.InputJsonValue,

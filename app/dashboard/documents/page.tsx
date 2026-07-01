@@ -1,3 +1,4 @@
+import Link from "next/link";
 import {
   BadgeCheck,
   ClipboardCheck,
@@ -6,6 +7,7 @@ import {
   FileCheck2,
   FileCog,
   FileText,
+  Lock,
   ScrollText,
   ShieldQuestion,
   type LucideIcon,
@@ -14,9 +16,10 @@ import type { Document as DocumentRow } from "@prisma/client";
 
 import { prisma } from "@/lib/prisma";
 import { getActiveCompany } from "@/lib/auth";
-import { formatDate } from "@/lib/utils";
+import { cn, formatDate } from "@/lib/utils";
 import { DOCUMENT_META, type DocumentType } from "@/lib/documents/templates";
 import { docLabel } from "@/lib/compliance/labels";
+import { docUnlocked, minTierFor, tierRank, TIER_LABEL, TIER_ORDER } from "@/lib/plan";
 import type { ComplianceProfile } from "@/lib/compliance/types";
 import { PageHeader } from "@/components/dashboard/page-header";
 import { GenerateButton } from "@/components/dashboard/documents/generate-button";
@@ -45,17 +48,32 @@ interface DocItem {
   reason: string;
 }
 
-function DocCard({ item, versions }: { item: DocItem; versions: DocumentRow[] }) {
+function DocCard({
+  item,
+  versions,
+  plan,
+}: {
+  item: DocItem;
+  versions: DocumentRow[];
+  plan: string | null;
+}) {
   const latest = versions[0];
   const Icon = ICONS[item.slug] ?? FileText;
   const canGenerate = GENERATABLE.has(item.slug);
+  const unlocked = docUnlocked(plan, item.slug);
+  const requiredTier = minTierFor(item.slug);
 
   return (
-    <Card className="flex flex-col">
+    <Card className={cn("flex flex-col", !unlocked && "border-dashed")}>
       <CardHeader>
         <div className="flex items-start justify-between gap-3">
           <div className="flex items-start gap-3">
-            <div className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-navy-900 text-brand-400">
+            <div
+              className={cn(
+                "inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-lg",
+                unlocked ? "bg-navy-900 text-brand-400" : "bg-secondary text-muted-foreground"
+              )}
+            >
               <Icon className="h-6 w-6" />
             </div>
             <div>
@@ -66,7 +84,11 @@ function DocCard({ item, versions }: { item: DocItem; versions: DocumentRow[] })
               </CardDescription>
             </div>
           </div>
-          {latest ? (
+          {!unlocked ? (
+            <Badge variant="secondary" className="shrink-0 gap-1 font-normal">
+              <Lock className="h-3 w-3" /> {TIER_LABEL[requiredTier]}
+            </Badge>
+          ) : latest ? (
             <Badge variant="success">v{latest.version}</Badge>
           ) : (
             <Badge variant="secondary">Niet gegenereerd</Badge>
@@ -76,14 +98,20 @@ function DocCard({ item, versions }: { item: DocItem; versions: DocumentRow[] })
 
       <CardContent className="mt-auto space-y-4">
         <div className="flex items-center gap-2">
-          {canGenerate ? (
+          {!unlocked ? (
+            <Button asChild size="sm" variant="outline">
+              <Link href="/pricing">
+                <Lock className="h-4 w-4" /> Beschikbaar vanaf {TIER_LABEL[requiredTier]}
+              </Link>
+            </Button>
+          ) : canGenerate ? (
             <GenerateButton type={item.slug as DocumentType} hasExisting={Boolean(latest)} />
           ) : (
             <Badge variant="secondary" className="font-normal">
               Zelf opstellen · sjabloon volgt
             </Badge>
           )}
-          {latest && (
+          {unlocked && latest && (
             <Button asChild variant="ghost" size="sm">
               <a
                 href={`/api/pdf/document/${latest.id}`}
@@ -136,6 +164,8 @@ export default async function DocumentsPage() {
   const versionsFor = (slug: string) => documents.filter((d) => d.type === slug);
 
   const profile = (company.profileJson as unknown as ComplianceProfile | null) ?? null;
+  const plan = company.plan;
+  const isTopPlan = tierRank(plan) >= tierRank("schaal");
 
   // Profile-driven: show exactly the documents this company's scan calls for,
   // split into verplicht vs aanbevolen. No scan yet → fall back to the
@@ -164,6 +194,29 @@ export default async function DocumentsPage() {
         </div>
       )}
 
+      <div
+        className={cn(
+          "mb-8 flex flex-col gap-3 rounded-lg border p-4 sm:flex-row sm:items-center sm:justify-between",
+          isTopPlan
+            ? "border-brand-100 bg-brand-50 text-navy-900"
+            : "border-navy-100 bg-navy-50 text-navy-900"
+        )}
+      >
+        <div className="text-sm">
+          <p className="font-semibold">Uw plan: {TIER_LABEL[TIER_ORDER[tierRank(plan)]]}</p>
+          <p className="text-muted-foreground">
+            {isTopPlan
+              ? "U heeft toegang tot alle documenten — samen vormen ze uw volledige AI-compliancehandboek."
+              : "Uw plan bepaalt welke documenten u kunt genereren. Upgrade voor het volledige documentenpakket."}
+          </p>
+        </div>
+        {!isTopPlan && (
+          <Button asChild size="sm">
+            <Link href="/pricing">Plannen bekijken</Link>
+          </Button>
+        )}
+      </div>
+
       {required.length > 0 && (
         <section className="mb-10">
           <h2 className="mb-1 text-lg font-semibold">Verplicht ({required.length})</h2>
@@ -172,7 +225,7 @@ export default async function DocumentsPage() {
           </p>
           <div className="grid gap-6 lg:grid-cols-2">
             {required.map((item) => (
-              <DocCard key={item.slug} item={item} versions={versionsFor(item.slug)} />
+              <DocCard key={item.slug} item={item} versions={versionsFor(item.slug)} plan={plan} />
             ))}
           </div>
         </section>
@@ -186,7 +239,7 @@ export default async function DocumentsPage() {
           </p>
           <div className="grid gap-6 lg:grid-cols-2">
             {recommended.map((item) => (
-              <DocCard key={item.slug} item={item} versions={versionsFor(item.slug)} />
+              <DocCard key={item.slug} item={item} versions={versionsFor(item.slug)} plan={plan} />
             ))}
           </div>
         </section>

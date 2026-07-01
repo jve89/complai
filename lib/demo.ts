@@ -71,7 +71,8 @@ export async function getDemoCompany(): Promise<Company> {
       name: DEMO_COMPANY_NAME,
       size: "51-250",
       sector: "hr",
-      plan: profile.recommendedTier,
+      // Top plan so the demo showcases the full document package (Audit-klaar).
+      plan: "schaal",
       entityRoles: profile.entityRoles,
       riskTiers: profile.riskTiers,
       profileJson: profile as unknown as Prisma.InputJsonValue,
@@ -133,6 +134,11 @@ async function ensureDemoData(company: Company): Promise<void> {
     { id: `${company.id}-u3`, email: "priya@demo-recruitment.nl", name: "Priya Sharma", role: "employee" as const },
     { id: `${company.id}-u4`, email: "lars@demo-recruitment.nl", name: "Lars Jansen", role: "employee" as const },
   ];
+  // Keep the demo on the top plan so every document stays unlocked.
+  if (company.plan !== "schaal") {
+    await prisma.company.update({ where: { id: company.id }, data: { plan: "schaal" } });
+  }
+
   const userCount = await prisma.user.count({ where: { companyId: company.id } });
   if (userCount === 0) {
     // Clear any orphaned demo users (from an earlier rebuild) so emails are free.

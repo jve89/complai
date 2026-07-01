@@ -50,7 +50,9 @@ export async function submitScan(
       data: {
         size: answers.size ?? undefined,
         sector: answers.sector ?? undefined,
-        plan: profile.recommendedTier,
+        // `plan` is the PURCHASED plan (what documents they can generate), not
+        // the recommendation — the scan only records the recommendation, in
+        // profileJson.recommendedTier. Leave the active plan untouched.
         entityRoles: profile.entityRoles,
         riskTiers: profile.riskTiers,
         profileJson: profile as unknown as Prisma.InputJsonValue,
