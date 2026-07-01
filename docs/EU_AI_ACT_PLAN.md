@@ -126,8 +126,14 @@ prepared artefacts (FRIA, oversight policy ready to go), not just a price.
    Art. 50 by role/content; GPAI branch; wizard branching UI.
 3. **Needs-based pricing + recommendation.** `recommendPlan` + `advisoryUpsell`;
    redefine tiers; "aanbevolen voor u" on results + pricing; register limits.
-4. **Module personalisation.** Document requirements + new templates;
-   training required/recommended; rewrite governance to read profile.
+4. ✅ **Module personalisation.** Documents page reads profile.documents
+   (Verplicht/Aanbevolen + "waarom", generation gated to available templates,
+   concept-scaffold guardrails on every PDF); e-learning paths badged from
+   profile.training; governance rewritten to derive checks/alerts from
+   profile.obligations (no hardcoded articles), deadline-aware.
+   **Remaining:** builders for the 4 not-yet-generatable document templates
+   (tech_doc / doc_conformity / assessment_record / gpai_docs) — currently shown
+   as "sjabloon volgt".
 5. **Per-system loop + recompute integrity.** Risk questions per `AiSystem`;
    `recomputeProfile` on mutations; one canonical score.
 
