@@ -3,6 +3,7 @@ import type Stripe from "stripe";
 
 import { stripe } from "@/lib/stripe";
 import { env } from "@/lib/env";
+import { syncSubscriptionToCompany, clearSubscription } from "@/lib/billing";
 
 export const runtime = "nodejs";
 
@@ -40,17 +41,33 @@ export async function POST(req: Request) {
     );
   }
 
-  switch (event.type) {
-    case "checkout.session.completed":
-    case "customer.subscription.created":
-    case "customer.subscription.updated":
-    case "customer.subscription.deleted":
-      // TODO: persist the Stripe customer/subscription on the Company once
-      // billing fields are added to the schema.
-      console.info(`[stripe] ${event.type}`);
-      break;
-    default:
-      break;
+  try {
+    switch (event.type) {
+      case "checkout.session.completed": {
+        const session = event.data.object as Stripe.Checkout.Session;
+        if (session.subscription) {
+          const sub = await stripe.subscriptions.retrieve(
+            session.subscription as string
+          );
+          await syncSubscriptionToCompany(sub);
+        }
+        break;
+      }
+      case "customer.subscription.created":
+      case "customer.subscription.updated":
+        await syncSubscriptionToCompany(event.data.object as Stripe.Subscription);
+        break;
+      case "customer.subscription.deleted":
+        await clearSubscription(event.data.object as Stripe.Subscription);
+        break;
+      default:
+        break;
+    }
+  } catch (err) {
+    const message = err instanceof Error ? err.message : "onbekend";
+    console.error(`[stripe] fout bij verwerken ${event.type}: ${message}`);
+    // 500 so Stripe retries the event.
+    return NextResponse.json({ error: "Verwerking mislukt." }, { status: 500 });
   }
 
   return NextResponse.json({ received: true });

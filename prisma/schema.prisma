@@ -44,10 +44,15 @@ model Company {
   logoUrl   String?  @map("logo_url")
   // Compliance profile (Phase 1): recommended tier, derived roles/tiers, and the
   // full ComplianceProfile snapshot the dashboard reads.
-  plan        String?  // recommended/active tier: gratis|starter|groei|schaal
+  plan        String?  // PURCHASED/active tier: gratis|starter|groei|schaal
   entityRoles String[] @map("entity_roles")
   riskTiers   String[] @map("risk_tiers")
   profileJson Json?    @map("profile_json")
+  // Stripe billing (set by the checkout webhook; the portal manages changes).
+  stripeCustomerId     String?   @unique @map("stripe_customer_id")
+  stripeSubscriptionId String?   @map("stripe_subscription_id")
+  planStatus           String?   @map("plan_status") // active|trialing|past_due|canceled
+  planRenewsAt         DateTime? @map("plan_renews_at")
   createdAt DateTime @default(now()) @map("created_at")
 
   users               User[]

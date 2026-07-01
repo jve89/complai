@@ -114,3 +114,30 @@ export function planForTier(tier: string): Plan {
   };
   return PLANS.find((p) => p.id === (byTier[tier] ?? "free")) ?? PLANS[0];
 }
+
+/** Displayed Plan id → the tier stored on `company.plan` (gates documents). */
+export function planIdToTier(id: PlanId): "gratis" | "starter" | "groei" | "schaal" {
+  const map: Record<PlanId, "gratis" | "starter" | "groei" | "schaal"> = {
+    free: "gratis",
+    starter: "starter",
+    professional: "groei",
+    corporate: "schaal",
+  };
+  return map[id];
+}
+
+/** Resolve a Stripe price id → the paid tier it grants (via the env price ids). */
+export function tierForPriceId(priceId: string): "starter" | "groei" | "schaal" | null {
+  if (!priceId) return null;
+  for (const plan of PLANS) {
+    if (plan.priceIdMonthly === priceId || plan.priceIdYearly === priceId) {
+      const tier = planIdToTier(plan.id);
+      return tier === "gratis" ? null : tier;
+    }
+  }
+  return null;
+}
+
+export function priceIdFor(plan: Plan, interval: "month" | "year"): string | undefined {
+  return interval === "year" ? plan.priceIdYearly : plan.priceIdMonthly;
+}

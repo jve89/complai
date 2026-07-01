@@ -15,8 +15,15 @@ export const metadata: Metadata = { title: "Inloggen" };
 export default function LoginPage({
   searchParams,
 }: {
-  searchParams: { redirect?: string; registered?: string; scan?: string };
+  searchParams: {
+    redirect?: string;
+    registered?: string;
+    scan?: string;
+    plan?: string;
+    interval?: string;
+  };
 }) {
+  const interval = searchParams.interval === "year" ? "year" : "month";
   return (
     <Card className="text-card-foreground">
       <CardHeader>
@@ -28,13 +35,17 @@ export default function LoginPage({
       <CardContent className="space-y-4">
         {searchParams.registered && (
           <div className="rounded-md bg-emerald-50 p-3 text-sm text-emerald-700">
-            Account aangemaakt. Bevestig eventueel uw e-mailadres en log in.
+            {searchParams.plan
+              ? "Account aangemaakt. Log in om door te gaan naar de betaling."
+              : "Account aangemaakt. Bevestig eventueel uw e-mailadres en log in."}
           </div>
         )}
         <AuthForm
           mode="login"
           redirectTo={searchParams.redirect}
           scanId={searchParams.scan}
+          plan={searchParams.plan}
+          interval={searchParams.plan ? interval : undefined}
         />
         <p className="text-center text-sm text-muted-foreground">
           Nog geen account?{" "}

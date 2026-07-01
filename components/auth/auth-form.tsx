@@ -23,12 +23,16 @@ export function AuthForm({
   scanId,
   inviteToken,
   inviteEmail,
+  plan,
+  interval,
 }: {
   mode: "login" | "signup";
   redirectTo?: string;
   scanId?: string;
   inviteToken?: string;
   inviteEmail?: string;
+  plan?: string;
+  interval?: string;
 }) {
   const isInvite = Boolean(inviteToken);
   const action = mode === "login" ? login : signup;
@@ -88,6 +92,8 @@ export function AuthForm({
       {redirectTo && <input type="hidden" name="redirect" value={redirectTo} />}
       {scanId && <input type="hidden" name="scan" value={scanId} />}
       {inviteToken && <input type="hidden" name="invite" value={inviteToken} />}
+      {plan && <input type="hidden" name="plan" value={plan} />}
+      {interval && <input type="hidden" name="interval" value={interval} />}
 
       {state?.error && (
         <div className="flex items-start gap-2 rounded-md bg-red-50 p-3 text-sm text-red-700">

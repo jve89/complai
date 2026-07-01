@@ -32,6 +32,11 @@ export function PricingTable() {
           window.location.href = data.url;
           return;
         }
+        // Account-first: no account yet → sign up, then continue to checkout.
+        if (data.needsAccount) {
+          window.location.href = `/signup?plan=${planId}&interval=${interval}`;
+          return;
+        }
         setNotice(data.message ?? "Afrekenen is momenteel niet beschikbaar.");
       } catch {
         setNotice("Er ging iets mis. Probeer het later opnieuw.");

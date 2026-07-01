@@ -64,7 +64,13 @@ export async function login(
     }
   }
 
-  const redirectTo = (formData.get("redirect") as string) || "/dashboard";
+  // Continue an account-first checkout that was interrupted by email confirmation.
+  const plan = (formData.get("plan") as string | null) || null;
+  const intervalParam =
+    (formData.get("interval") as string | null) === "year" ? "year" : "month";
+  const redirectTo = plan
+    ? `/api/stripe/checkout?plan=${encodeURIComponent(plan)}&interval=${intervalParam}`
+    : (formData.get("redirect") as string) || "/dashboard";
   revalidatePath("/", "layout");
   redirect(redirectTo);
 }
@@ -154,13 +160,26 @@ export async function signup(
     };
   }
 
+  // Account-first checkout: if they picked a paid plan, continue to Stripe after
+  // auth (carried through email confirmation via the login redirect).
+  const plan = (formData.get("plan") as string | null) || null;
+  const intervalParam =
+    (formData.get("interval") as string | null) === "year" ? "year" : "month";
+  const planQuery = plan
+    ? `&plan=${encodeURIComponent(plan)}&interval=${intervalParam}`
+    : "";
+
   // If email confirmation is required there is no session yet.
   if (!data.session) {
-    redirect("/login?registered=1");
+    redirect(`/login?registered=1${planQuery}`);
   }
 
   revalidatePath("/", "layout");
-  redirect("/dashboard");
+  redirect(
+    plan
+      ? `/api/stripe/checkout?plan=${encodeURIComponent(plan)}&interval=${intervalParam}`
+      : "/dashboard"
+  );
 }
 
 export async function logout() {

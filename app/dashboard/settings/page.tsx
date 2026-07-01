@@ -1,4 +1,6 @@
 import { getActiveCompany } from "@/lib/auth";
+import { formatDate } from "@/lib/utils";
+import { TIER_LABEL, TIER_ORDER, tierRank } from "@/lib/plan";
 import { PageHeader } from "@/components/dashboard/page-header";
 import { ProfileForm } from "@/components/dashboard/settings/profile-form";
 import { BillingSection } from "@/components/dashboard/settings/billing-section";
@@ -14,6 +16,9 @@ export const dynamic = "force-dynamic";
 
 export default async function SettingsPage() {
   const { company } = await getActiveCompany();
+
+  const planLabel = TIER_LABEL[TIER_ORDER[tierRank(company.plan)]];
+  const hasSubscription = Boolean(company.stripeCustomerId);
 
   return (
     <>
@@ -43,7 +48,12 @@ export default async function SettingsPage() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <BillingSection planName="Gratis" />
+            <BillingSection
+              planLabel={planLabel}
+              planStatus={company.planStatus}
+              hasSubscription={hasSubscription}
+              renewsAt={company.planRenewsAt ? formatDate(company.planRenewsAt) : null}
+            />
           </CardContent>
         </Card>
       </div>
