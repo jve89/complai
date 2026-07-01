@@ -9,13 +9,14 @@ import { SiteLogo } from "@/components/site-logo";
 
 const links = [
   { href: "/#hoe-het-werkt", label: "Hoe het werkt" },
+  { href: "/#functies", label: "Functies" },
   { href: "/demo", label: "Demo" },
   { href: "/pricing", label: "Prijzen" },
   { href: "/kennisbank", label: "Kennisbank" },
   { href: "/contact", label: "Contact" },
 ];
 
-export function Navbar() {
+export function Navbar({ isLoggedIn = false }: { isLoggedIn?: boolean }) {
   const [open, setOpen] = useState(false);
 
   return (
@@ -36,9 +37,15 @@ export function Navbar() {
         </nav>
 
         <div className="hidden items-center gap-3 md:flex">
-          <Button asChild variant="ghost">
-            <Link href="/login">Inloggen</Link>
-          </Button>
+          {isLoggedIn ? (
+            <Button asChild variant="ghost">
+              <Link href="/dashboard">Naar dashboard</Link>
+            </Button>
+          ) : (
+            <Button asChild variant="ghost">
+              <Link href="/login">Inloggen</Link>
+            </Button>
+          )}
           <Button asChild>
             <Link href="/scan">Start gratis risicoscan</Link>
           </Button>
@@ -67,9 +74,15 @@ export function Navbar() {
               </Link>
             ))}
             <div className="flex flex-col gap-2 pt-2">
-              <Button asChild variant="outline">
-                <Link href="/login">Inloggen</Link>
-              </Button>
+              {isLoggedIn ? (
+                <Button asChild variant="outline">
+                  <Link href="/dashboard">Naar dashboard</Link>
+                </Button>
+              ) : (
+                <Button asChild variant="outline">
+                  <Link href="/login">Inloggen</Link>
+                </Button>
+              )}
               <Button asChild>
                 <Link href="/scan">Start gratis risicoscan</Link>
               </Button>
