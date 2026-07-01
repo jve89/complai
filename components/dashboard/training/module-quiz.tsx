@@ -18,7 +18,7 @@ import {
 } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
 
-type Phase = "intro" | "quiz" | "result";
+type Phase = "intro" | "lesson" | "quiz" | "result";
 
 export function ModuleQuiz({
   module,
@@ -30,6 +30,7 @@ export function ModuleQuiz({
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [phase, setPhase] = useState<Phase>("intro");
+  const [lessonPage, setLessonPage] = useState(0);
   const [current, setCurrent] = useState(0);
   const [answers, setAnswers] = useState<number[]>([]);
   const [result, setResult] = useState<CompleteResult | null>(null);
@@ -38,9 +39,12 @@ export function ModuleQuiz({
   const total = module.quiz.length;
   const question = module.quiz[current];
   const selected = answers[current];
+  const lessons = module.lessons ?? [];
+  const lessonCount = lessons.length;
 
   function reset() {
     setPhase("intro");
+    setLessonPage(0);
     setCurrent(0);
     setAnswers([]);
     setResult(null);
@@ -82,7 +86,9 @@ export function ModuleQuiz({
           <DialogDescription>
             {phase === "quiz"
               ? `Vraag ${current + 1} van ${total}`
-              : `${module.minutes} min · ${total} vragen`}
+              : phase === "lesson"
+                ? `Onderdeel ${lessonPage + 1} van ${lessonCount}`
+                : `${module.minutes} min · ${total} vragen`}
           </DialogDescription>
         </DialogHeader>
 
@@ -93,11 +99,57 @@ export function ModuleQuiz({
               <p className="text-sm text-muted-foreground">{module.intro}</p>
             </div>
             <p className="text-sm text-muted-foreground">
-              Beantwoord {total} vragen. U slaagt met minimaal 4 goede antwoorden.
+              {lessonCount
+                ? `Eerst ${lessonCount} korte leesonderdelen, daarna ${total} vragen. U slaagt met minimaal 4 goede antwoorden.`
+                : `Beantwoord ${total} vragen. U slaagt met minimaal 4 goede antwoorden.`}
             </p>
-            <Button className="w-full" onClick={() => setPhase("quiz")}>
-              Start quiz
+            <Button
+              className="w-full"
+              onClick={() => setPhase(lessonCount ? "lesson" : "quiz")}
+            >
+              {lessonCount ? "Start module" : "Start quiz"}
             </Button>
+          </div>
+        )}
+
+        {phase === "lesson" && lessonCount > 0 && (
+          <div className="space-y-5">
+            <Progress value={((lessonPage + 1) / lessonCount) * 100} />
+            <div>
+              <p className="font-semibold">{lessons[lessonPage].heading}</p>
+              {lessons[lessonPage].paragraphs.map((p, i) => (
+                <p key={i} className="mt-2 text-sm text-muted-foreground">
+                  {p}
+                </p>
+              ))}
+            </div>
+            {lessonPage === lessonCount - 1 && (
+              <div className="rounded-lg bg-secondary/50 p-4 text-center">
+                <p className="text-sm font-medium">Bent u klaar voor de quiz?</p>
+                <p className="mt-0.5 text-xs text-muted-foreground">
+                  {total} korte vragen · minimaal 4 goed om te slagen.
+                </p>
+              </div>
+            )}
+            <div className="flex gap-2">
+              <Button
+                variant="ghost"
+                onClick={() =>
+                  lessonPage > 0 ? setLessonPage((p) => p - 1) : setPhase("intro")
+                }
+              >
+                Vorige
+              </Button>
+              {lessonPage === lessonCount - 1 ? (
+                <Button className="flex-1" onClick={() => setPhase("quiz")}>
+                  Start de quiz
+                </Button>
+              ) : (
+                <Button className="flex-1" onClick={() => setLessonPage((p) => p + 1)}>
+                  Volgende
+                </Button>
+              )}
+            </div>
           </div>
         )}
 

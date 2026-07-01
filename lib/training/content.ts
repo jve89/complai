@@ -7,11 +7,18 @@ export interface QuizQuestion {
   answer: number; // index of the correct option
 }
 
+export interface LessonSection {
+  heading: string;
+  paragraphs: string[];
+}
+
 export interface TrainingModule {
   id: string;
   title: string;
   minutes: number;
   intro: string;
+  /** Short reading content shown (paged) before the quiz. */
+  lessons?: LessonSection[];
   quiz: QuizQuestion[];
 }
 
@@ -42,7 +49,7 @@ export const PATHS: LearningPath[] = [
   },
 ];
 
-export const MODULES: TrainingModule[] = [
+const BASE_MODULES: TrainingModule[] = [
   {
     id: "what-is-ai",
     title: "Wat is AI?",
@@ -334,6 +341,130 @@ export const MODULES: TrainingModule[] = [
     ],
   },
 ];
+
+// Short reading content per module, shown (paged) before the quiz so learners
+// actually learn before being tested. Grounded in Reg. (EU) 2024/1689.
+const MODULE_LESSONS: Record<string, LessonSection[]> = {
+  "what-is-ai": [
+    {
+      heading: "Wat is kunstmatige intelligentie?",
+      paragraphs: [
+        "AI is software die taken uitvoert die normaal menselijke intelligentie vereisen: patronen herkennen, taal begrijpen of beslissingen ondersteunen.",
+        "De AI Act definieert een AI-systeem als een machinaal systeem dat met een zekere mate van autonomie werkt en output genereert — zoals voorspellingen, aanbevelingen of beslissingen — die de fysieke of digitale omgeving kan beïnvloeden.",
+      ],
+    },
+    {
+      heading: "Welke vormen zijn er?",
+      paragraphs: [
+        "Machine learning leert patronen uit data in plaats van vaste regels. Generatieve AI (zoals ChatGPT of beeldgeneratoren) maakt nieuwe tekst, beeld of audio.",
+        "Klassieke, volledig regelgebaseerde software valt meestal buiten de definitie. Twijfelt u? Behandel het dan als AI en leg het vast in uw register.",
+      ],
+    },
+    {
+      heading: "Waar komt u het tegen?",
+      paragraphs: [
+        "In chatbots, tekst- en beeldgeneratie, aanbevelingen, spamfilters en cv-selectie.",
+        "Let op: veel gangbare software heeft inmiddels AI-functies ingebouwd (Microsoft 365, Google Workspace, CRM's). Ook dat telt mee.",
+      ],
+    },
+  ],
+  "ai-act-15": [
+    {
+      heading: "Waarom een AI-wet?",
+      paragraphs: [
+        "De EU AI Act (Verordening (EU) 2024/1689) is de eerste brede AI-wet ter wereld. Het doel: AI die veilig en transparant is en de grondrechten respecteert.",
+        "De wet is sinds 2 februari 2025 van kracht en wordt gefaseerd ingevoerd.",
+      ],
+    },
+    {
+      heading: "Een risicogebaseerde aanpak",
+      paragraphs: [
+        "De wet deelt AI in naar risico: onaanvaardbaar (verboden — Art. 5), hoog risico (strenge eisen — Annex III), beperkt risico (transparantie — Art. 50) en minimaal risico.",
+        "Hoe hoger het risico, hoe meer verplichtingen. De meeste alledaagse AI valt in de laagste categorieën.",
+      ],
+    },
+    {
+      heading: "Rollen en deadlines",
+      paragraphs: [
+        "U bent 'aanbieder' als u AI ontwikkelt of onder eigen naam op de markt brengt, en 'gebruiksverantwoordelijke' als u AI van anderen gebruikt.",
+        "Belangrijke data: verboden praktijken en AI-geletterdheid gelden sinds februari 2025; de meeste hoog-risico- en transparantieplichten vanaf augustus 2026.",
+      ],
+    },
+  ],
+  "responsible-use": [
+    {
+      heading: "Menselijk toezicht",
+      paragraphs: [
+        "AI ondersteunt, mensen beslissen. Bij beslissingen over mensen — sollicitanten, klanten, medewerkers — moet een mens kunnen ingrijpen en de uitkomst kunnen herzien.",
+        "Vertrouw AI-output nooit blind, zeker niet als die gevolgen heeft voor personen.",
+      ],
+    },
+    {
+      heading: "Wees transparant",
+      paragraphs: [
+        "Laat mensen weten wanneer ze met een AI-systeem te maken hebben, bijvoorbeeld een chatbot, of wanneer content door AI is gegenereerd (Art. 50).",
+      ],
+    },
+    {
+      heading: "Let op kwaliteit en bronnen",
+      paragraphs: [
+        "Generatieve AI kan fouten maken of overtuigend klinkende onzin produceren ('hallucineren'). Controleer feiten en wees kritisch op vertekening (bias).",
+        "Deel geen vertrouwelijke of persoonsgegevens met externe AI-tools zonder dat dit is toegestaan en vastgelegd.",
+      ],
+    },
+  ],
+  "recognising-risks": [
+    {
+      heading: "Verboden praktijken (Art. 5)",
+      paragraphs: [
+        "Sommige toepassingen zijn simpelweg verboden: social scoring, manipulatie die ernstige schade veroorzaakt, emotieherkenning op het werk of in het onderwijs, en het ongericht scrapen van gezichtsbeelden.",
+        "Herkent u zoiets in uw organisatie? Meld het direct.",
+      ],
+    },
+    {
+      heading: "Signalen van hoog risico",
+      paragraphs: [
+        "AI die beslist of ondersteunt bij werving, krediet, verzekering, onderwijs of toegang tot essentiële diensten is vaak hoog risico (Annex III).",
+        "Daar gelden extra eisen, zoals menselijk toezicht, logging en soms een grondrechtentoets (FRIA).",
+      ],
+    },
+    {
+      heading: "Melden bij twijfel",
+      paragraphs: [
+        "Twijfelt u of een toepassing mag of hoog risico is? Meld het bij de AI-verantwoordelijke in uw organisatie.",
+        "Beter één keer te veel gemeld dan een verboden of hoog-risico systeem over het hoofd gezien.",
+      ],
+    },
+  ],
+  "privacy-ai": [
+    {
+      heading: "AI en persoonsgegevens",
+      paragraphs: [
+        "Veel AI verwerkt persoonsgegevens. Naast de AI Act blijft de AVG (GDPR) volledig gelden.",
+        "Verwerk alleen de gegevens die u echt nodig heeft (dataminimalisatie) en zorg voor een geldige grondslag.",
+      ],
+    },
+    {
+      heading: "Wees voorzichtig met invoer",
+      paragraphs: [
+        "Wat u in een externe AI-tool typt, kan worden opgeslagen of gebruikt voor training.",
+        "Deel geen klant-, medische of andere vertrouwelijke gegevens zonder dat dit is toegestaan en vastgelegd, bijvoorbeeld via een verwerkersovereenkomst.",
+      ],
+    },
+    {
+      heading: "Rechten van betrokkenen",
+      paragraphs: [
+        "Mensen hebben recht op inzage, correctie en bezwaar — ook bij besluiten waar AI aan te pas komt.",
+        "Bij besluiten met grote impact heeft iemand recht op een menselijke beoordeling.",
+      ],
+    },
+  ],
+};
+
+export const MODULES: TrainingModule[] = BASE_MODULES.map((m) => ({
+  ...m,
+  lessons: MODULE_LESSONS[m.id] ?? [],
+}));
 
 export function getModule(id: string): TrainingModule | undefined {
   return MODULES.find((m) => m.id === id);
