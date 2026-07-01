@@ -49,6 +49,14 @@ export async function updateCompanyProfile(input: {
 
 const roleSchema = z.enum(["admin", "manager", "employee"]);
 
+/** Team management (invite, roles, names) is admin-only. Returns the active
+ * company + user when the current user is a Beheerder, else null. */
+async function requireAdmin() {
+  const { company, user, demo } = await getActiveCompany();
+  if (demo || !user || user.profile?.role !== "admin") return null;
+  return { company, user };
+}
+
 export async function updateMemberRole(
   userId: string,
   role: string
@@ -56,7 +64,9 @@ export async function updateMemberRole(
   const parsed = roleSchema.safeParse(role);
   if (!parsed.success) return { ok: false, error: "Onbekende rol." };
 
-  const { company } = await getActiveCompany();
+  const ctx = await requireAdmin();
+  if (!ctx) return { ok: false, error: "Alleen een beheerder kan rollen wijzigen." };
+  const { company } = ctx;
   try {
     const res = await prisma.user.updateMany({
       where: { id: userId, companyId: company.id },
@@ -77,7 +87,9 @@ export async function updateMemberName(
   const trimmed = name.trim();
   if (trimmed.length < 2) return { ok: false, error: "Naam is te kort." };
 
-  const { company } = await getActiveCompany();
+  const ctx = await requireAdmin();
+  if (!ctx) return { ok: false, error: "Alleen een beheerder kan teamleden beheren." };
+  const { company } = ctx;
   try {
     const res = await prisma.user.updateMany({
       where: { id: userId, companyId: company.id },
@@ -99,6 +111,12 @@ const inviteSchema = z.object({
   role: roleSchema,
 });
 
+const ROLE_LABEL: Record<string, string> = {
+  admin: "Beheerder",
+  manager: "Manager",
+  employee: "Medewerker",
+};
+
 export async function inviteMember(input: {
   email: string;
   name?: string;
@@ -108,22 +126,40 @@ export async function inviteMember(input: {
   if (!parsed.success) {
     return { ok: false, error: parsed.error.issues[0]?.message ?? "Ongeldige invoer." };
   }
-  const { company } = await getActiveCompany();
+  const ctx = await requireAdmin();
+  if (!ctx) return { ok: false, error: "Alleen een beheerder kan teamleden uitnodigen." };
+  const { company } = ctx;
+  const email = parsed.data.email.toLowerCase();
 
-  // Sends an invitation email (logged to console in stub mode). Account creation
-  // happens when the invitee signs up; once Supabase admin invites are wired
-  // this can pre-provision the user.
+  // Don't invite someone who is already a member.
+  const existing = await prisma.user.findUnique({ where: { email } });
+  if (existing?.companyId === company.id) {
+    return { ok: false, error: "Deze persoon is al lid van uw team." };
+  }
+
+  // Create a pending invite with a token; the invitee joins this company + role
+  // when they sign up via /signup?invite=<token>.
+  const token = crypto.randomUUID();
+  try {
+    await prisma.invite.create({
+      data: { email, role: parsed.data.role, token, companyId: company.id },
+    });
+  } catch {
+    return { ok: false, error: "Uitnodiging aanmaken mislukt." };
+  }
+
+  const link = `${env.appUrl}/signup?invite=${token}`;
   const result = await sendEmail({
-    to: parsed.data.email,
+    to: email,
     subject: `Uitnodiging voor ${company.name} op ComplAI`,
-    html: `<p>U bent uitgenodigd om deel te nemen aan <strong>${company.name}</strong> op ComplAI als <strong>${parsed.data.role}</strong>.</p>
-           <p><a href="${env.appUrl}/signup">Maak uw account aan</a> om te beginnen.</p>`,
+    html: `<p>U bent uitgenodigd om deel te nemen aan <strong>${company.name}</strong> op ComplAI als <strong>${ROLE_LABEL[parsed.data.role] ?? parsed.data.role}</strong>.</p>
+           <p><a href="${link}">Accepteer de uitnodiging en maak uw account aan</a>.</p>`,
   });
 
   return {
     ok: true,
     message: result.stubbed
-      ? `Uitnodiging klaargezet voor ${parsed.data.email} (e-mail is gelogd; voeg RESEND_API_KEY toe om echt te versturen).`
-      : `Uitnodiging verzonden naar ${parsed.data.email}.`,
+      ? `Uitnodiging klaargezet voor ${email} (e-mail is gelogd; voeg RESEND_API_KEY toe om echt te versturen).`
+      : `Uitnodiging verzonden naar ${email}.`,
   };
 }

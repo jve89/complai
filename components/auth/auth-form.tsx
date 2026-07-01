@@ -21,11 +21,16 @@ export function AuthForm({
   mode,
   redirectTo,
   scanId,
+  inviteToken,
+  inviteEmail,
 }: {
   mode: "login" | "signup";
   redirectTo?: string;
   scanId?: string;
+  inviteToken?: string;
+  inviteEmail?: string;
 }) {
+  const isInvite = Boolean(inviteToken);
   const action = mode === "login" ? login : signup;
   const [state, formAction] = useFormState<AuthState, FormData>(
     action,
@@ -40,15 +45,17 @@ export function AuthForm({
             <Label htmlFor="name">Naam</Label>
             <Input id="name" name="name" placeholder="Voor- en achternaam" required />
           </div>
-          <div className="space-y-2">
-            <Label htmlFor="companyName">Organisatie</Label>
-            <Input
-              id="companyName"
-              name="companyName"
-              placeholder="Bedrijfsnaam"
-              required
-            />
-          </div>
+          {!isInvite && (
+            <div className="space-y-2">
+              <Label htmlFor="companyName">Organisatie</Label>
+              <Input
+                id="companyName"
+                name="companyName"
+                placeholder="Bedrijfsnaam"
+                required
+              />
+            </div>
+          )}
         </>
       )}
 
@@ -60,6 +67,8 @@ export function AuthForm({
           type="email"
           autoComplete="email"
           placeholder="naam@organisatie.nl"
+          defaultValue={inviteEmail}
+          readOnly={Boolean(inviteEmail)}
           required
         />
       </div>
@@ -78,6 +87,7 @@ export function AuthForm({
 
       {redirectTo && <input type="hidden" name="redirect" value={redirectTo} />}
       {scanId && <input type="hidden" name="scan" value={scanId} />}
+      {inviteToken && <input type="hidden" name="invite" value={inviteToken} />}
 
       {state?.error && (
         <div className="flex items-start gap-2 rounded-md bg-red-50 p-3 text-sm text-red-700">

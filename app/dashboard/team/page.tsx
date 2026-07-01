@@ -7,7 +7,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 export const dynamic = "force-dynamic";
 
 export default async function TeamPage() {
-  const { company, demo } = await getActiveCompany();
+  const { company, user, demo } = await getActiveCompany();
+  const canManage = !demo && user?.profile?.role === "admin";
 
   const members = await prisma.user.findMany({
     where: { companyId: company.id },
@@ -30,7 +31,7 @@ export default async function TeamPage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <TeamSection members={members} readOnly={demo} />
+          <TeamSection members={members} readOnly={!canManage} />
         </CardContent>
       </Card>
     </>

@@ -57,8 +57,25 @@ model Company {
   employees           Employee[]
   complianceItems     ComplianceItem[]
   trainingCompletions TrainingCompletion[]
+  invites             Invite[]
 
   @@map("companies")
+}
+
+/// A pending team invitation. Consumed at signup to join the company + role.
+model Invite {
+  id        String   @id @default(cuid())
+  email     String
+  role      String   @default("employee") // admin | manager | employee
+  token     String   @unique
+  accepted  Boolean  @default(false)
+  companyId String   @map("company_id")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  company Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  @@index([companyId])
+  @@map("invites")
 }
 
 model User {

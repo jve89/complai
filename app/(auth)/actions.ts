@@ -80,11 +80,39 @@ export async function signup(
     };
   }
 
-  const parsed = signupSchema.safeParse(Object.fromEntries(formData));
-  if (!parsed.success) {
-    return { error: parsed.error.issues[0]?.message };
+  const base = z
+    .object({
+      name: z.string().min(2, "Voer uw naam in."),
+      email: z.string().email("Voer een geldig e-mailadres in."),
+      password: z.string().min(8, "Het wachtwoord moet minstens 8 tekens bevatten."),
+    })
+    .safeParse(Object.fromEntries(formData));
+  if (!base.success) {
+    return { error: base.error.issues[0]?.message };
   }
-  const { name, companyName, email, password } = parsed.data;
+  const { name, email, password } = base.data;
+
+  // Invite path: join an existing company with the assigned role. Otherwise the
+  // signer creates a new company and becomes its Beheerder.
+  const inviteToken = (formData.get("invite") as string | null) || null;
+  let invite: { id: string; companyId: string; role: string } | null = null;
+  if (inviteToken) {
+    const rec = await prisma.invite.findUnique({ where: { token: inviteToken } });
+    if (!rec || rec.accepted) {
+      return { error: "Deze uitnodiging is niet meer geldig. Vraag de beheerder om een nieuwe." };
+    }
+    invite = { id: rec.id, companyId: rec.companyId, role: rec.role };
+  }
+
+  let companyName = "";
+  if (!invite) {
+    const cn = z
+      .string()
+      .min(2, "Voer de naam van uw organisatie in.")
+      .safeParse(formData.get("companyName"));
+    if (!cn.success) return { error: cn.error.issues[0]?.message };
+    companyName = cn.data;
+  }
 
   const supabase = createClient();
   const { data, error } = await supabase.auth.signUp({
@@ -97,25 +125,27 @@ export async function signup(
     return { error: error?.message ?? "Registratie mislukt. Probeer opnieuw." };
   }
 
-  // Create the company + admin profile row mirroring the Supabase auth uid.
   try {
-    const company = await prisma.company.create({ data: { name: companyName } });
+    let companyId: string;
+    let role: "admin" | "manager" | "employee" = "admin";
+    if (invite) {
+      companyId = invite.companyId;
+      role = z.enum(["admin", "manager", "employee"]).catch("employee").parse(invite.role);
+      await prisma.invite.update({ where: { id: invite.id }, data: { accepted: true } });
+    } else {
+      const company = await prisma.company.create({ data: { name: companyName } });
+      companyId = company.id;
+    }
+
     await prisma.user.upsert({
       where: { id: data.user.id },
-      update: { name, email, companyId: company.id },
-      create: {
-        id: data.user.id,
-        email,
-        name,
-        role: "admin",
-        companyId: company.id,
-      },
+      update: { name, email, companyId, role },
+      create: { id: data.user.id, email, name, role, companyId },
     });
 
-    // Bridge: if they came from an anonymous scan, populate the new dashboard
-    // from it so the account opens with their profile + obligations already set.
+    // Bridge: if they came from an anonymous scan, populate the dashboard from it.
     const scanId = formData.get("scan") as string | null;
-    if (scanId) await applyScanToCompany(scanId, company.id, data.user.id);
+    if (scanId) await applyScanToCompany(scanId, companyId, data.user.id);
   } catch (e) {
     console.error("Profiel aanmaken mislukt:", e);
     return {
