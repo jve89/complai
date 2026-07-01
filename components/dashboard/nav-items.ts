@@ -74,3 +74,14 @@ export const DASHBOARD_NAV: NavItem[] = [
     icon: Settings,
   },
 ];
+
+/** Same nav, remapped to /demo/* (minus Instellingen) for the public demo. */
+export const DEMO_NAV: NavItem[] = DASHBOARD_NAV.filter(
+  (n) => n.href !== "/dashboard/settings"
+).map((n) => ({
+  ...n,
+  href:
+    n.href === "/dashboard"
+      ? "/demo"
+      : n.href.replace("/dashboard/", "/demo/"),
+}));

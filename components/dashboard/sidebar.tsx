@@ -5,24 +5,36 @@ import { usePathname } from "next/navigation";
 
 import { cn } from "@/lib/utils";
 import { SiteLogo } from "@/components/site-logo";
-import { DASHBOARD_NAV } from "@/components/dashboard/nav-items";
+import { DASHBOARD_NAV, DEMO_NAV } from "@/components/dashboard/nav-items";
 
 function isActive(pathname: string, href: string) {
-  if (href === "/dashboard") return pathname === "/dashboard";
+  if (href === "/dashboard" || href === "/demo") return pathname === href;
   return pathname.startsWith(href);
 }
 
+// Nav is chosen by a serializable string (icons are functions and can't be passed
+// from a Server Component across the client boundary).
+const navFor = (nav: "dashboard" | "demo") =>
+  nav === "demo" ? DEMO_NAV : DASHBOARD_NAV;
+
 /** Desktop sidebar (fixed, hidden on mobile — see Topbar for mobile nav). */
-export function Sidebar() {
+export function Sidebar({
+  nav = "dashboard",
+  logoHref = "/dashboard",
+}: {
+  nav?: "dashboard" | "demo";
+  logoHref?: string;
+}) {
   const pathname = usePathname();
+  const items = navFor(nav);
 
   return (
     <aside className="fixed inset-y-0 left-0 z-30 hidden w-64 flex-col border-r border-white/10 bg-navy-900 text-white md:flex">
       <div className="flex h-16 items-center border-b border-white/10 px-6">
-        <SiteLogo className="text-white" href="/dashboard" />
+        <SiteLogo className="text-white" href={logoHref} />
       </div>
       <nav className="flex-1 space-y-1 p-4">
-        {DASHBOARD_NAV.map((item) => {
+        {items.map((item) => {
           const active = isActive(pathname, item.href);
           return (
             <Link
@@ -49,11 +61,12 @@ export function Sidebar() {
 }
 
 /** Horizontally scrollable nav shown on mobile only. */
-export function MobileNav() {
+export function MobileNav({ nav = "dashboard" }: { nav?: "dashboard" | "demo" }) {
   const pathname = usePathname();
+  const items = navFor(nav);
   return (
     <nav className="flex gap-2 overflow-x-auto border-b bg-background px-4 py-2 md:hidden">
-      {DASHBOARD_NAV.map((item) => {
+      {items.map((item) => {
         const active = isActive(pathname, item.href);
         return (
           <Link

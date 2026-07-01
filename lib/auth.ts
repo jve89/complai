@@ -1,10 +1,12 @@
 import { cache } from "react";
+import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import type { Company } from "@prisma/client";
 
 import { createClient } from "@/lib/supabase/server";
 import { prisma } from "@/lib/prisma";
 import { isSupabaseConfigured } from "@/lib/env";
+import { getDemoCompany } from "@/lib/demo";
 
 /**
  * Returns the authenticated Supabase user joined with their ComplAI profile
@@ -57,6 +59,12 @@ export interface ActiveCompany {
  *  - Supabase configured but signed out → redirect to /login
  */
 export const getActiveCompany = cache(async (): Promise<ActiveCompany> => {
+  // Public demo: middleware flags /demo/* requests; render the dashboard for the
+  // fictional demo company without requiring auth.
+  if (headers().get("x-demo") === "1") {
+    return { company: await getDemoCompany(), user: null, demo: true };
+  }
+
   const user = await getCurrentUser();
   if (user?.company) {
     return { company: user.company, user, demo: false };
