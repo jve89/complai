@@ -1,17 +1,29 @@
 import { notFound } from "next/navigation";
-import { ShieldCheck } from "lucide-react";
+import { LogIn, ShieldCheck } from "lucide-react";
 
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/auth";
-import { isSuperAdmin } from "@/lib/env";
+import { env, isSuperAdminEmail } from "@/lib/env";
 import { formatDate } from "@/lib/utils";
-import { TIER_LABEL, TIER_ORDER, tierRank } from "@/lib/plan";
-import type { TierId } from "@/lib/compliance/types";
+import { TIER_ORDER, tierRank } from "@/lib/plan";
 import { DEMO_COMPANY_NAME } from "@/lib/demo";
+import {
+  grantSuperAdmin,
+  revokeSuperAdmin,
+  startImpersonation,
+} from "@/app/dashboard/admin/actions";
 import { PageHeader } from "@/components/dashboard/page-header";
 import { PlanSelect } from "@/components/dashboard/admin/plan-select";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import {
   Table,
   TableBody,
@@ -31,33 +43,44 @@ const STATUS_LABEL: Record<string, string> = {
 };
 
 export default async function AdminPage() {
-  const user = await getCurrentUser().catch(() => null);
-  if (!isSuperAdmin(user?.email)) notFound();
+  const me = await getCurrentUser().catch(() => null);
+  if (!me?.superAdmin) notFound();
 
-  const companies = await prisma.company.findMany({
-    orderBy: { createdAt: "desc" },
-    include: {
-      _count: { select: { users: true, aiSystems: true } },
-    },
-  });
+  const [companies, staff] = await Promise.all([
+    prisma.company.findMany({
+      orderBy: { createdAt: "desc" },
+      include: { _count: { select: { users: true } } },
+    }),
+    prisma.user.findMany({
+      where: {
+        OR: [
+          { superAdmin: true },
+          ...(env.superAdminEmails.length ? [{ email: { in: env.superAdminEmails } }] : []),
+        ],
+      },
+      include: { company: { select: { name: true } } },
+      orderBy: { createdAt: "asc" },
+    }),
+  ]);
 
   const paying = companies.filter(
-    (c) => tierRank(c.plan) > 0 && c.name !== DEMO_COMPANY_NAME
+    (c) => tierRank(c.plan) > 0 && c.stripeCustomerId && c.name !== DEMO_COMPANY_NAME
   ).length;
 
   return (
     <>
       <PageHeader
         title="ComplAI-beheer"
-        description="Alle klantorganisaties en hun pakket. Alleen zichtbaar voor ComplAI-beheerders."
+        description="Alle klantorganisaties en het ComplAI-team. Alleen zichtbaar voor super-admins."
       />
 
       <div className="mb-6 flex flex-wrap gap-4">
         {[
           { label: "Organisaties", value: companies.length },
           { label: "Betalend", value: paying },
+          { label: "Super-admins", value: staff.length },
         ].map((s) => (
-          <Card key={s.label} className="min-w-[160px]">
+          <Card key={s.label} className="min-w-[150px]">
             <CardContent className="py-4">
               <p className="text-2xl font-bold tabular-nums">{s.value}</p>
               <p className="text-sm text-muted-foreground">{s.label}</p>
@@ -66,6 +89,59 @@ export default async function AdminPage() {
         ))}
       </div>
 
+      {/* Staff management */}
+      <Card className="mb-8">
+        <CardHeader>
+          <CardTitle className="text-base">ComplAI-team (super-admins)</CardTitle>
+          <CardDescription>
+            Super-admins beheren alle klanten. Dit staat los van de rol
+            binnen een klantorganisatie (beheerder/manager/medewerker).
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <ul className="divide-y">
+            {staff.map((u) => {
+              const fixed = isSuperAdminEmail(u.email);
+              return (
+                <li key={u.id} className="flex items-center justify-between gap-3 py-2">
+                  <div className="text-sm">
+                    <p className="font-medium">{u.name ?? u.email}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {u.email}
+                      {u.company ? ` · ${u.company.name}` : ""}
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    {fixed && <Badge variant="secondary">vast</Badge>}
+                    {u.id === me.id && <Badge variant="secondary">u</Badge>}
+                    {!fixed && u.id !== me.id && (
+                      <form action={revokeSuperAdmin}>
+                        <input type="hidden" name="userId" value={u.id} />
+                        <Button type="submit" size="sm" variant="ghost">
+                          Intrekken
+                        </Button>
+                      </form>
+                    )}
+                  </div>
+                </li>
+              );
+            })}
+          </ul>
+
+          <form action={grantSuperAdmin} className="flex flex-wrap items-end gap-2 border-t pt-4">
+            <div className="flex-1 space-y-1">
+              <label className="text-xs font-medium text-muted-foreground" htmlFor="email">
+                Maak iemand super-admin (op e-mailadres — moet al een account hebben)
+              </label>
+              <Input id="email" name="email" type="email" placeholder="collega@complai.nl" required />
+            </div>
+            <Button type="submit">Toevoegen</Button>
+          </form>
+        </CardContent>
+      </Card>
+
+      {/* Client companies */}
+      <h2 className="mb-3 text-lg font-semibold">Klantorganisaties</h2>
       <Card>
         <CardContent className="p-0">
           <Table>
@@ -76,17 +152,19 @@ export default async function AdminPage() {
                 <TableHead>Gebruikers</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead>Pakket</TableHead>
+                <TableHead className="text-right">Actie</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {companies.map((c) => {
                 const isDemo = c.name === DEMO_COMPANY_NAME;
+                const isSelf = c.id === me.company?.id;
                 return (
                   <TableRow key={c.id}>
                     <TableCell className="font-medium">
                       <span className="flex items-center gap-2">
                         {c.name}
-                        {isSuperAdmin(user?.email) && c.id === user?.company?.id && (
+                        {isSelf && (
                           <Badge variant="secondary" className="gap-1">
                             <ShieldCheck className="h-3 w-3" /> u
                           </Badge>
@@ -110,13 +188,23 @@ export default async function AdminPage() {
                     <TableCell>
                       <div className="flex flex-col gap-1">
                         <PlanSelect companyId={c.id} plan={TIER_ORDER[tierRank(c.plan)]} />
-                        {c.stripeCustomerId && (
+                        {c.stripeCustomerId && !isSelf && (
                           <span className="text-[11px] text-amber-600">
                             heeft Stripe-abonnement — handmatige wijziging wordt
                             door de volgende webhook overschreven
                           </span>
                         )}
                       </div>
+                    </TableCell>
+                    <TableCell className="text-right">
+                      {!isSelf && (
+                        <form action={startImpersonation}>
+                          <input type="hidden" name="companyId" value={c.id} />
+                          <Button type="submit" size="sm" variant="outline">
+                            <LogIn className="h-4 w-4" /> Open dashboard
+                          </Button>
+                        </form>
+                      )}
                     </TableCell>
                   </TableRow>
                 );
@@ -127,10 +215,10 @@ export default async function AdminPage() {
       </Card>
 
       <p className="mt-4 text-xs text-muted-foreground">
-        Pakket handmatig zetten geldt direct (ontgrendelt documenten), maar
-        wijzigt geen betaling. Voor betalende klanten is Stripe leidend —{" "}
-        {TIER_LABEL[TIER_ORDER[TIER_ORDER.length - 1] as TierId]} voor uzelf zetten
-        werkt alleen blijvend op een organisatie zonder actief abonnement.
+        &ldquo;Open dashboard&rdquo; opent de omgeving van die klant als ComplAI-beheerder:
+        u ziet en wijzigt alles in hun omgeving (audit-gelogd). Uw eigen
+        organisatie is vrijgesteld van Stripe-reconciliatie, dus een handmatig
+        gekozen pakket blijft staan.
       </p>
     </>
   );

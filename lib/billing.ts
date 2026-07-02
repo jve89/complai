@@ -5,9 +5,29 @@ import type { Company } from "@prisma/client";
 
 import { prisma } from "@/lib/prisma";
 import { stripe, tierForPriceId } from "@/lib/stripe";
+import { env } from "@/lib/env";
 
 /** Statuses that keep a subscription's documents unlocked (grace during dunning). */
 const GRANTING_STATUSES = new Set(["active", "trialing", "past_due"]);
+
+/** ComplAI staff companies are exempt from Stripe plan reconciliation, so a
+ * manually-set staff pakket (e.g. Audit-klaar for ourselves) is never
+ * overwritten by a webhook. */
+async function isStaffCompany(companyId: string): Promise<boolean> {
+  const staff = await prisma.user.findFirst({
+    where: {
+      companyId,
+      OR: [
+        { superAdmin: true },
+        ...(env.superAdminEmails.length
+          ? [{ email: { in: env.superAdminEmails } }]
+          : []),
+      ],
+    },
+    select: { id: true },
+  });
+  return Boolean(staff);
+}
 
 /** Find-or-create the Stripe customer for a company and persist its id. */
 export async function ensureStripeCustomer(
@@ -69,11 +89,13 @@ export async function syncSubscriptionToCompany(
   const tier = tierForPriceId(priceId);
   const granting = GRANTING_STATUSES.has(sub.status);
   const renewsAt = periodEnd(sub);
+  const staff = await isStaffCompany(company.id);
 
   await prisma.company.update({
     where: { id: company.id },
     data: {
-      plan: granting && tier ? tier : "gratis",
+      // Staff pakket is set manually and never reconciled from Stripe.
+      ...(staff ? {} : { plan: granting && tier ? tier : "gratis" }),
       planStatus: sub.status,
       stripeSubscriptionId: sub.id,
       planRenewsAt: renewsAt,
@@ -90,10 +112,11 @@ export async function clearSubscription(
   const company = await companyForCustomer(sub.customer);
   if (!company) return null;
 
+  const staff = await isStaffCompany(company.id);
   await prisma.company.update({
     where: { id: company.id },
     data: {
-      plan: "gratis",
+      ...(staff ? {} : { plan: "gratis" }),
       planStatus: "canceled",
       stripeSubscriptionId: null,
       planRenewsAt: null,

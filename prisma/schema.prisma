@@ -101,6 +101,9 @@ model User {
   name      String?
   role      Role     @default(admin)
   companyId String?  @map("company_id")
+  // ComplAI staff who can manage all clients (distinct from `role`, which is the
+  // beheerder/manager/medewerker role WITHIN a client company).
+  superAdmin Boolean @default(false) @map("super_admin")
   createdAt DateTime @default(now()) @map("created_at")
 
   company      Company?     @relation(fields: [companyId], references: [id], onDelete: SetNull)
@@ -109,6 +112,19 @@ model User {
 
   @@index([companyId])
   @@map("users")
+}
+
+/// Audit trail: a super-admin entering (impersonating) a client's dashboard.
+model ImpersonationLog {
+  id          String   @id @default(cuid())
+  adminUserId String   @map("admin_user_id")
+  adminEmail  String   @map("admin_email")
+  companyId   String   @map("company_id")
+  companyName String   @map("company_name")
+  startedAt   DateTime @default(now()) @map("started_at")
+
+  @@index([adminUserId])
+  @@map("impersonation_logs")
 }
 
 model AiSystem {

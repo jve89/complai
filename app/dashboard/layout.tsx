@@ -1,8 +1,8 @@
 import { Globe } from "lucide-react";
 
 import { getActiveCompany } from "@/lib/auth";
-import { isSuperAdmin } from "@/lib/env";
 import { logout } from "@/app/(auth)/actions";
+import { stopImpersonation } from "@/app/dashboard/admin/actions";
 import { Sidebar, MobileNav } from "@/components/dashboard/sidebar";
 import { SiteLogo } from "@/components/site-logo";
 import { Button } from "@/components/ui/button";
@@ -13,8 +13,8 @@ export default async function DashboardLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const { company, user, demo } = await getActiveCompany();
-  const showAdmin = !demo && isSuperAdmin(user?.email);
+  const { company, user, demo, impersonating } = await getActiveCompany();
+  const showAdmin = !demo && Boolean(user?.superAdmin);
 
   const websiteBtn = (
     <Button asChild variant="outline" size="sm" className="w-full justify-start md:w-auto md:justify-center">
@@ -76,6 +76,20 @@ export default async function DashboardLayout({
             </div>
           </div>
         </header>
+
+        {impersonating && (
+          <div className="flex flex-col items-start gap-2 border-b border-amber-300 bg-amber-100 px-4 py-2.5 text-sm text-amber-900 sm:flex-row sm:items-center sm:justify-between sm:px-6">
+            <span>
+              U bekijkt <strong>{company.name}</strong> als ComplAI-beheerder.
+              Wijzigingen worden opgeslagen in de omgeving van deze klant.
+            </span>
+            <form action={stopImpersonation}>
+              <Button type="submit" size="sm" variant="outline" className="bg-white">
+                Terug naar eigen omgeving
+              </Button>
+            </form>
+          </div>
+        )}
 
         <main className="px-4 py-6 sm:px-6 lg:px-8">{children}</main>
       </div>

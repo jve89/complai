@@ -19,8 +19,10 @@ export const env = {
     .filter(Boolean),
 };
 
-/** Whether an email belongs to a ComplAI super-admin. */
-export function isSuperAdmin(email?: string | null): boolean {
+/** Bootstrap allowlist: emails that are always super-admins (from env), so the
+ * first staff member is never locked out. Promotion of others is DB-backed
+ * (User.superAdmin); getCurrentUser() combines both into user.superAdmin. */
+export function isSuperAdminEmail(email?: string | null): boolean {
   return Boolean(email && env.superAdminEmails.includes(email.toLowerCase()));
 }
 

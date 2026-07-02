@@ -14,7 +14,11 @@ export async function getLearnerEmployee(
   company: Company,
   user: CurrentUser | null
 ): Promise<Employee> {
-  if (user) {
+  // Only link a learner to the signed-in user when they actually belong to this
+  // company — otherwise (a super-admin impersonating a client) we'd pollute the
+  // client's team with a staff employee. In that case fall through to the demo
+  // selection below.
+  if (user && user.company?.id === company.id) {
     // Employee's learning path mirrors their account role (employee/manager/admin),
     // so it lines up with the invite roles and the PATHS ids.
     const role = user.profile?.role ?? "employee";

@@ -1,12 +1,15 @@
 import { cache } from "react";
-import { headers } from "next/headers";
+import { headers, cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import type { Company } from "@prisma/client";
 
 import { createClient } from "@/lib/supabase/server";
 import { prisma } from "@/lib/prisma";
-import { isSupabaseConfigured } from "@/lib/env";
+import { isSupabaseConfigured, isSuperAdminEmail } from "@/lib/env";
 import { getDemoCompany } from "@/lib/demo";
+
+/** Cookie that carries the company a super-admin is currently impersonating. */
+export const IMPERSONATE_COOKIE = "complai_impersonate";
 
 /**
  * Returns the authenticated Supabase user joined with their ComplAI profile
@@ -28,11 +31,15 @@ export const getCurrentUser = cache(async () => {
     include: { company: true },
   });
 
+  const email = user.email ?? profile?.email ?? "";
+
   return {
     id: user.id,
-    email: user.email ?? profile?.email ?? "",
+    email,
     profile,
     company: profile?.company ?? null,
+    // Super-admin = env allowlist (bootstrap) OR the DB flag (promoted via UI).
+    superAdmin: Boolean(profile?.superAdmin) || isSuperAdminEmail(email),
   };
 });
 
@@ -49,6 +56,8 @@ export interface ActiveCompany {
   company: Company;
   user: CurrentUser | null;
   demo: boolean;
+  /** True when a super-admin is viewing this company via impersonation. */
+  impersonating: boolean;
 }
 
 /**
@@ -62,19 +71,31 @@ export const getActiveCompany = cache(async (): Promise<ActiveCompany> => {
   // Public demo: middleware flags /demo/* requests; render the dashboard for the
   // fictional demo company without requiring auth.
   if (headers().get("x-demo") === "1") {
-    return { company: await getDemoCompany(), user: null, demo: true };
+    return { company: await getDemoCompany(), user: null, demo: true, impersonating: false };
   }
 
   const user = await getCurrentUser();
+
+  // Impersonation: a super-admin viewing a client's dashboard. Honored only when
+  // the *real* session user is a super-admin (re-checked every request), so the
+  // cookie alone grants nothing.
+  if (user?.superAdmin) {
+    const targetId = cookies().get(IMPERSONATE_COOKIE)?.value;
+    if (targetId && targetId !== user.company?.id) {
+      const target = await prisma.company.findUnique({ where: { id: targetId } });
+      if (target) return { company: target, user, demo: false, impersonating: true };
+    }
+  }
+
   if (user?.company) {
-    return { company: user.company, user, demo: false };
+    return { company: user.company, user, demo: false, impersonating: false };
   }
 
   if (!isSupabaseConfigured) {
     const company = await prisma.company.findFirst({
       orderBy: { createdAt: "asc" },
     });
-    if (company) return { company, user: null, demo: true };
+    if (company) return { company, user: null, demo: true, impersonating: false };
   }
 
   // Self-heal: an authenticated user without a company (e.g. an earlier signup
@@ -99,7 +120,7 @@ export const getActiveCompany = cache(async (): Promise<ActiveCompany> => {
         companyId: company.id,
       },
     });
-    return { company, user, demo: false };
+    return { company, user, demo: false, impersonating: false };
   }
 
   redirect("/login");
