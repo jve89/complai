@@ -12,6 +12,9 @@ import {
 } from "@/lib/compliance/evidence-from-answers";
 import { materializeComplianceItems } from "@/lib/compliance/materialize";
 import { syncAiSystemsFromTools } from "@/lib/scan/claim";
+import { sendScanResult } from "@/lib/email/send";
+import { currentBaseUrl } from "@/lib/request-url";
+import { headlineLabel } from "@/lib/compliance/labels";
 import type { ScanAnswers } from "@/lib/compliance/questions";
 
 /**
@@ -60,6 +63,18 @@ export async function submitScan(
     });
     await materializeComplianceItems(companyId, profile);
     await syncAiSystemsFromTools(companyId, answers);
+  }
+
+  // Signed-in scanners get the report link by email (anonymous scans have no
+  // address; those users get the link via the welcome email at signup instead).
+  if (user?.email) {
+    await sendScanResult({
+      to: user.email,
+      score: profile.score,
+      headlineLabel: headlineLabel(profile.headline),
+      baseUrl: currentBaseUrl(),
+      resultPath: `/scan/results/${result.id}`,
+    });
   }
 
   return { id: result.id };

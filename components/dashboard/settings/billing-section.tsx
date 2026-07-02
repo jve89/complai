@@ -67,7 +67,7 @@ export function BillingSection({
       <div className="flex flex-col gap-2 sm:flex-row">
         <Button asChild>
           <Link href="/pricing">
-            {hasSubscription ? "Abonnement wijzigen" : "Kies een plan"}
+            {hasSubscription ? "Abonnement wijzigen" : "Kies een pakket"}
           </Link>
         </Button>
         {hasSubscription && (

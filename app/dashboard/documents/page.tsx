@@ -203,16 +203,16 @@ export default async function DocumentsPage() {
         )}
       >
         <div className="text-sm">
-          <p className="font-semibold">Uw plan: {TIER_LABEL[TIER_ORDER[tierRank(plan)]]}</p>
+          <p className="font-semibold">Uw pakket: {TIER_LABEL[TIER_ORDER[tierRank(plan)]]}</p>
           <p className="text-muted-foreground">
             {isTopPlan
               ? "U heeft toegang tot alle documenten — samen vormen ze uw volledige AI-compliancehandboek."
-              : "Uw plan bepaalt welke documenten u kunt genereren. Upgrade voor het volledige documentenpakket."}
+              : "Uw pakket bepaalt welke documenten u kunt genereren. Upgrade voor het volledige documentenpakket."}
           </p>
         </div>
         {!isTopPlan && (
           <Button asChild size="sm">
-            <Link href="/pricing">Plannen bekijken</Link>
+            <Link href="/pricing">Bekijk pakketten</Link>
           </Button>
         )}
       </div>

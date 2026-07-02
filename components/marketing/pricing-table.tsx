@@ -11,7 +11,7 @@ import { cn } from "@/lib/utils";
 
 type Interval = "month" | "year";
 
-export function PricingTable() {
+export function PricingTable({ scanId }: { scanId?: string }) {
   const [interval, setInterval] = useState<Interval>("month");
   const [pendingPlan, setPendingPlan] = useState<PlanId | null>(null);
   const [, startTransition] = useTransition();
@@ -33,8 +33,10 @@ export function PricingTable() {
           return;
         }
         // Account-first: no account yet → sign up, then continue to checkout.
+        // A scan that led here travels along, so signup still claims it.
         if (data.needsAccount) {
-          window.location.href = `/signup?plan=${planId}&interval=${interval}`;
+          const scan = scanId ? `&scan=${encodeURIComponent(scanId)}` : "";
+          window.location.href = `/signup?plan=${planId}&interval=${interval}${scan}`;
           return;
         }
         setNotice(data.message ?? "Afrekenen is momenteel niet beschikbaar.");

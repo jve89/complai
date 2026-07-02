@@ -1,9 +1,30 @@
 import { NextResponse } from "next/server";
 import type Stripe from "stripe";
 
-import { stripe } from "@/lib/stripe";
+import { stripe, tierForPriceId } from "@/lib/stripe";
 import { env } from "@/lib/env";
-import { syncSubscriptionToCompany, clearSubscription } from "@/lib/billing";
+import { prisma } from "@/lib/prisma";
+import {
+  syncSubscriptionToCompany,
+  clearSubscription,
+  companyForCustomer,
+} from "@/lib/billing";
+import {
+  sendPurchaseConfirmation,
+  sendPaymentFailed,
+  sendTrialEnding,
+  sendCancelRequested,
+  sendSubscriptionEnded,
+} from "@/lib/email/send";
+import { TIER_LABEL } from "@/lib/plan";
+import type { TierId } from "@/lib/compliance/types";
+import { baseUrlFrom } from "@/lib/request-url";
+import { formatDate } from "@/lib/utils";
+
+// Paid-tier label for emails; null when the price id can't be mapped — the
+// templates then say "uw pakket" instead of confirming the FREE tier.
+const tierLabel = (tier: string | null): string | null =>
+  tier && tier !== "gratis" ? TIER_LABEL[tier as TierId] ?? null : null;
 
 export const runtime = "nodejs";
 
@@ -41,6 +62,21 @@ export async function POST(req: Request) {
     );
   }
 
+  // Emails link to the canonical app URL when configured; the request host is
+  // only a fallback (a webhook POST has no user-facing origin).
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL?.replace(/\/+$/, "") || baseUrlFrom(req);
+
+  // Idempotency: Stripe redelivers events (timeouts, retries after a 500).
+  // Insert-or-skip on the event id makes redelivery a no-op — no duplicate
+  // emails, no repeated writes.
+  try {
+    await prisma.stripeEvent.create({
+      data: { id: event.id, type: event.type },
+    });
+  } catch {
+    return NextResponse.json({ received: true, duplicate: true });
+  }
+
   try {
     switch (event.type) {
       case "checkout.session.completed": {
@@ -49,23 +85,93 @@ export async function POST(req: Request) {
           const sub = await stripe.subscriptions.retrieve(
             session.subscription as string
           );
-          await syncSubscriptionToCompany(sub);
+          const sync = await syncSubscriptionToCompany(sub);
+          if (sync) {
+            await sendPurchaseConfirmation({
+              companyId: sync.companyId,
+              planLabel: tierLabel(sync.tier),
+              trialing: sync.status === "trialing",
+              renewsAt: sync.renewsAt ? formatDate(sync.renewsAt) : null,
+              baseUrl,
+            });
+          }
         }
         break;
       }
       case "customer.subscription.created":
-      case "customer.subscription.updated":
         await syncSubscriptionToCompany(event.data.object as Stripe.Subscription);
         break;
-      case "customer.subscription.deleted":
-        await clearSubscription(event.data.object as Stripe.Subscription);
+      case "customer.subscription.updated": {
+        const sub = event.data.object as Stripe.Subscription;
+        const sync = await syncSubscriptionToCompany(sub);
+        // Opzegging aangevraagd (cancel at period end): the only moment the
+        // "access until <date>" promise is true — confirm it here, once.
+        const prev = event.data.previous_attributes as
+          | Partial<Stripe.Subscription>
+          | undefined;
+        if (sync && sub.cancel_at_period_end && prev?.cancel_at_period_end === false) {
+          await sendCancelRequested({
+            companyId: sync.companyId,
+            accessUntil: sync.renewsAt ? formatDate(sync.renewsAt) : null,
+            baseUrl,
+          });
+        }
         break;
+      }
+      case "customer.subscription.trial_will_end": {
+        // Fires ±3 days before the trial converts — but also for subscriptions
+        // already cancelled at period end, where nothing will be charged.
+        const sub = event.data.object as Stripe.Subscription;
+        if (sub.cancel_at_period_end) break;
+        const company = await companyForCustomer(sub.customer);
+        if (company) {
+          await sendTrialEnding({
+            companyId: company.id,
+            planLabel: tierLabel(tierForPriceId(sub.items.data[0]?.price?.id ?? "")),
+            endsAt: sub.trial_end ? formatDate(new Date(sub.trial_end * 1000)) : null,
+            baseUrl,
+          });
+        }
+        break;
+      }
+      case "invoice.payment_failed": {
+        const invoice = event.data.object as Stripe.Invoice;
+        const company = await companyForCustomer(
+          typeof invoice.customer === "string" ? invoice.customer : invoice.customer?.id ?? null
+        );
+        if (company) {
+          await sendPaymentFailed({ companyId: company.id, baseUrl });
+        }
+        break;
+      }
+      case "customer.subscription.deleted": {
+        const sub = event.data.object as Stripe.Subscription;
+        const cleared = await clearSubscription(sub);
+        if (cleared) {
+          // Dunning-cancel (failed payments) is not an opzegging by the klant —
+          // it gets its own, non-accusatory copy.
+          const involuntary =
+            sub.cancellation_details?.reason === "payment_failed" ||
+            sub.status === "unpaid";
+          await sendSubscriptionEnded({
+            companyId: cleared.companyId,
+            involuntary,
+            baseUrl,
+          });
+        }
+        break;
+      }
       default:
         break;
     }
   } catch (err) {
     const message = err instanceof Error ? err.message : "onbekend";
     console.error(`[stripe] fout bij verwerken ${event.type}: ${message}`);
+    // Release the idempotency claim so Stripe's retry is NOT skipped as a
+    // duplicate — otherwise a failed handler would never re-run.
+    await prisma.stripeEvent
+      .delete({ where: { id: event.id } })
+      .catch(() => undefined);
     // 500 so Stripe retries the event.
     return NextResponse.json({ error: "Verwerking mislukt." }, { status: 500 });
   }

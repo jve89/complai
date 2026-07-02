@@ -53,6 +53,8 @@ model Company {
   stripeSubscriptionId String?   @map("stripe_subscription_id")
   planStatus           String?   @map("plan_status") // active|trialing|past_due|canceled
   planRenewsAt         DateTime? @map("plan_renews_at")
+  // "Aan de slag" checklist: hidden forever once dismissed (or all steps done).
+  onboardingDismissedAt DateTime? @map("onboarding_dismissed_at")
   createdAt DateTime @default(now()) @map("created_at")
 
   users               User[]
@@ -65,6 +67,16 @@ model Company {
   invites             Invite[]
 
   @@map("companies")
+}
+
+/// Processed Stripe webhook events — insert-or-skip gives idempotency, so a
+/// redelivered event never repeats emails or writes.
+model StripeEvent {
+  id        String   @id // Stripe event id (evt_…)
+  type      String
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@map("stripe_events")
 }
 
 /// A pending team invitation. Consumed at signup to join the company + role.

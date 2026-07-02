@@ -324,15 +324,15 @@ export default async function ScanResultsPage({
         </>
       )}
 
-      {/* Recommended plan */}
+      {/* Recommended package */}
       <Card className="mb-6">
         <CardHeader>
-          <CardTitle className="text-base">Aanbevolen plan</CardTitle>
+          <CardTitle className="text-base">Aanbevolen pakket</CardTitle>
         </CardHeader>
         <CardContent className="space-y-2">
           <p>
-            Op basis van uw profiel adviseren wij het{" "}
-            <span className="font-semibold">{TIER_LABEL[profile.recommendedTier]}</span>-plan
+            Op basis van uw profiel adviseren wij het pakket{" "}
+            <span className="font-semibold">{TIER_LABEL[profile.recommendedTier]}</span>
             {profile.recommendedTier !== "gratis" && " (eerste maand gratis)"}.
           </p>
           {profile.advisoryUpsell && (
@@ -340,9 +340,6 @@ export default async function ScanResultsPage({
               {profile.advisoryUpsell.reason}
             </p>
           )}
-          <Button asChild variant="outline" className="mt-2">
-            <Link href="/pricing">Bekijk plannen</Link>
-          </Button>
         </CardContent>
       </Card>
 
@@ -357,20 +354,32 @@ export default async function ScanResultsPage({
         </Card>
       )}
 
-      {/* CTA */}
+      {/* CTA — the two remaining onboarding steps, as equal choices */}
       <Card className="overflow-hidden border-0 bg-navy-900 text-white">
         <CardContent className="flex flex-col items-center gap-4 py-10 text-center">
           <Sparkles className="h-8 w-8 text-brand-400" />
           <h2 className="text-2xl font-bold">Zet uw resultaat om in actie</h2>
           <p className="max-w-lg text-white/70">
-            Maak een gratis account aan — dit resultaat staat dan meteen klaar in uw dashboard, met
-            uw verplichtingen om af te vinken en documenten om te genereren.
+            Stap één is gedaan. Kies nu wat u eerst doet — de volgorde maakt niet
+            uit: dit resultaat staat straks meteen klaar in uw dashboard.
           </p>
-          <Button asChild size="lg">
-            <Link href={`/signup?scan=${result.id}`}>
-              Gratis account aanmaken <ArrowRight className="h-4 w-4" />
-            </Link>
-          </Button>
+          <div className="flex flex-col items-center gap-3 sm:flex-row">
+            <Button asChild size="lg">
+              <Link href={`/signup?scan=${result.id}`}>
+                Gratis account aanmaken <ArrowRight className="h-4 w-4" />
+              </Link>
+            </Button>
+            <Button
+              asChild
+              size="lg"
+              variant="outline"
+              className="border-white/30 bg-transparent text-white hover:bg-white/10 hover:text-white"
+            >
+              <Link href={`/pricing?scan=${result.id}`}>
+                Bekijk pakketten <ArrowRight className="h-4 w-4" />
+              </Link>
+            </Button>
+          </div>
           <p className="text-sm text-white/50">
             Al een account?{" "}
             <Link href={`/login?scan=${result.id}`} className="underline">

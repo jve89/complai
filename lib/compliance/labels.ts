@@ -14,3 +14,16 @@ export const DOC_LABELS: Record<string, string> = {
 };
 
 export const docLabel = (slug: string): string => DOC_LABELS[slug] ?? slug;
+
+/** Plain-text labels for the profile headline (used in UI badges and emails). */
+export const HEADLINE_LABEL: Record<string, string> = {
+  prohibited: "Verboden praktijk",
+  high_risk: "Hoog risico",
+  limited_risk: "Beperkt risico",
+  out_of_scope: "Buiten de reikwijdte",
+  excluded: "Uitgesloten",
+  minimal: "Minimaal risico",
+};
+
+export const headlineLabel = (headline: string): string =>
+  HEADLINE_LABEL[headline] ?? headline;

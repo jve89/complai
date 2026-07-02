@@ -1,3 +1,5 @@
+import { headers } from "next/headers";
+
 import { env } from "@/lib/env";
 
 /**
@@ -12,6 +14,21 @@ export function baseUrlFrom(req: Request): string {
   if (origin) return origin.replace(/\/+$/, "");
 
   const host = req.headers.get("host");
+  if (host) {
+    const local = host.startsWith("localhost") || host.startsWith("127.");
+    return `${local ? "http" : "https"}://${host}`;
+  }
+
+  return env.appUrl;
+}
+
+/** Same idea for Server Actions / RSC, where there is no Request object. */
+export function currentBaseUrl(): string {
+  const h = headers();
+  const origin = h.get("origin");
+  if (origin) return origin.replace(/\/+$/, "");
+
+  const host = h.get("host");
   if (host) {
     const local = host.startsWith("localhost") || host.startsWith("127.");
     return `${local ? "http" : "https"}://${host}`;

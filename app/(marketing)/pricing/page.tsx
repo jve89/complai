@@ -6,10 +6,11 @@ import { PricingTable } from "@/components/marketing/pricing-table";
 export const metadata: Metadata = {
   title: "Prijzen",
   description:
-    "Heldere prijzen voor AI Act-compliance. Start gratis en groei mee met Starter, Groei of Schaal.",
+    "Heldere prijzen voor AI Act-compliance. Start gratis met Inzicht en groei mee met Actief, Compliance-klaar of Audit-klaar.",
 };
 
-const COLUMNS = ["Gratis", "Starter", "Groei", "Schaal"];
+const COLUMNS = ["Inzicht", "Actief", "Compliance-klaar", "Audit-klaar"];
+const HIGHLIGHT = "Compliance-klaar";
 
 const COMPARISON: { feature: string; values: (string | boolean)[] }[] = [
   { feature: "Risicoscan + PDF-rapport", values: [true, true, true, true] },
@@ -32,7 +33,11 @@ function Cell({ value }: { value: string | boolean }) {
   );
 }
 
-export default function PricingPage() {
+export default function PricingPage({
+  searchParams,
+}: {
+  searchParams: { scan?: string };
+}) {
   return (
     <>
       <section className="border-b bg-navy-900 py-16 text-center text-white">
@@ -49,7 +54,7 @@ export default function PricingPage() {
 
       <section className="py-16">
         <div className="container">
-          <PricingTable />
+          <PricingTable scanId={searchParams.scan} />
         </div>
       </section>
 
@@ -71,7 +76,7 @@ export default function PricingPage() {
                     <th
                       key={col}
                       className={
-                        col === "Groei"
+                        col === HIGHLIGHT
                           ? "p-4 text-center text-sm font-semibold text-brand-700"
                           : "p-4 text-center text-sm font-medium"
                       }
@@ -89,7 +94,7 @@ export default function PricingPage() {
                       <td
                         key={i}
                         className={
-                          COLUMNS[i] === "Groei"
+                          COLUMNS[i] === HIGHLIGHT
                             ? "bg-brand-50/50 p-4 text-center"
                             : "p-4 text-center"
                         }
@@ -104,8 +109,8 @@ export default function PricingPage() {
           </div>
 
           <p className="mt-8 text-center text-sm text-muted-foreground">
-            Alle prijzen zijn exclusief btw. Maandelijks opzegbaar. Jaarlijkse
-            betaling levert 15% korting op.
+            Alle prijzen zijn exclusief btw. Maandelijks opzegbaar. Bij
+            jaarlijkse betaling krijgt u 2 maanden gratis.
           </p>
         </div>
       </section>

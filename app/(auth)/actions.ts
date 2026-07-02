@@ -8,6 +8,8 @@ import { createClient } from "@/lib/supabase/server";
 import { prisma } from "@/lib/prisma";
 import { isSupabaseConfigured } from "@/lib/env";
 import { applyScanToCompany } from "@/lib/scan/claim";
+import { sendWelcome } from "@/lib/email/send";
+import { currentBaseUrl } from "@/lib/request-url";
 
 export type AuthState = { error?: string } | undefined;
 
@@ -152,6 +154,14 @@ export async function signup(
     // Bridge: if they came from an anonymous scan, populate the dashboard from it.
     const scanId = formData.get("scan") as string | null;
     if (scanId) await applyScanToCompany(scanId, companyId, data.user.id);
+
+    // Welcome email (never blocks signup — sendWelcome catches its own errors).
+    await sendWelcome({
+      to: email,
+      name,
+      baseUrl: currentBaseUrl(),
+      withScan: Boolean(scanId),
+    });
   } catch (e) {
     console.error("Profiel aanmaken mislukt:", e);
     return {

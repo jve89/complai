@@ -14,8 +14,10 @@ import {
 import { getActiveCompany } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { formatDate } from "@/lib/utils";
+import { TIER_LABEL, TIER_ORDER, tierRank } from "@/lib/plan";
 import type { ComplianceProfile } from "@/lib/compliance/types";
 import { DASHBOARD_NAV } from "@/components/dashboard/nav-items";
+import { OnboardingChecklist } from "@/components/dashboard/onboarding-checklist";
 import { ScoreRing } from "@/components/score-ring";
 import { PageHeader } from "@/components/dashboard/page-header";
 import { Badge } from "@/components/ui/badge";
@@ -43,8 +45,12 @@ function statusBadge(status: string) {
   return <Badge variant="secondary">Te doen</Badge>;
 }
 
-export default async function DashboardPage() {
-  const { company } = await getActiveCompany();
+export default async function DashboardPage({
+  searchParams,
+}: {
+  searchParams: { checkout?: string };
+}) {
+  const { company, demo } = await getActiveCompany();
   const profile = (company.profileJson as unknown as ComplianceProfile | null) ?? null;
 
   const [aiSystems, employees, items] = await Promise.all([
@@ -56,27 +62,61 @@ export default async function DashboardPage() {
     }),
   ]);
 
-  // No scan yet → prompt to run it.
+  // "Aan de slag": account (inherently done here) + scan + pakket. Hidden
+  // forever once everything is done or the user dismisses it.
+  const scanDone = Boolean(profile);
+  const planDone = tierRank(company.plan) > 0;
+  const planLabel = TIER_LABEL[TIER_ORDER[tierRank(company.plan)]];
+  let showChecklist = !demo && !company.onboardingDismissedAt;
+  if (showChecklist && scanDone && planDone) {
+    // All steps done → persist, so the checklist never returns (even after a
+    // later opzegging drops the plan back to gratis).
+    await prisma.company.update({
+      where: { id: company.id },
+      data: { onboardingDismissedAt: new Date() },
+    });
+    showChecklist = false;
+  }
+
+  const checkoutBanner =
+    searchParams.checkout === "success" ? (
+      <div className="mb-6 rounded-lg border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-800">
+        <strong>Gelukt!</strong>{" "}
+        {planDone
+          ? "Uw pakket is geactiveerd en uw documenten zijn ontgrendeld."
+          : "Uw pakket wordt geactiveerd — dit duurt hooguit enkele seconden. Ververs de pagina als het nog niet zichtbaar is."}
+      </div>
+    ) : null;
+
+  const checklist = showChecklist ? (
+    <OnboardingChecklist scanDone={scanDone} planDone={planDone} planLabel={planLabel} />
+  ) : null;
+
+  // No scan yet → the checklist is the main content; fall back to the classic
+  // prompt when it was dismissed.
   if (!profile && items.length === 0) {
     return (
       <>
         <PageHeader title={`Welkom bij ${company.name}`} />
-        <Card>
-          <CardContent className="flex flex-col items-center gap-4 py-16 text-center">
-            <div className="inline-flex h-12 w-12 items-center justify-center rounded-full bg-brand-50 text-brand-600">
-              <Search className="h-6 w-6" />
-            </div>
-            <p className="max-w-md text-muted-foreground">
-              Doe eerst de risicoscan. Daarna ziet u hier precies welke AI Act-verplichtingen
-              voor uw organisatie gelden en hoe ver u bent.
-            </p>
-            <Button asChild>
-              <Link href="/scan">
-                Start de risicoscan <ArrowRight className="h-4 w-4" />
-              </Link>
-            </Button>
-          </CardContent>
-        </Card>
+        {checkoutBanner}
+        {checklist ?? (
+          <Card>
+            <CardContent className="flex flex-col items-center gap-4 py-16 text-center">
+              <div className="inline-flex h-12 w-12 items-center justify-center rounded-full bg-brand-50 text-brand-600">
+                <Search className="h-6 w-6" />
+              </div>
+              <p className="max-w-md text-muted-foreground">
+                Doe eerst de risicoscan. Daarna ziet u hier precies welke AI Act-verplichtingen
+                voor uw organisatie gelden en hoe ver u bent.
+              </p>
+              <Button asChild>
+                <Link href="/scan">
+                  Start de risicoscan <ArrowRight className="h-4 w-4" />
+                </Link>
+              </Button>
+            </CardContent>
+          </Card>
+        )}
       </>
     );
   }
@@ -124,6 +164,9 @@ export default async function DashboardPage() {
           <Link href="/scan">Scan bijwerken</Link>
         </Button>
       </PageHeader>
+
+      {checkoutBanner}
+      {checklist}
 
       <div className="grid gap-6 lg:grid-cols-3">
         <Card className="lg:col-span-1">

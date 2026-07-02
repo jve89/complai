@@ -36,7 +36,7 @@ export async function generateDocument(
   if (!docUnlocked(company.plan, type)) {
     return {
       ok: false,
-      error: `Dit document is beschikbaar vanaf het ${TIER_LABEL[minTierFor(type)]}-plan.`,
+      error: `Dit document is beschikbaar vanaf het pakket ${TIER_LABEL[minTierFor(type)]}.`,
     };
   }
 

@@ -1,22 +1,24 @@
 import Link from "next/link";
 import {
-  Activity,
   AlertTriangle,
   ArrowRight,
   BarChart3,
+  BookOpen,
   Check,
-  ClipboardList,
   Clock,
   Database,
   Euro,
   FileText,
   GraduationCap,
-  Layers,
   Minus,
+  Package,
   Scale,
+  ScanSearch,
   Search,
   ShieldCheck,
   Sparkles,
+  UserPlus,
+  Users,
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -24,13 +26,28 @@ import { Badge } from "@/components/ui/badge";
 import { Faq } from "@/components/marketing/faq";
 import { PLANS } from "@/lib/stripe";
 
-const steps = [
-  { icon: Search, title: "Scan", text: "Ontdek in vijf minuten waar uw organisatie staat." },
-  { icon: ClipboardList, title: "Registreer", text: "Verzamel al uw AI-toepassingen op één plek." },
-  { icon: Layers, title: "Classificeer", text: "Laat het risiconiveau per systeem automatisch bepalen." },
-  { icon: FileText, title: "Documenteer", text: "Maak beleid, FRIA en beoordelingen met één druk op de knop." },
-  { icon: GraduationCap, title: "Train", text: "Maak uw team AI-vaardig met e-learning en certificaten." },
-  { icon: Activity, title: "Monitor", text: "Houd deadlines in het oog en blijf doorlopend compliant." },
+// The three ways to start — every klant doet ze uiteindelijk alle drie, de
+// volgorde maakt niet uit. Each card has its own direct action.
+const startSteps = [
+  {
+    icon: Search,
+    title: "Doe de gratis risicoscan",
+    text: "Ontdek in vijf minuten welke AI Act-verplichtingen voor uw organisatie gelden — zonder account.",
+    cta: { label: "Start de scan", href: "/scan" },
+    primary: true,
+  },
+  {
+    icon: Package,
+    title: "Kies uw pakket",
+    text: "Van de eerste basis tot een audit-klaar documentenpakket. Eerste maand gratis, maandelijks opzegbaar.",
+    cta: { label: "Bekijk pakketten", href: "/pricing" },
+  },
+  {
+    icon: UserPlus,
+    title: "Maak een gratis account",
+    text: "Uw eigen compliance-omgeving, zonder betaalgegevens. Nodig later eenvoudig uw team uit.",
+    cta: { label: "Registreer gratis", href: "/signup" },
+  },
 ];
 
 const pains = [
@@ -58,9 +75,19 @@ const pains = [
 
 const features = [
   {
+    icon: ShieldCheck,
+    title: "Compliance-dashboard",
+    text: "Uw gereedheidsscore, de status per AI Act-verplichting, openstaande acties en deadlines in één overzicht.",
+  },
+  {
     icon: Database,
     title: "AI-register",
     text: "Al uw AI-systemen overzichtelijk bij elkaar, met automatische risico-indeling volgens Annex III.",
+  },
+  {
+    icon: ScanSearch,
+    title: "Schaduw-AI-check",
+    text: "Spoor AI-gebruik op dat nog niet geregistreerd staat — de meest gemaakte fout bij een controle.",
   },
   {
     icon: FileText,
@@ -69,18 +96,23 @@ const features = [
   },
   {
     icon: GraduationCap,
-    title: "E-learning",
+    title: "E-learning & certificaten",
     text: "Leerpaden per rol met toetsen en certificaten, zodat AI-geletterdheid (Art. 4) aantoonbaar wordt.",
-  },
-  {
-    icon: ShieldCheck,
-    title: "Compliance-dashboard",
-    text: "Uw score, de status per AI Act-artikel, openstaande acties en deadlines in één overzicht.",
   },
   {
     icon: BarChart3,
     title: "Governance",
     text: "Kwartaalchecks en signalen bij verlopen documenten of ontbrekende certificaten. Doorlopend grip.",
+  },
+  {
+    icon: BookOpen,
+    title: "Kennisbank",
+    text: "De AI Act in gewoon Nederlands: risiconiveaus, rollen, deadlines en boetes — altijd bij de hand.",
+  },
+  {
+    icon: Users,
+    title: "Team & rollen",
+    text: "Nodig collega's uit als beheerder, manager of medewerker — ieder met een passend leerpad.",
   },
   {
     icon: Sparkles,
@@ -281,23 +313,23 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* How it works */}
+      {/* Getting started — three interchangeable first steps */}
       <section id="hoe-het-werkt" className="py-20">
         <div className="container">
           <div className="mx-auto mb-14 max-w-2xl text-center">
             <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">
-              Zo werkt het — in zes stappen
+              Snel van start in drie stappen
             </h2>
             <p className="mt-4 text-lg text-muted-foreground">
-              Van de eerste scan tot doorlopende bewaking: ComplAI loodst u door
-              elke stap.
+              U kiest zelf de volgorde — waar u ook begint, alles komt samen in
+              uw eigen dashboard.
             </p>
           </div>
-          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {steps.map((step, i) => (
+          <div className="grid gap-6 lg:grid-cols-3">
+            {startSteps.map((step, i) => (
               <div
                 key={step.title}
-                className="relative rounded-xl border bg-card p-6 shadow-sm transition-shadow hover:shadow-md"
+                className="relative flex flex-col rounded-xl border bg-card p-6 shadow-sm transition-shadow hover:shadow-md"
               >
                 <span className="absolute right-5 top-5 text-4xl font-bold text-brand-500/25">
                   {String(i + 1).padStart(2, "0")}
@@ -306,7 +338,16 @@ export default function LandingPage() {
                   <step.icon className="h-6 w-6" />
                 </div>
                 <h3 className="text-lg font-semibold">{step.title}</h3>
-                <p className="mt-1 text-sm text-muted-foreground">{step.text}</p>
+                <p className="mt-1 flex-1 text-sm text-muted-foreground">{step.text}</p>
+                <Button
+                  asChild
+                  variant={step.primary ? "default" : "outline"}
+                  className="mt-5 w-fit"
+                >
+                  <Link href={step.cta.href}>
+                    {step.cta.label} <ArrowRight className="h-4 w-4" />
+                  </Link>
+                </Button>
               </div>
             ))}
           </div>
@@ -346,8 +387,8 @@ export default function LandingPage() {
               Alles op één plek
             </h2>
             <p className="mt-4 text-lg text-muted-foreground">
-              Elke verplichting uit de AI Act afgedekt — en aantoonbaar onder
-              controle.
+              Eenmaal binnen heeft u alles in handen om elke verplichting uit de
+              AI Act af te dekken — en het aantoonbaar te houden.
             </p>
           </div>
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
@@ -420,11 +461,11 @@ export default function LandingPage() {
         <div className="container">
           <div className="mx-auto mb-14 max-w-2xl text-center">
             <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">
-              Voor elke organisatie een passend plan
+              Voor elke organisatie een passend pakket
             </h2>
             <p className="mt-4 text-lg text-muted-foreground">
-              De scan is gratis, zonder account. Elk betaald plan begint met een
-              gratis eerste maand.
+              De scan is gratis, zonder account. Elk betaald pakket begint met
+              een gratis eerste maand.
             </p>
           </div>
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
@@ -460,13 +501,13 @@ export default function LandingPage() {
                   variant={plan.highlighted ? "default" : "outline"}
                   className="mt-4 w-full"
                 >
-                  <Link href="/pricing">Bekijk plan</Link>
+                  <Link href="/pricing">Bekijk pakket</Link>
                 </Button>
               </div>
             ))}
           </div>
           <p className="mt-8 text-center text-sm text-muted-foreground">
-            Alle plannen en functievergelijking op de{" "}
+            Alle pakketten en functievergelijking op de{" "}
             <Link href="/pricing" className="font-medium text-primary hover:underline">
               prijzenpagina
             </Link>
