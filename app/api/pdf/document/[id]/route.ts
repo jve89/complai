@@ -2,6 +2,7 @@ import { renderToBuffer } from "@react-pdf/renderer";
 
 import { prisma } from "@/lib/prisma";
 import { getActiveCompany } from "@/lib/auth";
+import { DEMO_COMPANY_NAME } from "@/lib/demo";
 import { getDocumentMeta, type DocumentContent, type DocumentType } from "@/lib/documents/templates";
 import { DocumentPdf } from "@/components/pdf/document-pdf";
 
@@ -12,13 +13,24 @@ export async function GET(
   _req: Request,
   { params }: { params: { id: string } }
 ) {
-  const { company } = await getActiveCompany();
-
-  const doc = await prisma.document.findFirst({
-    where: { id: params.id, companyId: company.id },
+  // Look the document up first; demo documents are public (rendered as a
+  // watermarked preview), real documents are scoped to the active company.
+  const doc = await prisma.document.findUnique({
+    where: { id: params.id },
+    include: { company: { select: { id: true, name: true } } },
   });
   if (!doc) {
     return new Response("Document niet gevonden", { status: 404 });
+  }
+
+  const preview = doc.company.name === DEMO_COMPANY_NAME;
+  if (!preview) {
+    // Real document → enforce ownership (this path may redirect anonymous users
+    // to login via getActiveCompany).
+    const { company } = await getActiveCompany();
+    if (doc.companyId !== company.id) {
+      return new Response("Document niet gevonden", { status: 404 });
+    }
   }
 
   const content = doc.content as unknown as DocumentContent;
@@ -30,13 +42,15 @@ export async function GET(
   const buffer = await renderToBuffer(
     DocumentPdf({
       content,
-      companyName: company.name,
+      companyName: doc.company.name,
       version: doc.version,
       date,
+      preview,
     })
   );
 
-  const filename = `${meta.name.toLowerCase().replace(/[^a-z0-9]+/g, "-")}-v${doc.version}.pdf`;
+  const suffix = preview ? "voorbeeld" : `v${doc.version}`;
+  const filename = `${meta.name.toLowerCase().replace(/[^a-z0-9]+/g, "-")}-${suffix}.pdf`;
 
   return new Response(new Uint8Array(buffer), {
     headers: {

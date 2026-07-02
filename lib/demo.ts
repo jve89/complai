@@ -10,9 +10,22 @@ import { buildProfile } from "@/lib/compliance/profile";
 import { evidenceFromAnswers } from "@/lib/compliance/evidence-from-answers";
 import { materializeComplianceItems } from "@/lib/compliance/materialize";
 import { buildDocument, type DocumentType } from "@/lib/documents/templates";
+import { modulesForPath, moduleCountForPath } from "@/lib/training/content";
 import type { ScanAnswers } from "@/lib/compliance/questions";
 
 export const DEMO_COMPANY_NAME = "Demo Recruitment B.V.";
+
+// Simulated e-learning progress per demo employee: how many of their path's
+// modules are completed ("all" = finished). Gives the overview a realistic mix
+// (2 afgerond, 2 bezig, 1 niet gestart). Lars is mid-way and is the demo
+// learner (see lib/training/learner.ts), so his modules show partial progress.
+const DEMO_TRAINING_PROGRESS: Record<string, number | "all"> = {
+  "Sanne de Vries": "all",
+  "Tom Bakker": "all",
+  "Priya Sharma": 0,
+  "Lars Jansen": 3,
+  "Fatima El Amrani": 2,
+};
 
 // A comprehensive case: an HR-tech company that BUILDS and DEPLOYS a high-risk AI
 // recruitment tool (Annex III), offers a GPAI model, and runs a chatbot — so the
@@ -113,7 +126,7 @@ export async function getDemoCompany(): Promise<Company> {
     data: [
       { companyId: company.id, name: "Sanne de Vries", role: "admin", trainingCompleted: true },
       { companyId: company.id, name: "Tom Bakker", role: "manager", trainingCompleted: true },
-      { companyId: company.id, name: "Priya Sharma", role: "employee", trainingCompleted: true },
+      { companyId: company.id, name: "Priya Sharma", role: "employee", trainingCompleted: false },
       { companyId: company.id, name: "Lars Jansen", role: "employee", trainingCompleted: false },
       { companyId: company.id, name: "Fatima El Amrani", role: "employee", trainingCompleted: false },
     ],
@@ -128,25 +141,36 @@ export async function getDemoCompany(): Promise<Company> {
  * of generated documents — also back-fills demo companies created before these
  * were added, without touching a real customer's data. */
 async function ensureDemoData(company: Company): Promise<void> {
+  // Every Employee also gets a matching User so they appear in the Medewerkers
+  // tab (which reads users), not only in the e-learning overview (which reads
+  // employees). Kept in sync with the employees created in getDemoCompany.
   const demoUsers = [
     { id: `${company.id}-u1`, email: "sanne@demo-recruitment.nl", name: "Sanne de Vries", role: "admin" as const },
     { id: `${company.id}-u2`, email: "tom@demo-recruitment.nl", name: "Tom Bakker", role: "manager" as const },
     { id: `${company.id}-u3`, email: "priya@demo-recruitment.nl", name: "Priya Sharma", role: "employee" as const },
     { id: `${company.id}-u4`, email: "lars@demo-recruitment.nl", name: "Lars Jansen", role: "employee" as const },
+    { id: `${company.id}-u5`, email: "fatima@demo-recruitment.nl", name: "Fatima El Amrani", role: "employee" as const },
   ];
   // Keep the demo on the top plan so every document stays unlocked.
   if (company.plan !== "schaal") {
     await prisma.company.update({ where: { id: company.id }, data: { plan: "schaal" } });
   }
 
-  const userCount = await prisma.user.count({ where: { companyId: company.id } });
-  if (userCount === 0) {
-    // Clear any orphaned demo users (from an earlier rebuild) so emails are free.
+  // Create any demo users that don't exist yet (back-fills e.g. Fatima onto an
+  // older demo company) without disturbing the ones already present.
+  const existingUsers = await prisma.user.findMany({
+    where: { companyId: company.id },
+    select: { email: true },
+  });
+  const have = new Set(existingUsers.map((u) => u.email));
+  const missing = demoUsers.filter((u) => !have.has(u.email));
+  if (missing.length) {
+    // Free the emails first in case they're orphaned from an earlier rebuild.
     await prisma.user.deleteMany({
-      where: { email: { in: demoUsers.map((u) => u.email) } },
+      where: { email: { in: missing.map((u) => u.email) } },
     });
     await prisma.user.createMany({
-      data: demoUsers.map((u) => ({ ...u, companyId: company.id })),
+      data: missing.map((u) => ({ ...u, companyId: company.id })),
     });
   }
 
@@ -162,6 +186,43 @@ async function ensureDemoData(company: Company): Promise<void> {
           content: buildDocument(type, company, systems) as unknown as Prisma.InputJsonValue,
         },
       });
+    }
+  }
+
+  // Simulate e-learning progress so the overview shows a realistic mix and the
+  // demo learner (Lars) has some finished modules. Guard on Sanne, who is never
+  // the demo learner — so her completions only exist once we've seeded — making
+  // this robust against stray completions a demo visitor may create for Lars.
+  const employees = await prisma.employee.findMany({
+    where: { companyId: company.id },
+  });
+  const sanne = employees.find((e) => e.name === "Sanne de Vries");
+  const alreadySeeded = sanne
+    ? (await prisma.trainingCompletion.count({ where: { employeeId: sanne.id } })) > 0
+    : false;
+  if (!alreadySeeded) {
+    for (const emp of employees) {
+      const spec = DEMO_TRAINING_PROGRESS[emp.name] ?? 0;
+      const modules = modulesForPath(emp.role);
+      const count = spec === "all" ? modules.length : Math.min(spec, modules.length);
+      if (count > 0) {
+        await prisma.trainingCompletion.createMany({
+          data: modules.slice(0, count).map((m) => ({
+            companyId: company.id,
+            employeeId: emp.id,
+            moduleId: m.id,
+            score: 5,
+          })),
+          skipDuplicates: true,
+        });
+      }
+      const finished = count >= moduleCountForPath(emp.role);
+      if (emp.trainingCompleted !== finished) {
+        await prisma.employee.update({
+          where: { id: emp.id },
+          data: { trainingCompleted: finished },
+        });
+      }
     }
   }
 }

@@ -3,11 +3,17 @@
 import { type ReactNode, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Menu, X } from "lucide-react";
+import { Menu, ShieldCheck, X } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import { SiteLogo } from "@/components/site-logo";
 import { DASHBOARD_NAV, DEMO_NAV } from "@/components/dashboard/nav-items";
+
+const ADMIN_ITEM = {
+  href: "/dashboard/admin",
+  label: "ComplAI-beheer",
+  icon: ShieldCheck,
+};
 
 function isActive(pathname: string, href: string) {
   if (href === "/dashboard" || href === "/demo") return pathname === href;
@@ -23,9 +29,11 @@ const navFor = (nav: "dashboard" | "demo") =>
 export function Sidebar({
   nav = "dashboard",
   logoHref = "/dashboard",
+  showAdmin = false,
 }: {
   nav?: "dashboard" | "demo";
   logoHref?: string;
+  showAdmin?: boolean;
 }) {
   const pathname = usePathname();
   const items = navFor(nav);
@@ -54,6 +62,20 @@ export function Sidebar({
             </Link>
           );
         })}
+        {showAdmin && (
+          <Link
+            href={ADMIN_ITEM.href}
+            className={cn(
+              "mt-1 flex items-center gap-3 rounded-lg border-t border-white/10 px-3 py-2.5 pt-4 text-sm font-medium transition-colors",
+              isActive(pathname, ADMIN_ITEM.href)
+                ? "text-brand-300"
+                : "text-white/70 hover:bg-white/10 hover:text-white"
+            )}
+          >
+            <ADMIN_ITEM.icon className="h-5 w-5 shrink-0" />
+            {ADMIN_ITEM.label}
+          </Link>
+        )}
       </nav>
       <div className="border-t border-white/10 p-4 text-xs text-white/40">
         EU AI Act compliance
@@ -67,9 +89,11 @@ export function Sidebar({
 export function MobileNav({
   nav = "dashboard",
   actions,
+  showAdmin = false,
 }: {
   nav?: "dashboard" | "demo";
   actions?: ReactNode;
+  showAdmin?: boolean;
 }) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
@@ -116,6 +140,21 @@ export function MobileNav({
                   </Link>
                 );
               })}
+              {showAdmin && (
+                <Link
+                  href={ADMIN_ITEM.href}
+                  onClick={() => setOpen(false)}
+                  className={cn(
+                    "mt-1 flex items-center gap-3 rounded-lg border-t px-3 py-2.5 pt-4 text-sm font-medium",
+                    isActive(pathname, ADMIN_ITEM.href)
+                      ? "bg-navy-900 text-white"
+                      : "text-foreground hover:bg-secondary"
+                  )}
+                >
+                  <ADMIN_ITEM.icon className="h-5 w-5" />
+                  {ADMIN_ITEM.label}
+                </Link>
+              )}
             </nav>
             {actions && (
               <div

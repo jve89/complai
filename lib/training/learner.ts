@@ -6,8 +6,9 @@ import type { CurrentUser } from "@/lib/auth";
 /**
  * Resolves which Employee record the current learner maps to.
  *  - signed-in user → their linked employee (created on first use)
- *  - demo mode (no user) → the first employee who hasn't finished training yet,
- *    so progress is visible in the overview; falls back to any/created employee.
+ *  - demo mode (no user) → the first employee who is mid-way through training
+ *    (so the module list shows real progress), else the first unfinished one;
+ *    falls back to any/created employee.
  */
 export async function getLearnerEmployee(
   company: Company,
@@ -44,11 +45,15 @@ export async function getLearnerEmployee(
     });
   }
 
-  const incomplete = await prisma.employee.findFirst({
+  const incompletes = await prisma.employee.findMany({
     where: { companyId: company.id, trainingCompleted: false },
     orderBy: { createdAt: "asc" },
+    include: { trainingCompletions: { select: { id: true } } },
   });
-  if (incomplete) return incomplete;
+  // Prefer someone already mid-way so the module list shows finished modules.
+  const learner =
+    incompletes.find((e) => e.trainingCompletions.length > 0) ?? incompletes[0];
+  if (learner) return learner;
 
   const any = await prisma.employee.findFirst({
     where: { companyId: company.id },

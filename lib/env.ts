@@ -12,7 +12,17 @@ export const env = {
   stripeWebhookSecret: process.env.STRIPE_WEBHOOK_SECRET,
   resendApiKey: process.env.RESEND_API_KEY,
   emailFrom: process.env.EMAIL_FROM ?? "ComplAI <onboarding@resend.dev>",
+  // ComplAI staff who may manage all client companies (comma-separated emails).
+  superAdminEmails: (process.env.SUPER_ADMIN_EMAILS ?? "")
+    .split(",")
+    .map((e) => e.trim().toLowerCase())
+    .filter(Boolean),
 };
+
+/** Whether an email belongs to a ComplAI super-admin. */
+export function isSuperAdmin(email?: string | null): boolean {
+  return Boolean(email && env.superAdminEmails.includes(email.toLowerCase()));
+}
 
 export const isStripeConfigured = Boolean(env.stripeSecretKey);
 export const isResendConfigured = Boolean(env.resendApiKey);
