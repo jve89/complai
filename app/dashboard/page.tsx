@@ -168,6 +168,19 @@ export default async function DashboardPage({
       {checkoutBanner}
       {checklist}
 
+      {/* Current pakket + management */}
+      <div className="mb-6 flex flex-wrap items-center justify-between gap-3 rounded-lg border bg-card p-4">
+        <div>
+          <p className="text-sm text-muted-foreground">Uw pakket</p>
+          <p className="text-lg font-semibold">{planLabel}</p>
+        </div>
+        <Button asChild variant="outline" size="sm">
+          <Link href={company.stripeCustomerId ? "/dashboard/settings" : "/pricing"}>
+            {company.stripeCustomerId ? "Abonnement beheren" : "Kies een pakket"}
+          </Link>
+        </Button>
+      </div>
+
       <div className="grid gap-6 lg:grid-cols-3">
         <Card className="lg:col-span-1">
           <CardHeader>

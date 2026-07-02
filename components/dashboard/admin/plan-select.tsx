@@ -4,32 +4,42 @@ import { useState, useTransition } from "react";
 import { Check, Loader2 } from "lucide-react";
 
 import { setCompanyPlan } from "@/app/dashboard/admin/actions";
+import { Button } from "@/components/ui/button";
 import { TIER_ORDER, TIER_LABEL } from "@/lib/plan";
 import type { TierId } from "@/lib/compliance/types";
 
 export function PlanSelect({
   companyId,
+  companyName,
   plan,
 }: {
   companyId: string;
+  companyName: string;
   plan: string;
 }) {
-  const [value, setValue] = useState(plan);
-  const [saved, setSaved] = useState(false);
+  const [current, setCurrent] = useState(plan);
+  const [staged, setStaged] = useState(plan);
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
 
-  function change(next: string) {
-    setValue(next);
-    setSaved(false);
+  const dirty = staged !== current;
+
+  function apply() {
     setError(null);
+    if (
+      !confirm(
+        `Pakket van ${companyName} wijzigen naar ${TIER_LABEL[staged as TierId]}?`
+      )
+    ) {
+      return;
+    }
     startTransition(async () => {
-      const res = await setCompanyPlan(companyId, next);
+      const res = await setCompanyPlan(companyId, staged);
       if (res.ok) {
-        setSaved(true);
+        setCurrent(staged);
       } else {
         setError(res.error);
-        setValue(plan); // revert
+        setStaged(current); // revert selection
       }
     });
   }
@@ -37,8 +47,8 @@ export function PlanSelect({
   return (
     <div className="flex items-center gap-2">
       <select
-        value={value}
-        onChange={(e) => change(e.target.value)}
+        value={staged}
+        onChange={(e) => setStaged(e.target.value)}
         disabled={isPending}
         className="rounded-md border bg-background px-2 py-1.5 text-sm"
       >
@@ -48,11 +58,13 @@ export function PlanSelect({
           </option>
         ))}
       </select>
-      {isPending ? (
-        <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
-      ) : saved ? (
-        <Check className="h-4 w-4 text-brand-600" />
-      ) : null}
+      {dirty ? (
+        <Button size="sm" onClick={apply} disabled={isPending}>
+          {isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : "Toepassen"}
+        </Button>
+      ) : (
+        <Check className="h-4 w-4 text-brand-600/50" />
+      )}
       {error && <span className="text-xs text-red-600">{error}</span>}
     </div>
   );
