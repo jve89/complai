@@ -6,6 +6,7 @@ import { cookies } from "next/headers";
 
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser, IMPERSONATE_COOKIE } from "@/lib/auth";
+import { deleteAuthUsers } from "@/lib/supabase/admin";
 import { TIER_ORDER } from "@/lib/plan";
 import type { TierId } from "@/lib/compliance/types";
 
@@ -97,4 +98,54 @@ export async function startImpersonation(formData: FormData): Promise<void> {
 export async function stopImpersonation(): Promise<void> {
   cookies().delete(IMPERSONATE_COOKIE);
   redirect("/dashboard/admin");
+}
+
+/**
+ * Permanently deletes a single person: their Supabase auth login + User row +
+ * linked e-learning record. Super-admin only; cannot delete yourself.
+ */
+export async function deleteUser(formData: FormData): Promise<void> {
+  const me = await requireSuperAdmin();
+  if (!me) return;
+  const userId = String(formData.get("userId") ?? "");
+  if (!userId || userId === me.id) return;
+
+  const target = await prisma.user.findUnique({ where: { id: userId } });
+  if (!target) return;
+
+  console.error(
+    `[admin-audit] ${me.email} verwijdert gebruiker ${target.email} (${userId})`
+  );
+  await deleteAuthUsers([userId]);
+  await prisma.employee.deleteMany({ where: { userId } });
+  await prisma.user.delete({ where: { id: userId } });
+
+  revalidatePath("/dashboard/admin");
+}
+
+/**
+ * Permanently deletes a whole organisation: every member's auth login + all its
+ * data (AI-register, documents, employees, compliance items, training,
+ * invites cascade). Super-admin only; cannot delete your own organisation.
+ */
+export async function deleteCompany(formData: FormData): Promise<void> {
+  const me = await requireSuperAdmin();
+  if (!me) return;
+  const companyId = String(formData.get("companyId") ?? "");
+  if (!companyId || companyId === me.company?.id) return;
+
+  const company = await prisma.company.findUnique({
+    where: { id: companyId },
+    include: { users: { select: { id: true } } },
+  });
+  if (!company) return;
+
+  console.error(
+    `[admin-audit] ${me.email} verwijdert organisatie ${company.name} (${companyId}) met ${company.users.length} gebruiker(s)`
+  );
+  await deleteAuthUsers(company.users.map((u) => u.id));
+  await prisma.user.deleteMany({ where: { companyId } });
+  await prisma.company.delete({ where: { id: companyId } });
+
+  revalidatePath("/dashboard/admin");
 }

@@ -16,6 +16,7 @@ import {
 } from "@/app/dashboard/admin/actions";
 import { PageHeader } from "@/components/dashboard/page-header";
 import { PlanSelect } from "@/components/dashboard/admin/plan-select";
+import { DeleteButton } from "@/components/dashboard/admin/delete-button";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -241,14 +242,19 @@ export default async function AdminPage({
                         </div>
                       </TableCell>
                       <TableCell className="text-right">
-                        {!isSelf && (
-                          <form action={startImpersonation}>
-                            <input type="hidden" name="companyId" value={c.id} />
-                            <Button type="submit" size="sm" variant="outline">
-                              <LogIn className="h-4 w-4" /> Open dashboard
-                            </Button>
-                          </form>
-                        )}
+                        <div className="flex items-center justify-end gap-1">
+                          {!isSelf && (
+                            <form action={startImpersonation}>
+                              <input type="hidden" name="companyId" value={c.id} />
+                              <Button type="submit" size="sm" variant="outline">
+                                <LogIn className="h-4 w-4" /> Open dashboard
+                              </Button>
+                            </form>
+                          )}
+                          {!isSelf && !isDemo && (
+                            <DeleteButton id={c.id} name={c.name} kind="organisatie" />
+                          )}
+                        </div>
                       </TableCell>
                     </TableRow>
                   );
@@ -267,6 +273,7 @@ export default async function AdminPage({
                   <TableHead>E-mail</TableHead>
                   <TableHead>Rol</TableHead>
                   <TableHead>Organisatie</TableHead>
+                  <TableHead className="text-right">Actie</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -285,6 +292,11 @@ export default async function AdminPage({
                     <TableCell className="text-sm text-muted-foreground">{u.email}</TableCell>
                     <TableCell className="text-sm">{ROLE_LABEL[u.role] ?? u.role}</TableCell>
                     <TableCell className="text-sm">{u.company?.name ?? "—"}</TableCell>
+                    <TableCell className="text-right">
+                      {u.id !== me.id && (
+                        <DeleteButton id={u.id} name={u.name ?? u.email} kind="persoon" />
+                      )}
+                    </TableCell>
                   </TableRow>
                 ))}
               </TableBody>

@@ -783,6 +783,83 @@ const ROLE_MODULES: TrainingModule[] = [
       },
     ],
   },
+  {
+    id: "platform-beheer",
+    title: "Werken met ComplAI als beheerder",
+    minutes: 10,
+    intro:
+      "Voor beheerders: hoe ComplAI werkt, wat u als beheerder kunt en waar u verantwoordelijk voor bent — van het uitnodigen van uw team tot het beheren van uw pakket.",
+    lessons: [
+      {
+        heading: "Het platform in het kort",
+        paragraphs: [
+          "ComplAI helpt uw organisatie grip te krijgen op de EU AI Act. De kernonderdelen: het AI-register (al uw AI-systemen), de documentgenerator (beleid, FRIA, transparantie en meer), e-learning met certificaten, en het governance-overzicht met deadlines en kwartaalchecks.",
+          "Alles begint bij de risicoscan: die bepaalt welke verplichtingen en documenten voor uw organisatie gelden. Werk de scan bij als er iets verandert.",
+        ],
+      },
+      {
+        heading: "Uw rol als beheerder",
+        paragraphs: [
+          "Als beheerder bent u de admin van uw organisatie in ComplAI. U nodigt collega's uit via Medewerkers en wijst hun rol toe: Medewerker, Manager of Beheerder. Alleen beheerders kunnen uitnodigen en rollen wijzigen.",
+          "De rol bepaalt het leerpad in de e-learning (Medewerker, Manager of Beheerder). Een organisatie kan meerdere beheerders hebben.",
+        ],
+      },
+      {
+        heading: "Pakket, documenten en verantwoordelijkheid",
+        paragraphs: [
+          "Uw pakket bepaalt welke documenten u kunt genereren; u beheert het via Instellingen → Abonnement.",
+          "Gegenereerde documenten zijn concept-sjablonen op basis van uw eigen opgaven. U vult ze aan, laat ze toetsen en stelt ze zelf vast — ComplAI biedt beslissingsondersteuning, geen juridisch advies. Als beheerder houdt u het register actueel, wijst u training toe en stelt u documenten vast.",
+        ],
+      },
+    ],
+    quiz: [
+      {
+        question: "Wie kan in ComplAI teamleden uitnodigen en hun rol wijzigen?",
+        options: [
+          "Iedereen in de organisatie",
+          "Alleen een beheerder",
+          "Alleen ComplAI",
+          "Alleen een manager",
+        ],
+        answer: 1,
+      },
+      {
+        question: "Wat bepaalt het leerpad van een teamlid in de e-learning?",
+        options: [
+          "Hun e-mailadres",
+          "De rol die de beheerder toewijst (medewerker/manager/beheerder)",
+          "De datum van aanmelden",
+          "Het toeval",
+        ],
+        answer: 1,
+      },
+      {
+        question: "Wat bepaalt welke documenten u kunt genereren?",
+        options: [
+          "Het aantal medewerkers",
+          "Uw pakket (abonnement)",
+          "De dag van de week",
+          "Niets, alles is altijd beschikbaar",
+        ],
+        answer: 1,
+      },
+      {
+        question: "Wat is de status van een door ComplAI gegenereerd document?",
+        options: [
+          "Een juridisch bindend eindproduct",
+          "Een concept-sjabloon dat u zelf aanvult en vaststelt",
+          "Een door de toezichthouder goedgekeurd document",
+          "Een openbare publicatie",
+        ],
+        answer: 1,
+      },
+      {
+        question: "Kan een organisatie meerdere beheerders hebben?",
+        options: ["Ja", "Nee, maximaal één", "Alleen met een Audit-klaar-pakket", "Alleen tijdens de proefperiode"],
+        answer: 0,
+      },
+    ],
+  },
 ];
 
 export const MODULES: TrainingModule[] = [
@@ -796,7 +873,7 @@ const CORE_IDS = BASE_MODULES.map((m) => m.id);
 export const PATH_MODULES: Record<PathId, string[]> = {
   employee: CORE_IDS,
   manager: [...CORE_IDS, "human-oversight", "deployer-duties"],
-  admin: [...CORE_IDS, "risk-management", "technical-docs"],
+  admin: [...CORE_IDS, "risk-management", "technical-docs", "platform-beheer"],
 };
 
 export function getModule(id: string): TrainingModule | undefined {

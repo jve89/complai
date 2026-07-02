@@ -197,8 +197,11 @@ async function ensureDemoData(company: Company): Promise<void> {
     where: { companyId: company.id },
   });
   const sanne = employees.find((e) => e.name === "Sanne de Vries");
+  // Re-seed when Sanne (the "afgerond" beheerder) is short of her path's module
+  // count — so adding a Beheerder module top-ups the demo instead of leaving 7/8.
   const alreadySeeded = sanne
-    ? (await prisma.trainingCompletion.count({ where: { employeeId: sanne.id } })) > 0
+    ? (await prisma.trainingCompletion.count({ where: { employeeId: sanne.id } })) >=
+      moduleCountForPath(sanne.role)
     : false;
   if (!alreadySeeded) {
     for (const emp of employees) {
