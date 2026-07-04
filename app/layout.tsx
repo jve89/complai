@@ -3,6 +3,7 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 
 import { CookieConsent } from "@/components/cookie-consent";
+import { env } from "@/lib/env";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -19,6 +20,8 @@ export const metadata: Metadata = {
   description:
     "ComplAI helpt Nederlandse mkb-organisaties stap voor stap voldoen aan de EU AI Act: risicoscan, AI-register, documenten, e-learning en governance vanuit één omgeving.",
   keywords: ["EU AI Act", "AI compliance", "AI-register", "risicoscan", "FRIA", "AI governance"],
+  // Held out of search until launch (flip ALLOW_INDEXING=true in Vercel).
+  robots: env.allowIndexing ? undefined : { index: false, follow: false },
   openGraph: {
     title: "ComplAI — Word AI Act-compliant zonder advieskosten",
     description:
