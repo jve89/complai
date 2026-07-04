@@ -14,6 +14,7 @@ import { materializeComplianceItems } from "@/lib/compliance/materialize";
 import { syncAiSystemsFromTools } from "@/lib/scan/claim";
 import { sendScanResult } from "@/lib/email/send";
 import { currentBaseUrl } from "@/lib/request-url";
+import { rateLimitByIp } from "@/lib/rate-limit";
 import { headlineLabel } from "@/lib/compliance/labels";
 import type { ScanAnswers } from "@/lib/compliance/questions";
 
@@ -26,6 +27,11 @@ import type { ScanAnswers } from "@/lib/compliance/questions";
 export async function submitScan(
   answers: ScanAnswers
 ): Promise<{ id: string }> {
+  // Generous throttle so no real user is affected, but anonymous DB spam can't
+  // run away. The wizard catches this and shows a retry message.
+  const rl = await rateLimitByIp("scan", 20, 3600);
+  if (!rl.ok) throw new Error(rl.error);
+
   const user = await getCurrentUser().catch(() => null);
   const companyId = user?.company?.id ?? null;
 

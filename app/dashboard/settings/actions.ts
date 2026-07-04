@@ -140,9 +140,10 @@ export async function inviteMember(input: {
   // Create a pending invite with a token; the invitee joins this company + role
   // when they sign up via /signup?invite=<token>.
   const token = crypto.randomUUID();
+  const expiresAt = new Date(Date.now() + 14 * 24 * 60 * 60 * 1000); // 14 days
   try {
     await prisma.invite.create({
-      data: { email, role: parsed.data.role, token, companyId: company.id },
+      data: { email, role: parsed.data.role, token, companyId: company.id, expiresAt },
     });
   } catch {
     return { ok: false, error: "Uitnodiging aanmaken mislukt." };

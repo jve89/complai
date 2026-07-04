@@ -22,6 +22,18 @@ export function baseUrlFrom(req: Request): string {
   return env.appUrl;
 }
 
+/**
+ * Best-effort client IP for Server Actions / RSC, from the proxy headers Vercel
+ * sets. Used only as a rate-limit key — never for trust/authorization. Falls
+ * back to "unknown" (a shared bucket) when no header is present.
+ */
+export function currentClientIp(): string {
+  const h = headers();
+  const fwd = h.get("x-forwarded-for");
+  if (fwd) return fwd.split(",")[0]!.trim();
+  return h.get("x-real-ip") ?? "unknown";
+}
+
 /** Same idea for Server Actions / RSC, where there is no Request object. */
 export function currentBaseUrl(): string {
   const h = headers();

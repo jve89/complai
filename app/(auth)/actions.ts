@@ -10,6 +10,7 @@ import { isSupabaseConfigured } from "@/lib/env";
 import { applyScanToCompany } from "@/lib/scan/claim";
 import { sendWelcome } from "@/lib/email/send";
 import { currentBaseUrl } from "@/lib/request-url";
+import { rateLimitByIp } from "@/lib/rate-limit";
 
 export type AuthState = { error?: string } | undefined;
 export type ResetState = { error?: string; sent?: boolean } | undefined;
@@ -36,6 +37,9 @@ export async function login(
         "Supabase is nog niet geconfigureerd. Vul NEXT_PUBLIC_SUPABASE_URL en _ANON_KEY in.",
     };
   }
+
+  const rl = await rateLimitByIp("login", 10, 300);
+  if (!rl.ok) return { error: rl.error };
 
   const parsed = loginSchema.safeParse(Object.fromEntries(formData));
   if (!parsed.success) {
@@ -89,6 +93,9 @@ export async function signup(
     };
   }
 
+  const rl = await rateLimitByIp("signup", 5, 3600);
+  if (!rl.ok) return { error: rl.error };
+
   const base = z
     .object({
       name: z.string().min(2, "Voer uw naam in."),
@@ -109,6 +116,9 @@ export async function signup(
     const rec = await prisma.invite.findUnique({ where: { token: inviteToken } });
     if (!rec || rec.accepted) {
       return { error: "Deze uitnodiging is niet meer geldig. Vraag de beheerder om een nieuwe." };
+    }
+    if (rec.expiresAt && rec.expiresAt < new Date()) {
+      return { error: "Deze uitnodiging is verlopen. Vraag de beheerder om een nieuwe." };
     }
     invite = { id: rec.id, companyId: rec.companyId, role: rec.role };
   }
@@ -205,6 +215,10 @@ export async function requestPasswordReset(
   if (!isSupabaseConfigured) {
     return { error: "Supabase is nog niet geconfigureerd." };
   }
+
+  const rl = await rateLimitByIp("pwreset", 5, 3600);
+  if (!rl.ok) return { error: rl.error };
+
   const parsed = z
     .string()
     .email("Voer een geldig e-mailadres in.")

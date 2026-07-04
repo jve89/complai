@@ -38,7 +38,8 @@ export default async function SignupPage({
       where: { token: inviteToken },
       include: { company: true },
     });
-    if (rec && !rec.accepted) {
+    const expired = rec?.expiresAt ? rec.expiresAt < new Date() : false;
+    if (rec && !rec.accepted && !expired) {
       invite = { email: rec.email, role: rec.role, company: rec.company.name };
     } else {
       inviteInvalid = true;

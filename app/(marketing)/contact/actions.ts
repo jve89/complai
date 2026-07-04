@@ -5,6 +5,7 @@ import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { sendEmail } from "@/lib/resend";
 import { env } from "@/lib/env";
+import { rateLimitByIp } from "@/lib/rate-limit";
 
 export type ContactState = { ok?: boolean; error?: string } | undefined;
 
@@ -20,6 +21,9 @@ export async function submitContact(
   _prev: ContactState,
   formData: FormData
 ): Promise<ContactState> {
+  const rl = await rateLimitByIp("contact", 5, 3600);
+  if (!rl.ok) return { error: rl.error };
+
   const parsed = schema.safeParse(Object.fromEntries(formData));
   if (!parsed.success) return { error: parsed.error.issues[0]?.message };
 

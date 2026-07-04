@@ -88,6 +88,7 @@ model Invite {
   accepted  Boolean  @default(false)
   companyId String   @map("company_id")
   createdAt DateTime @default(now()) @map("created_at")
+  expiresAt DateTime? @map("expires_at") // null = legacy invite, treated as non-expiring
 
   company Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
 
@@ -239,4 +240,16 @@ model ContactMessage {
 
   @@index([createdAt])
   @@map("contact_messages")
+}
+
+/// Fixed-window rate-limit counters, keyed by "<action>:<ip>". A shared store
+/// (vs in-memory) so limits hold across serverless instances. Rows are
+/// self-expiring by resetAt; a stale row is simply overwritten on next hit.
+model RateLimit {
+  key     String   @id
+  count   Int      @default(0)
+  resetAt DateTime @map("reset_at")
+
+  @@index([resetAt])
+  @@map("rate_limits")
 }
