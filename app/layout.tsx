@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 
+import { CookieConsent } from "@/components/cookie-consent";
+
 const inter = Inter({
   subsets: ["latin"],
   variable: "--font-inter",
@@ -33,7 +35,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="nl" suppressHydrationWarning>
-      <body className={`${inter.variable} font-sans antialiased`}>{children}</body>
+      <body className={`${inter.variable} font-sans antialiased`}>
+        {children}
+        <CookieConsent />
+      </body>
     </html>
   );
 }
