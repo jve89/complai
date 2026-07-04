@@ -13,6 +13,8 @@ import {
 } from "lucide-react";
 
 import { prisma } from "@/lib/prisma";
+import { getCurrentUser } from "@/lib/auth";
+import { onboardingState } from "@/lib/onboarding";
 import type { ComplianceProfile, EntityRole, ObligationItem } from "@/lib/compliance/types";
 import { ScoreRing } from "@/components/score-ring";
 import { Badge } from "@/components/ui/badge";
@@ -125,6 +127,10 @@ export default async function ScanResultsPage({
 }) {
   const result = await prisma.scanResult.findUnique({ where: { id: params.id } });
   if (!result || !result.profile) notFound();
+
+  // Position-aware CTA: where is this viewer in the 3-step onboarding?
+  const user = await getCurrentUser();
+  const onboarding = onboardingState(user?.company ?? null);
 
   const profile = result.profile as unknown as ComplianceProfile;
   const headline = HEADLINE[profile.headline];
@@ -354,38 +360,85 @@ export default async function ScanResultsPage({
         </Card>
       )}
 
-      {/* CTA — the two remaining onboarding steps, as equal choices */}
+      {/* CTA — shows only the onboarding steps that remain for THIS viewer */}
       <Card className="overflow-hidden border-0 bg-navy-900 text-white">
         <CardContent className="flex flex-col items-center gap-4 py-10 text-center">
           <Sparkles className="h-8 w-8 text-brand-400" />
-          <h2 className="text-2xl font-bold">Zet uw resultaat om in actie</h2>
-          <p className="max-w-lg text-white/70">
-            Stap één is gedaan. Kies nu wat u eerst doet — de volgorde maakt niet
-            uit: dit resultaat staat straks meteen klaar in uw dashboard.
-          </p>
-          <div className="flex flex-col items-center gap-3 sm:flex-row">
-            <Button asChild size="lg">
-              <Link href={`/signup?scan=${result.id}`}>
-                Gratis account aanmaken <ArrowRight className="h-4 w-4" />
-              </Link>
-            </Button>
-            <Button
-              asChild
-              size="lg"
-              variant="outline"
-              className="border-white/30 bg-transparent text-white hover:bg-white/10 hover:text-white"
-            >
-              <Link href={`/pricing?scan=${result.id}`}>
-                Bekijk pakketten <ArrowRight className="h-4 w-4" />
-              </Link>
-            </Button>
-          </div>
-          <p className="text-sm text-white/50">
-            Al een account?{" "}
-            <Link href={`/login?scan=${result.id}`} className="underline">
-              Inloggen
-            </Link>
-          </p>
+
+          {!user ? (
+            /* Anonymous: account + pakket still to go (scan carried along). */
+            <>
+              <h2 className="text-2xl font-bold">Zet uw resultaat om in actie</h2>
+              <p className="max-w-lg text-white/70">
+                Stap 1 van 3 is gedaan. Kies nu wat u eerst doet — de volgorde
+                maakt niet uit: dit resultaat staat straks meteen klaar in uw
+                dashboard.
+              </p>
+              <div className="flex flex-col items-center gap-3 sm:flex-row">
+                <Button asChild size="lg">
+                  <Link href={`/signup?scan=${result.id}`}>
+                    Gratis account aanmaken <ArrowRight className="h-4 w-4" />
+                  </Link>
+                </Button>
+                <Button
+                  asChild
+                  size="lg"
+                  variant="outline"
+                  className="border-white/30 bg-transparent text-white hover:bg-white/10 hover:text-white"
+                >
+                  <Link href={`/pricing?scan=${result.id}`}>
+                    Bekijk pakketten <ArrowRight className="h-4 w-4" />
+                  </Link>
+                </Button>
+              </div>
+              <p className="text-sm text-white/50">
+                Al een account?{" "}
+                <Link href={`/login?scan=${result.id}`} className="underline">
+                  Inloggen
+                </Link>
+              </p>
+            </>
+          ) : !onboarding.packageDone ? (
+            /* Logged in, no pakket yet: one step left. */
+            <>
+              <h2 className="text-2xl font-bold">Nog één stap: kies uw pakket</h2>
+              <p className="max-w-lg text-white/70">
+                {onboarding.doneCount} van 3 stappen klaar. Uw account staat klaar
+                {onboarding.scanDone ? " en uw scan is opgeslagen" : ""} —
+                ontgrendel nu de documenten die bij uw verplichtingen horen.
+              </p>
+              <div className="flex flex-col items-center gap-3 sm:flex-row">
+                <Button asChild size="lg">
+                  <Link href="/pricing">
+                    Bekijk pakketten <ArrowRight className="h-4 w-4" />
+                  </Link>
+                </Button>
+                <Button
+                  asChild
+                  size="lg"
+                  variant="outline"
+                  className="border-white/30 bg-transparent text-white hover:bg-white/10 hover:text-white"
+                >
+                  <Link href="/dashboard">
+                    Naar mijn dashboard <ArrowRight className="h-4 w-4" />
+                  </Link>
+                </Button>
+              </div>
+            </>
+          ) : (
+            /* Logged in with a pakket: all 3 done. */
+            <>
+              <h2 className="text-2xl font-bold">U bent helemaal ingericht</h2>
+              <p className="max-w-lg text-white/70">
+                3 van 3 stappen klaar. Dit resultaat staat klaar in uw dashboard.
+              </p>
+              <Button asChild size="lg">
+                <Link href="/dashboard">
+                  Naar mijn dashboard <ArrowRight className="h-4 w-4" />
+                </Link>
+              </Button>
+            </>
+          )}
         </CardContent>
       </Card>
     </div>

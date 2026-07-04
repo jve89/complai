@@ -16,6 +16,7 @@ import { prisma } from "@/lib/prisma";
 import { formatDate } from "@/lib/utils";
 import { TIER_LABEL, TIER_ORDER, tierRank } from "@/lib/plan";
 import type { ComplianceProfile } from "@/lib/compliance/types";
+import { onboardingState } from "@/lib/onboarding";
 import { DASHBOARD_NAV } from "@/components/dashboard/nav-items";
 import { OnboardingChecklist } from "@/components/dashboard/onboarding-checklist";
 import { ScoreRing } from "@/components/score-ring";
@@ -63,9 +64,9 @@ export default async function DashboardPage({
   ]);
 
   // "Aan de slag": account (inherently done here) + scan + pakket. Hidden
-  // forever once everything is done or the user dismisses it.
-  const scanDone = Boolean(profile);
-  const planDone = tierRank(company.plan) > 0;
+  // forever once everything is done or the user dismisses it. Shared with the
+  // scan-results CTA via onboardingState so both surfaces stay in sync.
+  const { scanDone, packageDone: planDone } = onboardingState(company);
   const planLabel = TIER_LABEL[TIER_ORDER[tierRank(company.plan)]];
   let showChecklist = !demo && !company.onboardingDismissedAt;
   if (showChecklist && scanDone && planDone) {
