@@ -4,6 +4,8 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { cookies } from "next/headers";
 
+import { Prisma } from "@prisma/client";
+
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser, IMPERSONATE_COOKIE } from "@/lib/auth";
 import { deleteAuthUsers } from "@/lib/supabase/admin";
@@ -189,4 +191,52 @@ export async function deleteCompany(formData: FormData): Promise<void> {
   await prisma.company.delete({ where: { id: companyId } });
 
   revalidatePath("/dashboard/admin");
+}
+
+/**
+ * Resets a company's product data to a fresh state WITHOUT deleting logins:
+ * clears its scans, generated documents, AI-register, compliance items and
+ * e-learning progress, and wipes the derived compliance snapshot
+ * (profileJson/roles/tiers) + the onboarding dismissal. Keeps the users
+ * (logins), the team roster (employees), and the plan/Stripe billing.
+ *
+ * Super-admin only; type-to-confirm on the client. Unlike deleteCompany this is
+ * allowed on your OWN organisation — it never touches your login — which is how
+ * you start a test account over. The demo company is excluded (re-seed resets it).
+ */
+export async function resetCompanyData(formData: FormData): Promise<void> {
+  const me = await requireSuperAdmin();
+  if (!me) return;
+  const companyId = String(formData.get("companyId") ?? "");
+  if (!companyId) return;
+
+  const company = await prisma.company.findUnique({
+    where: { id: companyId },
+    select: { id: true, name: true },
+  });
+  if (!company) return;
+
+  console.error(
+    `[admin-audit] ${me.email} reset de gegevens van organisatie ${company.name} (${companyId})`
+  );
+
+  await prisma.$transaction([
+    prisma.trainingCompletion.deleteMany({ where: { companyId } }),
+    prisma.document.deleteMany({ where: { companyId } }),
+    prisma.aiSystem.deleteMany({ where: { companyId } }),
+    prisma.complianceItem.deleteMany({ where: { companyId } }),
+    prisma.scanResult.deleteMany({ where: { companyId } }),
+    prisma.company.update({
+      where: { id: companyId },
+      data: {
+        profileJson: Prisma.DbNull,
+        entityRoles: [],
+        riskTiers: [],
+        onboardingDismissedAt: null,
+      },
+    }),
+  ]);
+
+  revalidatePath("/dashboard/admin");
+  revalidatePath("/dashboard");
 }

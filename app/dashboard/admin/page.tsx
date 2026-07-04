@@ -13,6 +13,7 @@ import { revokeSuperAdmin, startImpersonation } from "@/app/dashboard/admin/acti
 import { PageHeader } from "@/components/dashboard/page-header";
 import { PlanSelect } from "@/components/dashboard/admin/plan-select";
 import { DeleteButton } from "@/components/dashboard/admin/delete-button";
+import { ResetButton } from "@/components/dashboard/admin/reset-button";
 import { AdminSearch } from "@/components/dashboard/admin/admin-search";
 import { RoleSelect } from "@/components/dashboard/admin/role-select";
 import { SuperAdminToggle } from "@/components/dashboard/admin/super-admin-toggle";
@@ -299,6 +300,7 @@ export default async function AdminPage({
                               </Button>
                             </form>
                           )}
+                          {!isDemo && <ResetButton id={c.id} name={c.name} />}
                           {!isSelf && !isDemo && (
                             <DeleteButton id={c.id} name={c.name} kind="organisatie" />
                           )}

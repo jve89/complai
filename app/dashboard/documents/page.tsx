@@ -167,18 +167,31 @@ export default async function DocumentsPage() {
   const plan = company.plan;
   const isTopPlan = tierRank(plan) >= tierRank("schaal");
 
-  // Profile-driven: show exactly the documents this company's scan calls for,
-  // split into verplicht vs aanbevolen. No scan yet → fall back to the
-  // generatable templates so the page is never empty.
-  let required: DocItem[];
-  let recommended: DocItem[];
-  if (profile?.documents) {
-    required = profile.documents.required.map((d) => ({ slug: d.slug, reason: d.reason }));
-    recommended = profile.documents.recommended.map((d) => ({ slug: d.slug, reason: d.reason }));
-  } else {
-    required = [];
-    recommended = DOCUMENT_META.map((m) => ({ slug: m.type, reason: m.description }));
-  }
+  // Two lenses combine here:
+  //  • Scan-driven — what THIS company must (verplicht) / should (aanbevolen)
+  //    have, from its ComplianceProfile.
+  //  • Plan-driven — everything else the pakket includes ("u krijgt waar u voor
+  //    betaalt"): the rest of the full handboek, split into what you can build
+  //    now vs. what a higher pakket would add. So the top tier shows all 8.
+  const catalogReason = new Map<string, string>(
+    DOCUMENT_META.map((m) => [m.type, m.description])
+  );
+  const catalogItem = (slug: string): DocItem => ({ slug, reason: catalogReason.get(slug) ?? "" });
+
+  const required: DocItem[] = profile?.documents
+    ? profile.documents.required.map((d) => ({ slug: d.slug, reason: d.reason }))
+    : [];
+  const recommended: DocItem[] = profile?.documents
+    ? profile.documents.recommended.map((d) => ({ slug: d.slug, reason: d.reason }))
+    : [];
+
+  const flagged = new Set([...required, ...recommended].map((d) => d.slug));
+  const rest = DOCUMENT_META.map((m) => m.type).filter((slug) => !flagged.has(slug));
+  const available: DocItem[] = rest.filter((slug) => docUnlocked(plan, slug)).map(catalogItem);
+  const lockedExtra: DocItem[] = rest
+    .filter((slug) => !docUnlocked(plan, slug))
+    .sort((a, b) => tierRank(minTierFor(a)) - tierRank(minTierFor(b)))
+    .map(catalogItem);
 
   return (
     <>
@@ -232,13 +245,42 @@ export default async function DocumentsPage() {
       )}
 
       {recommended.length > 0 && (
-        <section>
+        <section className="mb-10">
           <h2 className="mb-1 text-lg font-semibold">Aanbevolen ({recommended.length})</h2>
           <p className="mb-4 text-sm text-muted-foreground">
             Niet verplicht, wel verstandig om klaar te hebben liggen.
           </p>
           <div className="grid gap-6 lg:grid-cols-2">
             {recommended.map((item) => (
+              <DocCard key={item.slug} item={item} versions={versionsFor(item.slug)} plan={plan} />
+            ))}
+          </div>
+        </section>
+      )}
+
+      {available.length > 0 && (
+        <section className="mb-10">
+          <h2 className="mb-1 text-lg font-semibold">Ook beschikbaar in uw pakket ({available.length})</h2>
+          <p className="mb-4 text-sm text-muted-foreground">
+            Uw scan markeerde deze niet als nodig, maar ze zitten in uw pakket —
+            samen vormen ze het volledige compliancehandboek. U kunt ze alvast opstellen.
+          </p>
+          <div className="grid gap-6 lg:grid-cols-2">
+            {available.map((item) => (
+              <DocCard key={item.slug} item={item} versions={versionsFor(item.slug)} plan={plan} />
+            ))}
+          </div>
+        </section>
+      )}
+
+      {lockedExtra.length > 0 && (
+        <section>
+          <h2 className="mb-1 text-lg font-semibold">Beschikbaar in een hoger pakket ({lockedExtra.length})</h2>
+          <p className="mb-4 text-sm text-muted-foreground">
+            Onderdeel van het volledige compliancehandboek. Upgrade om deze te ontgrendelen.
+          </p>
+          <div className="grid gap-6 lg:grid-cols-2">
+            {lockedExtra.map((item) => (
               <DocCard key={item.slug} item={item} versions={versionsFor(item.slug)} plan={plan} />
             ))}
           </div>
