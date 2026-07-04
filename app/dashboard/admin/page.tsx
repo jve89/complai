@@ -107,8 +107,10 @@ export default async function AdminPage({
   };
   if (peopleCmp[sort]) people.sort((a, b) => peopleCmp[sort](a, b) * d);
 
+  // "Betalend" = an actual live subscription, not just a leftover Stripe
+  // customer record (which an abandoned checkout also creates).
   const paying = companies.filter(
-    (c) => tierRank(c.plan) > 0 && c.stripeCustomerId && c.name !== DEMO_COMPANY_NAME
+    (c) => c.stripeSubscriptionId && c.name !== DEMO_COMPANY_NAME
   ).length;
 
   const tabClass = (active: boolean) =>
@@ -264,9 +266,9 @@ export default async function AdminPage({
                       </TableCell>
                       <TableCell className="text-sm">{c._count.users}</TableCell>
                       <TableCell>
-                        {c.stripeCustomerId ? (
+                        {c.planStatus ? (
                           <Badge variant="secondary">
-                            {STATUS_LABEL[c.planStatus ?? ""] ?? "—"}
+                            {STATUS_LABEL[c.planStatus] ?? c.planStatus}
                           </Badge>
                         ) : (
                           <span className="text-xs text-muted-foreground">geen abonnement</span>
@@ -279,10 +281,10 @@ export default async function AdminPage({
                             companyName={c.name}
                             plan={TIER_ORDER[tierRank(c.plan)]}
                           />
-                          {c.stripeCustomerId && !isSelf && (
+                          {c.stripeSubscriptionId && !isSelf && (
                             <span className="text-[11px] text-amber-600">
-                              heeft Stripe-abonnement — handmatige wijziging wordt door
-                              de volgende webhook overschreven
+                              heeft een lopend Stripe-abonnement — handmatige wijziging
+                              wordt door de volgende webhook overschreven
                             </span>
                           )}
                         </div>
