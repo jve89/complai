@@ -12,6 +12,7 @@ import { sendWelcome } from "@/lib/email/send";
 import { currentBaseUrl } from "@/lib/request-url";
 
 export type AuthState = { error?: string } | undefined;
+export type ResetState = { error?: string; sent?: boolean } | undefined;
 
 const loginSchema = z.object({
   email: z.string().email("Voer een geldig e-mailadres in."),
@@ -190,6 +191,65 @@ export async function signup(
       ? `/api/stripe/checkout?plan=${encodeURIComponent(plan)}&interval=${intervalParam}`
       : "/dashboard"
   );
+}
+
+/**
+ * Sends a Supabase password-recovery email. The link lands on /auth/confirm,
+ * which establishes a session and forwards to /wachtwoord-herstellen. We always
+ * report success so the form never reveals whether an address has an account.
+ */
+export async function requestPasswordReset(
+  _prev: ResetState,
+  formData: FormData
+): Promise<ResetState> {
+  if (!isSupabaseConfigured) {
+    return { error: "Supabase is nog niet geconfigureerd." };
+  }
+  const parsed = z
+    .string()
+    .email("Voer een geldig e-mailadres in.")
+    .safeParse(formData.get("email"));
+  if (!parsed.success) return { error: parsed.error.issues[0]?.message };
+
+  const supabase = createClient();
+  await supabase.auth.resetPasswordForEmail(parsed.data, {
+    redirectTo: `${currentBaseUrl()}/auth/confirm?next=/wachtwoord-herstellen`,
+  });
+  return { sent: true };
+}
+
+/**
+ * Sets a new password for the user whose recovery session was just established
+ * by /auth/confirm. Requires an authenticated session (the recovery link).
+ */
+export async function updatePassword(
+  _prev: AuthState,
+  formData: FormData
+): Promise<AuthState> {
+  if (!isSupabaseConfigured) {
+    return { error: "Supabase is nog niet geconfigureerd." };
+  }
+  const parsed = z
+    .string()
+    .min(8, "Het wachtwoord moet minstens 8 tekens bevatten.")
+    .safeParse(formData.get("password"));
+  if (!parsed.success) return { error: parsed.error.issues[0]?.message };
+
+  const supabase = createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) {
+    return { error: "Uw herstel-link is verlopen of ongeldig. Vraag een nieuwe aan." };
+  }
+
+  const { error } = await supabase.auth.updateUser({ password: parsed.data });
+  if (error) {
+    return { error: "Wachtwoord bijwerken mislukt. Probeer het opnieuw." };
+  }
+
+  revalidatePath("/", "layout");
+  redirect("/dashboard");
 }
 
 export async function logout() {
