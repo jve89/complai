@@ -65,6 +65,47 @@ export async function revokeSuperAdmin(formData: FormData): Promise<void> {
   revalidatePath("/dashboard/admin");
 }
 
+/** Grant/revoke super-admin by user id (from the Alle personen table). Cannot
+ * change your own status. */
+export async function setSuperAdmin(
+  userId: string,
+  value: boolean
+): Promise<AdminResult> {
+  const me = await requireSuperAdmin();
+  if (!me) return { ok: false, error: "Geen toegang." };
+  if (userId === me.id) {
+    return { ok: false, error: "U kunt uw eigen super-admin-status niet wijzigen." };
+  }
+  const res = await prisma.user.updateMany({
+    where: { id: userId },
+    data: { superAdmin: value },
+  });
+  if (res.count === 0) return { ok: false, error: "Persoon niet gevonden." };
+  revalidatePath("/dashboard/admin");
+  return { ok: true };
+}
+
+/** Set a person's role within their company (beheerder/manager/medewerker).
+ * Super-admin only; keeps the linked e-learning record in sync. */
+export async function setUserRole(
+  userId: string,
+  role: string
+): Promise<AdminResult> {
+  if (!(await requireSuperAdmin())) return { ok: false, error: "Geen toegang." };
+  if (!["admin", "manager", "employee"].includes(role)) {
+    return { ok: false, error: "Onbekende rol." };
+  }
+  const typedRole = role as "admin" | "manager" | "employee";
+  const res = await prisma.user.updateMany({
+    where: { id: userId },
+    data: { role: typedRole },
+  });
+  if (res.count === 0) return { ok: false, error: "Persoon niet gevonden." };
+  await prisma.employee.updateMany({ where: { userId }, data: { role } });
+  revalidatePath("/dashboard/admin");
+  return { ok: true };
+}
+
 /** Enter (impersonate) a client's dashboard. Super-admin only; audit-logged. */
 export async function startImpersonation(formData: FormData): Promise<void> {
   const me = await requireSuperAdmin();

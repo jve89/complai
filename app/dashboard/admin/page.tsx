@@ -1,25 +1,23 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { LogIn, ShieldCheck } from "lucide-react";
+import type { Prisma } from "@prisma/client";
 
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/auth";
 import { env, isSuperAdminEmail } from "@/lib/env";
 import { cn, formatDate } from "@/lib/utils";
-import { TIER_ORDER, TIER_LABEL, tierRank } from "@/lib/plan";
-import type { TierId } from "@/lib/compliance/types";
+import { TIER_ORDER, tierRank } from "@/lib/plan";
 import { DEMO_COMPANY_NAME } from "@/lib/demo";
-import {
-  grantSuperAdmin,
-  revokeSuperAdmin,
-  startImpersonation,
-} from "@/app/dashboard/admin/actions";
+import { revokeSuperAdmin, startImpersonation } from "@/app/dashboard/admin/actions";
 import { PageHeader } from "@/components/dashboard/page-header";
 import { PlanSelect } from "@/components/dashboard/admin/plan-select";
 import { DeleteButton } from "@/components/dashboard/admin/delete-button";
+import { AdminSearch } from "@/components/dashboard/admin/admin-search";
+import { RoleSelect } from "@/components/dashboard/admin/role-select";
+import { SuperAdminToggle } from "@/components/dashboard/admin/super-admin-toggle";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import {
   Card,
   CardContent,
@@ -45,24 +43,28 @@ const STATUS_LABEL: Record<string, string> = {
   canceled: "Opgezegd",
 };
 
-const ROLE_LABEL: Record<string, string> = {
-  admin: "Beheerder",
-  manager: "Manager",
-  employee: "Medewerker",
-};
-
 export default async function AdminPage({
   searchParams,
 }: {
-  searchParams: { view?: string };
+  searchParams: { view?: string; q?: string; sort?: string; dir?: string };
 }) {
   const me = await getCurrentUser().catch(() => null);
   if (!me?.superAdmin) notFound();
 
   const view = searchParams.view === "personen" ? "personen" : "organisaties";
+  const q = searchParams.q?.trim() ?? "";
+  const sort = searchParams.sort ?? "";
+  const dir: "asc" | "desc" = searchParams.dir === "desc" ? "desc" : "asc";
+  const like = { contains: q, mode: "insensitive" as const };
+
+  const companyWhere: Prisma.CompanyWhereInput = q ? { name: like } : {};
+  const peopleWhere: Prisma.UserWhereInput = q
+    ? { OR: [{ name: like }, { email: like }, { company: { name: like } }] }
+    : {};
 
   const [companies, staff, people] = await Promise.all([
     prisma.company.findMany({
+      where: companyWhere,
       orderBy: { createdAt: "desc" },
       include: { _count: { select: { users: true } } },
     }),
@@ -78,11 +80,32 @@ export default async function AdminPage({
     }),
     view === "personen"
       ? prisma.user.findMany({
+          where: peopleWhere,
           include: { company: { select: { name: true } } },
           orderBy: [{ company: { name: "asc" } }, { role: "asc" }],
         })
       : Promise.resolve([]),
   ]);
+
+  // In-memory sort (handles pakket-by-rank and personen-by-count, which SQL
+  // can't order directly). Default order stays as the query returns it.
+  const d = dir === "desc" ? -1 : 1;
+  const companyCmp: Record<string, (a: (typeof companies)[number], b: (typeof companies)[number]) => number> = {
+    organisatie: (a, b) => a.name.localeCompare(b.name),
+    aangemaakt: (a, b) => a.createdAt.getTime() - b.createdAt.getTime(),
+    personen: (a, b) => a._count.users - b._count.users,
+    status: (a, b) => (a.planStatus ?? "").localeCompare(b.planStatus ?? ""),
+    pakket: (a, b) => tierRank(a.plan) - tierRank(b.plan),
+  };
+  if (companyCmp[sort]) companies.sort((a, b) => companyCmp[sort](a, b) * d);
+
+  const peopleCmp: Record<string, (a: (typeof people)[number], b: (typeof people)[number]) => number> = {
+    naam: (a, b) => (a.name ?? "").localeCompare(b.name ?? ""),
+    email: (a, b) => a.email.localeCompare(b.email),
+    rol: (a, b) => a.role.localeCompare(b.role),
+    organisatie: (a, b) => (a.company?.name ?? "").localeCompare(b.company?.name ?? ""),
+  };
+  if (peopleCmp[sort]) people.sort((a, b) => peopleCmp[sort](a, b) * d);
 
   const paying = companies.filter(
     (c) => tierRank(c.plan) > 0 && c.stripeCustomerId && c.name !== DEMO_COMPANY_NAME
@@ -93,6 +116,29 @@ export default async function AdminPage({
       "rounded-lg px-3 py-1.5 text-sm font-medium",
       active ? "bg-navy-900 text-white" : "text-muted-foreground hover:bg-secondary"
     );
+
+  // Sortable column header (Link that toggles dir, preserving view + search).
+  const sortHead = (col: string, label: string, right = false) => {
+    const active = sort === col;
+    const p = new URLSearchParams();
+    if (view === "personen") p.set("view", "personen");
+    if (q) p.set("q", q);
+    p.set("sort", col);
+    p.set("dir", active && dir === "asc" ? "desc" : "asc");
+    return (
+      <TableHead className={right ? "text-right" : undefined}>
+        <Link
+          href={`/dashboard/admin?${p.toString()}`}
+          className="inline-flex items-center gap-1 hover:text-foreground"
+        >
+          {label}
+          <span className="text-muted-foreground">
+            {active ? (dir === "desc" ? "↓" : "↑") : ""}
+          </span>
+        </Link>
+      </TableHead>
+    );
+  };
 
   return (
     <>
@@ -116,16 +162,20 @@ export default async function AdminPage({
         ))}
       </div>
 
-      {/* Staff management */}
+      {/* Staff overview — grant/revoke happens in the Alle personen tab */}
       <Card className="mb-8">
         <CardHeader>
           <CardTitle className="text-base">ComplAI-team (super-admins)</CardTitle>
           <CardDescription>
-            Super-admins beheren alle klanten. Dit staat los van de rol binnen een
-            klantorganisatie (beheerder/manager/medewerker).
+            Super-admins beheren alle klanten — los van de rol binnen een
+            klantorganisatie. Iemand promoveren? Doe dat via de{" "}
+            <Link href="/dashboard/admin?view=personen" className="text-primary hover:underline">
+              Alle personen
+            </Link>{" "}
+            tab.
           </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-4">
+        <CardContent>
           <ul className="divide-y">
             {staff.map((u) => {
               const fixed = isSuperAdminEmail(u.email);
@@ -154,32 +204,28 @@ export default async function AdminPage({
               );
             })}
           </ul>
-
-          <form action={grantSuperAdmin} className="flex flex-wrap items-end gap-2 border-t pt-4">
-            <div className="flex-1 space-y-1">
-              <label className="text-xs font-medium text-muted-foreground" htmlFor="email">
-                Maak iemand super-admin (op e-mailadres — moet al een account hebben)
-              </label>
-              <Input id="email" name="email" type="email" placeholder="collega@complai.nl" required />
-            </div>
-            <Button type="submit">Toevoegen</Button>
-          </form>
         </CardContent>
       </Card>
 
-      {/* View switch */}
-      <div className="mb-4 flex items-center justify-between gap-3">
-        <h2 className="text-lg font-semibold">
-          {view === "personen" ? "Alle personen" : "Klantorganisaties"}
-        </h2>
-        <div className="inline-flex gap-1 rounded-lg border p-1">
-          <Link href="/dashboard/admin" className={tabClass(view === "organisaties")}>
-            Organisaties
-          </Link>
-          <Link href="/dashboard/admin?view=personen" className={tabClass(view === "personen")}>
-            Alle personen
-          </Link>
+      {/* View switch + search */}
+      <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+        <div className="flex items-center gap-3">
+          <h2 className="text-lg font-semibold">
+            {view === "personen" ? "Alle personen" : "Klantorganisaties"}
+          </h2>
+          <div className="inline-flex gap-1 rounded-lg border p-1">
+            <Link href="/dashboard/admin" className={tabClass(view === "organisaties")}>
+              Organisaties
+            </Link>
+            <Link href="/dashboard/admin?view=personen" className={tabClass(view === "personen")}>
+              Alle personen
+            </Link>
+          </div>
         </div>
+        <AdminSearch
+          key={view}
+          placeholder={view === "personen" ? "Zoek op naam, e-mail…" : "Zoek op organisatie…"}
+        />
       </div>
 
       {view === "organisaties" ? (
@@ -188,11 +234,11 @@ export default async function AdminPage({
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Organisatie</TableHead>
-                  <TableHead>Aangemaakt</TableHead>
-                  <TableHead>Personen</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Pakket</TableHead>
+                  {sortHead("organisatie", "Organisatie")}
+                  {sortHead("aangemaakt", "Aangemaakt")}
+                  {sortHead("personen", "Personen")}
+                  {sortHead("status", "Status")}
+                  {sortHead("pakket", "Pakket")}
                   <TableHead className="text-right">Actie</TableHead>
                 </TableRow>
               </TableHeader>
@@ -259,6 +305,13 @@ export default async function AdminPage({
                     </TableRow>
                   );
                 })}
+                {companies.length === 0 && (
+                  <TableRow>
+                    <TableCell colSpan={6} className="py-8 text-center text-sm text-muted-foreground">
+                      Geen organisaties gevonden.
+                    </TableCell>
+                  </TableRow>
+                )}
               </TableBody>
             </Table>
           </CardContent>
@@ -269,29 +322,32 @@ export default async function AdminPage({
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Naam</TableHead>
-                  <TableHead>E-mail</TableHead>
-                  <TableHead>Rol</TableHead>
-                  <TableHead>Organisatie</TableHead>
+                  {sortHead("naam", "Naam")}
+                  {sortHead("email", "E-mail")}
+                  {sortHead("rol", "Rol")}
+                  {sortHead("organisatie", "Organisatie")}
+                  <TableHead>Super-admin</TableHead>
                   <TableHead className="text-right">Actie</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {people.map((u) => (
                   <TableRow key={u.id}>
-                    <TableCell className="font-medium">
-                      <span className="flex items-center gap-2">
-                        {u.name ?? "—"}
-                        {u.superAdmin && (
-                          <Badge variant="secondary" className="gap-1">
-                            <ShieldCheck className="h-3 w-3" /> staff
-                          </Badge>
-                        )}
-                      </span>
-                    </TableCell>
+                    <TableCell className="font-medium">{u.name ?? "—"}</TableCell>
                     <TableCell className="text-sm text-muted-foreground">{u.email}</TableCell>
-                    <TableCell className="text-sm">{ROLE_LABEL[u.role] ?? u.role}</TableCell>
+                    <TableCell>
+                      <RoleSelect userId={u.id} name={u.name ?? u.email} role={u.role} />
+                    </TableCell>
                     <TableCell className="text-sm">{u.company?.name ?? "—"}</TableCell>
+                    <TableCell>
+                      <SuperAdminToggle
+                        userId={u.id}
+                        name={u.name ?? u.email}
+                        isSuper={u.superAdmin || isSuperAdminEmail(u.email)}
+                        fixed={isSuperAdminEmail(u.email)}
+                        isSelf={u.id === me.id}
+                      />
+                    </TableCell>
                     <TableCell className="text-right">
                       {u.id !== me.id && (
                         <DeleteButton id={u.id} name={u.name ?? u.email} kind="persoon" />
@@ -299,6 +355,13 @@ export default async function AdminPage({
                     </TableCell>
                   </TableRow>
                 ))}
+                {people.length === 0 && (
+                  <TableRow>
+                    <TableCell colSpan={6} className="py-8 text-center text-sm text-muted-foreground">
+                      Geen personen gevonden.
+                    </TableCell>
+                  </TableRow>
+                )}
               </TableBody>
             </Table>
           </CardContent>
