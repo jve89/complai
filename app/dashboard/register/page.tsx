@@ -39,7 +39,7 @@ export default async function RegisterPage({
 }: {
   searchParams: { risk?: string; status?: string };
 }) {
-  const { company } = await getActiveCompany();
+  const { company, demo } = await getActiveCompany();
 
   const riskFilter = RISK_LEVELS.includes(searchParams.risk as RiskLevel)
     ? (searchParams.risk as RiskLevel)
@@ -68,7 +68,7 @@ export default async function RegisterPage({
         description="Beheer al uw AI-systemen en hun risicoclassificatie."
       >
         <Button asChild variant="outline">
-          <a href="/api/register/export">
+          <a href={demo ? "/api/register/export?demo=1" : "/api/register/export"}>
             <Download className="h-4 w-4" /> Exporteer CSV
           </a>
         </Button>

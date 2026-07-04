@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { getActiveCompany } from "@/lib/auth";
+import { getDemoCompany } from "@/lib/demo";
 import { RISK_LABEL, ROLE_LABEL, STATUS_LABEL } from "@/lib/register/labels";
 
 export const runtime = "nodejs";
@@ -10,8 +11,10 @@ function csvCell(value: string | null | undefined) {
   return `"${v}"`;
 }
 
-export async function GET() {
-  const { company } = await getActiveCompany();
+export async function GET(req: Request) {
+  // The demo register is public, so its export skips auth (demo data only).
+  const isDemo = new URL(req.url).searchParams.get("demo") === "1";
+  const company = isDemo ? await getDemoCompany() : (await getActiveCompany()).company;
   const systems = await prisma.aiSystem.findMany({
     where: { companyId: company.id },
     orderBy: { createdAt: "asc" },

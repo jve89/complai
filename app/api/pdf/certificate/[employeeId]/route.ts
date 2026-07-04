@@ -2,6 +2,7 @@ import { renderToBuffer } from "@react-pdf/renderer";
 
 import { prisma } from "@/lib/prisma";
 import { getActiveCompany } from "@/lib/auth";
+import { DEMO_COMPANY_NAME } from "@/lib/demo";
 import { getModule, getPath, moduleCountForPath } from "@/lib/training/content";
 import { CertificatePdf } from "@/components/pdf/certificate-pdf";
 
@@ -12,14 +13,21 @@ export async function GET(
   _req: Request,
   { params }: { params: { employeeId: string } }
 ) {
-  const { company } = await getActiveCompany();
-
-  const employee = await prisma.employee.findFirst({
-    where: { id: params.employeeId, companyId: company.id },
-    include: { trainingCompletions: true },
+  // Look the employee up first; demo certificates are public, real ones are
+  // scoped to the active company (which may redirect anonymous users to login).
+  const employee = await prisma.employee.findUnique({
+    where: { id: params.employeeId },
+    include: { trainingCompletions: true, company: { select: { id: true, name: true } } },
   });
   if (!employee || employee.trainingCompletions.length === 0) {
     return new Response("Geen certificaat beschikbaar", { status: 404 });
+  }
+
+  if (employee.company.name !== DEMO_COMPANY_NAME) {
+    const { company } = await getActiveCompany();
+    if (employee.companyId !== company.id) {
+      return new Response("Geen certificaat beschikbaar", { status: 404 });
+    }
   }
 
   const completedTitles = employee.trainingCompletions
