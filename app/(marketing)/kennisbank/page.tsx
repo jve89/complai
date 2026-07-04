@@ -11,6 +11,7 @@ export const metadata: Metadata = {
   title: "Kennisbank — de EU AI-wet in begrijpelijk Nederlands",
   description:
     "Risiconiveaus, deadlines, rollen en boetes van de EU AI Act (Verordening (EU) 2024/1689) — helder uitgelegd.",
+  alternates: { canonical: "/kennisbank" },
 };
 
 export default function KennisbankPage() {

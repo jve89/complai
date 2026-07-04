@@ -2,12 +2,35 @@ import type { MetadataRoute } from "next";
 
 import { env } from "@/lib/env";
 
+type Entry = {
+  path: string;
+  priority: number;
+  changeFrequency: NonNullable<MetadataRoute.Sitemap[number]["changeFrequency"]>;
+};
+
 export default function sitemap(): MetadataRoute.Sitemap {
-  const routes = ["", "/scan", "/pricing", "/login", "/signup"];
-  return routes.map((route) => ({
-    url: `${env.appUrl}${route}`,
-    lastModified: new Date("2026-06-27"),
-    changeFrequency: "weekly",
-    priority: route === "" ? 1 : 0.7,
+  const lastModified = new Date("2026-07-04");
+
+  // Public, indexable routes. Higher priority for the pages that drive
+  // conversion and organic search; legal pages are indexable but low priority.
+  const entries: Entry[] = [
+    { path: "", priority: 1, changeFrequency: "weekly" },
+    { path: "/scan", priority: 0.9, changeFrequency: "weekly" },
+    { path: "/pricing", priority: 0.9, changeFrequency: "weekly" },
+    { path: "/kennisbank", priority: 0.8, changeFrequency: "weekly" },
+    { path: "/contact", priority: 0.5, changeFrequency: "monthly" },
+    { path: "/login", priority: 0.4, changeFrequency: "yearly" },
+    { path: "/signup", priority: 0.5, changeFrequency: "yearly" },
+    { path: "/privacy", priority: 0.3, changeFrequency: "yearly" },
+    { path: "/voorwaarden", priority: 0.3, changeFrequency: "yearly" },
+    { path: "/cookies", priority: 0.3, changeFrequency: "yearly" },
+    { path: "/verwerkersovereenkomst", priority: 0.3, changeFrequency: "yearly" },
+  ];
+
+  return entries.map(({ path, priority, changeFrequency }) => ({
+    url: `${env.appUrl}${path}`,
+    lastModified,
+    changeFrequency,
+    priority,
   }));
 }

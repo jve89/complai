@@ -1,4 +1,5 @@
 import Link from "next/link";
+import type { Metadata } from "next";
 import {
   AlertTriangle,
   ArrowRight,
@@ -25,6 +26,8 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Faq } from "@/components/marketing/faq";
 import { PLANS } from "@/lib/stripe";
+
+export const metadata: Metadata = { alternates: { canonical: "/" } };
 
 // The three ways to start — every klant doet ze uiteindelijk alle drie, de
 // volgorde maakt niet uit. Each card has its own direct action.

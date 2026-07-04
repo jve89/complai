@@ -7,6 +7,7 @@ export const metadata: Metadata = {
   title: "Contact",
   description:
     "Vragen over de EU AI Act of over ComplAI? Neem contact op — we reageren doorgaans binnen één werkdag.",
+  alternates: { canonical: "/contact" },
 };
 
 const points = [

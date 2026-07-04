@@ -7,6 +7,7 @@ export const metadata: Metadata = {
   title: "Prijzen",
   description:
     "Heldere prijzen voor AI Act-compliance. Start gratis met Inzicht en groei mee met Actief, Compliance-klaar of Audit-klaar.",
+  alternates: { canonical: "/pricing" },
 };
 
 const COLUMNS = ["Inzicht", "Actief", "Compliance-klaar", "Audit-klaar"];
