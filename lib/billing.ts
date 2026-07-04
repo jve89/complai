@@ -91,11 +91,16 @@ export async function syncSubscriptionToCompany(
   const renewsAt = periodEnd(sub);
   const staff = await isStaffCompany(company.id);
 
+  // Staff pakketten are protected from being silently reset to gratis by an
+  // unrelated/lapsed webhook — but a real granted purchase (e.g. staff testing
+  // checkout themselves) still applies, so it isn't lost to the exemption.
+  const planUpdate =
+    granting && tier ? { plan: tier } : staff ? {} : { plan: "gratis" };
+
   await prisma.company.update({
     where: { id: company.id },
     data: {
-      // Staff pakket is set manually and never reconciled from Stripe.
-      ...(staff ? {} : { plan: granting && tier ? tier : "gratis" }),
+      ...planUpdate,
       planStatus: sub.status,
       stripeSubscriptionId: sub.id,
       planRenewsAt: renewsAt,
