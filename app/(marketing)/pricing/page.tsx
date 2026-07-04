@@ -15,7 +15,9 @@ const HIGHLIGHT = "Compliance-klaar";
 const COMPARISON: { feature: string; values: (string | boolean)[] }[] = [
   { feature: "Risicoscan + PDF-rapport", values: [true, true, true, true] },
   { feature: "AI-register", values: ["Max. 3", "Onbeperkt", "Onbeperkt", "Onbeperkt"] },
-  { feature: "Documentgenerator", values: [false, "Basis", "Alle (incl. FRIA)", "Alle (incl. FRIA)"] },
+  { feature: "AI-beleid + transparantieverklaring", values: [false, true, true, true] },
+  { feature: "FRIA + risicobeoordeling (gebruik hoog-risico AI)", values: [false, false, true, true] },
+  { feature: "Technische documentatie, conformiteit, GPAI (aanbieder)", values: [false, false, false, true] },
   { feature: "E-learning & certificaten", values: [false, false, true, true] },
   { feature: "Governance-dashboard", values: [false, false, true, true] },
   { feature: "Gebruikers", values: ["1", "5", "25", "Onbeperkt"] },

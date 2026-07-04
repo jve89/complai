@@ -9,6 +9,7 @@
 
 import { buildProfile } from "@/lib/compliance/profile";
 import { evidenceFromAnswers } from "@/lib/compliance/evidence-from-answers";
+import { docUnlocked } from "@/lib/plan";
 import { scanProgress, visibleSteps } from "@/lib/scan/wizard";
 import type { ScanAnswers } from "@/lib/compliance/questions";
 
@@ -124,6 +125,43 @@ function check(name: string, cond: boolean, detail = "") {
   console.log("Row 10 — GPAI model provider:");
   check("tier schaal", p.recommendedTier === "schaal", p.recommendedTier);
   check("GPAI provider obligation present", p.obligations.some((o) => o.code === "GPAI_PROVIDER"));
+}
+
+// ── Row 11 — chatbot PROVIDER → transparency required → Actief (starter) ─────
+{
+  const p = profileOf(base({ roles: ["provider"], scopeCriteria: ["place_system"], transparency: ["chatbot"] }));
+  console.log("Row 11 — chatbot provider (transparency is a provider duty):");
+  check("limited_risk headline", p.headline === "limited_risk", p.headline);
+  check("transparency is a required document", p.documents.required.some((d) => d.slug === "transparency"));
+  check("tier starter (Actief)", p.recommendedTier === "starter", p.recommendedTier);
+}
+
+// ── Invariant — the recommended pakket unlocks EVERY required document ────────
+// This is the promise: advice never sends someone to a pakket that can't produce
+// the documents that pakket is being recommended for.
+{
+  const scenarios: ScanAnswers[] = [
+    base({ roles: ["deployer"], scopeCriteria: ["established_eu"], transparency: ["chatbot"] }),
+    base({ roles: ["provider"], scopeCriteria: ["place_system"], transparency: ["chatbot", "synthetic"] }),
+    base({ roles: ["deployer"], scopeCriteria: ["established_eu"], annexIII_areas: ["4"] }),
+    base({ roles: ["deployer"], scopeCriteria: ["established_eu"], annexIII_areas: ["5"], annexIII_subareas: ["5b"], publicBodyOrService: true }),
+    base({ roles: ["provider"], scopeCriteria: ["place_system"], annexIII_areas: ["4"] }),
+    base({ roles: ["provider"], scopeCriteria: ["place_system"], annexI_A: ["machinery"], thirdPartyConformity: true }),
+    base({ scopeCriteria: ["place_gpai_model"], gpaiSystemic: ["none"] }),
+    base({ roles: ["deployer"], scopeCriteria: ["established_eu"], annexIII_areas: ["4"], art6_3_carveout: true }),
+  ];
+  console.log("Invariant — recommended pakket unlocks all required documents:");
+  let ok = true;
+  for (const a of scenarios) {
+    const p = profileOf(a);
+    for (const doc of p.documents.required) {
+      if (!docUnlocked(p.recommendedTier, doc.slug)) {
+        ok = false;
+        console.log(`    MISS: '${doc.slug}' not unlocked by recommended '${p.recommendedTier}'`);
+      }
+    }
+  }
+  check("every required document is unlocked by the recommended pakket", ok);
 }
 
 // ── Progress bar monotonicity (Bug 4) ────────────────────────────────────────

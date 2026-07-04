@@ -7,6 +7,7 @@
 // any credit/insurance deployer; Art. 50(1)/(2) are provider duties; prohibited
 // overrides high-risk; FOSS exemption voids for high-risk/Art.5/Art.50.
 
+import { APPLICATION_DATES } from "@/lib/compliance/timeline";
 import type { EntityRole, RiskTier } from "@/lib/compliance/types";
 import type { ScanAnswers } from "@/lib/compliance/questions";
 
@@ -20,7 +21,9 @@ export interface ClassificationResult {
     gpaiSystemic: boolean;
     profiling: boolean;
   };
-  emitted: { code: string; required?: boolean }[];
+  // `deadline` overrides the catalog default (used to stamp the later Annex I
+  // application date on high-risk product systems).
+  emitted: { code: string; required?: boolean; deadline?: string }[];
   caveats: string[];
 }
 
@@ -31,10 +34,11 @@ const hasAnyReal = (arr: string[] | undefined) =>
 export function classify(answers: ScanAnswers): ClassificationResult {
   const roles = new Set<EntityRole>(answers.roles ?? []);
   const tiers = new Set<RiskTier>();
-  const emitted: { code: string; required?: boolean }[] = [];
+  const emitted: { code: string; required?: boolean; deadline?: string }[] = [];
   const caveats: string[] = [];
   const exclusions: string[] = [];
-  const emit = (code: string, required?: boolean) => emitted.push({ code, required });
+  const emit = (code: string, required?: boolean, deadline?: string) =>
+    emitted.push({ code, required, deadline });
 
   const isProvider = () => roles.has("provider");
   const isDeployer = () => roles.has("deployer");
@@ -173,15 +177,22 @@ export function classify(answers: ScanAnswers): ClassificationResult {
   }
 
   // ── High-risk obligation sets ────────────────────────────────────────────
+  // High-risk driven by an Annex I product (no Annex III use-case) applies from
+  // 2 Aug 2027; a stand-alone Annex III use applies from 2 Aug 2026 (the catalog
+  // default). See lib/compliance/timeline.ts.
+  const hrDeadline =
+    isHigh && !hasAnyReal(answers.annexIII_areas)
+      ? APPLICATION_DATES.highRiskAnnexI
+      : undefined;
   if (isHigh) {
     tiers.add("high");
-    if (isDeployer()) emit("ART_26_DEPLOYER");
+    if (isDeployer()) emit("ART_26_DEPLOYER", undefined, hrDeadline);
     if (isProvider()) {
-      emit("ART_16_PROVIDER");
-      emit("ART_11_TECHDOC");
-      emit("ART_43_CONFORMITY");
-      emit("ART_47_DOC");
-      emit("ART_49_REGISTRATION");
+      emit("ART_16_PROVIDER", undefined, hrDeadline);
+      emit("ART_11_TECHDOC", undefined, hrDeadline);
+      emit("ART_43_CONFORMITY", undefined, hrDeadline);
+      emit("ART_47_DOC", undefined, hrDeadline);
+      emit("ART_49_REGISTRATION", undefined, hrDeadline);
     }
   }
   if (isHighNotify) {

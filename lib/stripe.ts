@@ -76,7 +76,7 @@ export const PLANS: Plan[] = [
     freeFirstMonth: true,
     features: [
       "Alles uit Actief",
-      "Alle documenten incl. FRIA & risicobeoordeling",
+      "FRIA, risicobeoordeling & beoordelingsdossier",
       "E-learning met certificaten",
       "Governance-dashboard",
       "Tot 25 gebruikers",
@@ -93,9 +93,9 @@ export const PLANS: Plan[] = [
     freeFirstMonth: true,
     features: [
       "Alles uit Compliance-klaar",
+      "Technische documentatie, EU-conformiteit & GPAI-docs",
       "Onbeperkt gebruikers & vestigingen",
       "Audit-export & API-toegang",
-      "Bewijsdossier voor toezichthouder",
       "Persoonlijke onboarding",
     ],
   },

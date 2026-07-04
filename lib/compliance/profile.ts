@@ -4,6 +4,7 @@
 import { classify } from "@/lib/compliance/engine";
 import { OBLIGATION_CATALOG, makeObligation } from "@/lib/compliance/obligations";
 import { resolveStatus } from "@/lib/compliance/resolve";
+import { TIER_ORDER, minTierFor, tierRank } from "@/lib/plan";
 import type { ScanAnswers } from "@/lib/compliance/questions";
 import type {
   AdvisoryUpsell,
@@ -25,32 +26,20 @@ const EMPTY_EVIDENCE: CompanyEvidence = {
   completedTrainingPaths: [],
 };
 
-function recommendTier(
-  tiers: string[],
-  flags: { gpaiModelProvider: boolean },
-  roles: string[],
-  requiredDocsCount: number,
-  size?: string
-): TierId {
-  const has = (t: string) => tiers.includes(t);
-  const isProvider = roles.includes("provider");
-
-  // Recommend a paid tier ONLY when a genuinely required *deliverable* exists.
-  // Required AI-literacy training is satisfied by the free e-learning and is not
-  // a document, so it never enters requiredDocsCount — an advisory-only chatbot
-  // (limited risk, no required docs) therefore stays on the free tier.
-  let tier: TierId;
-  if (flags.gpaiModelProvider || (has("high") && isProvider)) tier = "schaal";
-  else if (has("high")) tier = "groei";
-  else if (has("high_notify") || requiredDocsCount > 0) tier = "starter";
-  else tier = "gratis";
-
-  // 250+ employees bump one tier for admin/seat needs.
-  if (size === "250+") {
-    const order: TierId[] = ["gratis", "starter", "groei", "schaal"];
-    tier = order[Math.min(order.indexOf(tier) + 1, order.length - 1)];
+/**
+ * The recommended pakket = the LOWEST tier that unlocks every REQUIRED document,
+ * derived from DOC_MIN_TIER so advice and gating can never contradict. Required
+ * AI-literacy training is free (not a document), so an advisory-only company
+ * (limited risk, no required docs) stays on the free tier.
+ */
+function recommendTier(requiredDocs: DocRequirement[], size?: string): TierId {
+  let rank = 0; // gratis
+  for (const doc of requiredDocs) {
+    rank = Math.max(rank, tierRank(minTierFor(doc.slug)));
   }
-  return tier;
+  // 250+ employees bump one tier for admin/seat needs.
+  if (size === "250+") rank += 1;
+  return TIER_ORDER[Math.min(rank, TIER_ORDER.length - 1)];
 }
 
 export function buildProfile(
@@ -62,9 +51,12 @@ export function buildProfile(
 
   // Expand emitted codes → obligations (dedup by code; respect required override).
   const byCode = new Map<string, ObligationItem>();
-  for (const { code, required } of c.emitted) {
+  for (const { code, required, deadline } of c.emitted) {
     if (byCode.has(code)) continue;
-    const item = makeObligation(code, required === undefined ? undefined : { required });
+    const overrides: Partial<ObligationItem> = {};
+    if (required !== undefined) overrides.required = required;
+    if (deadline) overrides.deadline = deadline;
+    const item = makeObligation(code, Object.keys(overrides).length ? overrides : undefined);
     if (!item) continue;
     item.status = resolveStatus(code, evidence);
     byCode.set(code, item);
@@ -144,17 +136,12 @@ export function buildProfile(
 
   const level = score >= 75 ? "laag" : score >= 45 ? "gemiddeld" : "hoog";
 
-  const recommendedTier = recommendTier(
-    c.riskTiers,
-    c.systemFlags,
-    c.entityRoles,
-    requiredDocs.length,
-    answers.size
-  );
+  const recommendedTier = recommendTier(requiredDocs, answers.size);
 
-  // Advisory upsell: limited today but adjacent to high-risk (carve-out claimed).
+  // Advisory upsell: limited today but adjacent to high-risk (carve-out claimed),
+  // and only when the recommendation is actually below the suggested tier.
   let advisoryUpsell: AdvisoryUpsell | undefined;
-  if (c.riskTiers.includes("high_notify") && recommendedTier !== "schaal") {
+  if (c.riskTiers.includes("high_notify") && tierRank(recommendedTier) < tierRank("groei")) {
     advisoryUpsell = {
       toTier: "groei",
       reason:

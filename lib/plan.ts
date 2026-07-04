@@ -20,20 +20,27 @@ export function tierRank(plan: string | null | undefined): number {
 }
 
 /**
- * Minimum plan that unlocks each document type:
- *  - Actief (starter):       Art. 4/5 basics → AI-beleid
- *  - Compliance-klaar (groei): + Art. 50 transparantiepakket
- *  - Audit-klaar (schaal):   + all hoog-risico documenten (the full manual)
- * Free (Inzicht) unlocks no documents — dashboard + scan only.
+ * Minimum plan that unlocks each document type — a deployer → provider split,
+ * mirroring the AI Act's own duty structure. Free (Inzicht) unlocks no documents.
+ *  - Actief (starter):        the broad basics — AI-beleid (Art. 4/5) and the
+ *                             Art. 50 transparantieverklaring.
+ *  - Compliance-klaar (groei): + the documents a USER of high-risk AI needs —
+ *                             FRIA (Art. 27), risicobeoordeling (Art. 26) and the
+ *                             Art. 6(4) beoordelingsdossier.
+ *  - Audit-klaar (schaal):    + the documents a MAKER/provider needs — technische
+ *                             documentatie (Annex IV), EU-conformiteitsverklaring
+ *                             (Art. 47) and GPAI-documentatie (Art. 53).
+ * The scan recommends the LOWEST pakket that unlocks every required document
+ * (see recommendedTier in lib/compliance/profile.ts), so advice and gating agree.
  */
 export const DOC_MIN_TIER: Record<string, TierId> = {
   ai_policy: "starter",
-  transparency: "groei",
-  risk_assessment: "schaal",
-  fria: "schaal",
+  transparency: "starter",
+  fria: "groei",
+  risk_assessment: "groei",
+  assessment_record: "groei",
   tech_doc: "schaal",
   doc_conformity: "schaal",
-  assessment_record: "schaal",
   gpai_docs: "schaal",
 };
 
