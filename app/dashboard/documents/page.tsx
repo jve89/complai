@@ -46,6 +46,8 @@ const GENERATABLE = new Set<string>(DOCUMENT_META.map((m) => m.type));
 interface DocItem {
   slug: string;
   reason: string;
+  /** Scan relevance hint — the pakket owns the doc either way. */
+  relevance?: "required" | "recommended";
 }
 
 function DocCard({
@@ -77,7 +79,17 @@ function DocCard({
               <Icon className="h-6 w-6" />
             </div>
             <div>
-              <CardTitle className="text-base">{docLabel(item.slug)}</CardTitle>
+              <div className="flex flex-wrap items-center gap-2">
+                <CardTitle className="text-base">{docLabel(item.slug)}</CardTitle>
+                {item.relevance && (
+                  <Badge
+                    variant={item.relevance === "required" ? "default" : "secondary"}
+                    className="font-normal"
+                  >
+                    {item.relevance === "required" ? "Verplicht voor u" : "Aanbevolen voor u"}
+                  </Badge>
+                )}
+              </div>
               <CardDescription className="mt-1">
                 <span className="font-medium text-foreground/70">Waarom: </span>
                 {item.reason}
@@ -167,43 +179,61 @@ export default async function DocumentsPage() {
   const plan = company.plan;
   const isTopPlan = tierRank(plan) >= tierRank("schaal");
 
-  // Two lenses combine here:
-  //  • Scan-driven — what THIS company must (verplicht) / should (aanbevolen)
-  //    have, from its ComplianceProfile.
-  //  • Plan-driven — everything else the pakket includes ("u krijgt waar u voor
-  //    betaalt"): the rest of the full handboek, split into what you can build
-  //    now vs. what a higher pakket would add. So the top tier shows all 8.
+  // Pakket-first: the documents you get are determined by your pakket (you get
+  // what you pay for). The scan only ADVISES which tier to take, so here it just
+  // adds a "voor u" relevance hint on the documents it flagged — it never gates
+  // what appears. Every document in your pakket is a first-class deliverable.
   const catalogReason = new Map<string, string>(
     DOCUMENT_META.map((m) => [m.type, m.description])
   );
-  const catalogItem = (slug: string): DocItem => ({ slug, reason: catalogReason.get(slug) ?? "" });
+  const scanHint = new Map<string, { reason: string; relevance: "required" | "recommended" }>();
+  if (profile?.documents) {
+    for (const d of profile.documents.required) {
+      scanHint.set(d.slug, { reason: d.reason, relevance: "required" });
+    }
+    for (const d of profile.documents.recommended) {
+      if (!scanHint.has(d.slug)) scanHint.set(d.slug, { reason: d.reason, relevance: "recommended" });
+    }
+  }
 
-  const required: DocItem[] = profile?.documents
-    ? profile.documents.required.map((d) => ({ slug: d.slug, reason: d.reason }))
-    : [];
-  const recommended: DocItem[] = profile?.documents
-    ? profile.documents.recommended.map((d) => ({ slug: d.slug, reason: d.reason }))
-    : [];
+  const catalogOrder = DOCUMENT_META.map((m) => m.type);
+  const relevanceRank = (slug: string) => {
+    const r = scanHint.get(slug)?.relevance;
+    return r === "required" ? 0 : r === "recommended" ? 1 : 2;
+  };
+  const allItems: DocItem[] = catalogOrder
+    .map((slug) => {
+      const hint = scanHint.get(slug);
+      return {
+        slug,
+        reason: hint?.reason ?? catalogReason.get(slug) ?? "",
+        relevance: hint?.relevance,
+      };
+    })
+    // Scan-relevant docs float to the top; the rest keep catalogue order.
+    .sort(
+      (a, b) =>
+        relevanceRank(a.slug) - relevanceRank(b.slug) ||
+        catalogOrder.indexOf(a.slug) - catalogOrder.indexOf(b.slug)
+    );
 
-  const flagged = new Set([...required, ...recommended].map((d) => d.slug));
-  const rest = DOCUMENT_META.map((m) => m.type).filter((slug) => !flagged.has(slug));
-  const available: DocItem[] = rest.filter((slug) => docUnlocked(plan, slug)).map(catalogItem);
-  const lockedExtra: DocItem[] = rest
-    .filter((slug) => !docUnlocked(plan, slug))
-    .sort((a, b) => tierRank(minTierFor(a)) - tierRank(minTierFor(b)))
-    .map(catalogItem);
+  // Yours now (in your pakket) vs. what a higher pakket would add.
+  const owned = allItems.filter((i) => docUnlocked(plan, i.slug));
+  const locked = allItems
+    .filter((i) => !docUnlocked(plan, i.slug))
+    .sort((a, b) => tierRank(minTierFor(a.slug)) - tierRank(minTierFor(b.slug)));
 
   return (
     <>
       <PageHeader
         title="Documenten"
-        description="De documenten die op basis van uw scan voor u gelden — automatisch gevuld met uw gegevens."
+        description="De documenten in uw pakket — automatisch gevuld met uw gegevens."
       />
 
       {!profile && (
         <div className="mb-6 rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800">
-          Doe eerst de risicoscan om te zien welke documenten voor uw organisatie
-          verplicht of aanbevolen zijn. Hieronder ziet u de beschikbare sjablonen.
+          Doe de risicoscan om te zien welke van deze documenten extra relevant
+          voor uw organisatie zijn. U kunt ze nu al opstellen.
         </div>
       )}
 
@@ -230,57 +260,30 @@ export default async function DocumentsPage() {
         )}
       </div>
 
-      {required.length > 0 && (
+      {owned.length > 0 && (
         <section className="mb-10">
-          <h2 className="mb-1 text-lg font-semibold">Verplicht ({required.length})</h2>
+          <h2 className="mb-1 text-lg font-semibold">Uw documenten ({owned.length})</h2>
           <p className="mb-4 text-sm text-muted-foreground">
-            Deze documenten horen bij uw wettelijke verplichtingen.
+            Alle documenten in uw pakket. Documenten met{" "}
+            <span className="font-medium text-foreground/70">&ldquo;voor u&rdquo;</span> zijn
+            volgens uw risicoscan extra relevant voor uw organisatie.
           </p>
           <div className="grid gap-6 lg:grid-cols-2">
-            {required.map((item) => (
+            {owned.map((item) => (
               <DocCard key={item.slug} item={item} versions={versionsFor(item.slug)} plan={plan} />
             ))}
           </div>
         </section>
       )}
 
-      {recommended.length > 0 && (
-        <section className="mb-10">
-          <h2 className="mb-1 text-lg font-semibold">Aanbevolen ({recommended.length})</h2>
-          <p className="mb-4 text-sm text-muted-foreground">
-            Niet verplicht, wel verstandig om klaar te hebben liggen.
-          </p>
-          <div className="grid gap-6 lg:grid-cols-2">
-            {recommended.map((item) => (
-              <DocCard key={item.slug} item={item} versions={versionsFor(item.slug)} plan={plan} />
-            ))}
-          </div>
-        </section>
-      )}
-
-      {available.length > 0 && (
-        <section className="mb-10">
-          <h2 className="mb-1 text-lg font-semibold">Ook beschikbaar in uw pakket ({available.length})</h2>
-          <p className="mb-4 text-sm text-muted-foreground">
-            Uw scan markeerde deze niet als nodig, maar ze zitten in uw pakket —
-            samen vormen ze het volledige compliancehandboek. U kunt ze alvast opstellen.
-          </p>
-          <div className="grid gap-6 lg:grid-cols-2">
-            {available.map((item) => (
-              <DocCard key={item.slug} item={item} versions={versionsFor(item.slug)} plan={plan} />
-            ))}
-          </div>
-        </section>
-      )}
-
-      {lockedExtra.length > 0 && (
+      {locked.length > 0 && (
         <section>
-          <h2 className="mb-1 text-lg font-semibold">Beschikbaar in een hoger pakket ({lockedExtra.length})</h2>
+          <h2 className="mb-1 text-lg font-semibold">Beschikbaar in een hoger pakket ({locked.length})</h2>
           <p className="mb-4 text-sm text-muted-foreground">
             Onderdeel van het volledige compliancehandboek. Upgrade om deze te ontgrendelen.
           </p>
           <div className="grid gap-6 lg:grid-cols-2">
-            {lockedExtra.map((item) => (
+            {locked.map((item) => (
               <DocCard key={item.slug} item={item} versions={versionsFor(item.slug)} plan={plan} />
             ))}
           </div>
