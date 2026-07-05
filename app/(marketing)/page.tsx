@@ -119,8 +119,8 @@ const features = [
   },
   {
     icon: Sparkles,
-    title: "Altijd actueel",
-    text: "Het platform beweegt mee met de gefaseerde invoering van de wet, zodat u nooit iets mist.",
+    title: "Meegroeien met de wet",
+    text: "De deadlines en verplichtingen in het platform werken we bij naarmate de AI Act gefaseerd in werking treedt, zodat u met de actuele stand werkt.",
   },
 ];
 
@@ -248,7 +248,7 @@ export default function LandingPage() {
             <Scale className="h-4 w-4 text-brand-500" /> Gebouwd op Verordening (EU) 2024/1689
           </span>
           <span className="hidden text-muted-foreground/40 sm:inline">·</span>
-          <span>Digital Omnibus-voorstel gesignaleerd (nog niet aangenomen)</span>
+          <span>Toepassingsdata volgens de officiële EU-tijdlijn (Art. 113)</span>
           <span className="hidden text-muted-foreground/40 sm:inline">·</span>
           <span>In het Nederlands</span>
           <span className="hidden text-muted-foreground/40 sm:inline">·</span>
@@ -308,9 +308,9 @@ export default function LandingPage() {
               </Link>
             </Button>
             <p className="max-w-2xl text-center text-xs text-white/50">
-              Toepassingsdata volgens Art. 113. Een Digital Omnibus-voorstel kan
-              sommige data uitstellen; tot het is aangenomen blijven de huidige data
-              leidend. Dit is beslissingsondersteuning, geen juridisch advies.
+              Toepassingsdata volgens de officiële EU-tijdlijn (Art. 113).
+              Wetgeving en deadlines kunnen wijzigen; we houden de data in het
+              platform actueel. Dit is beslissingsondersteuning, geen juridisch advies.
             </p>
           </div>
         </div>

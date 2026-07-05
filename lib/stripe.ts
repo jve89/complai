@@ -89,7 +89,7 @@ export const PLANS: Plan[] = [
     yearly: 1490,
     priceIdMonthly: process.env.STRIPE_PRICE_CORP_MONTHLY,
     priceIdYearly: process.env.STRIPE_PRICE_CORP_YEARLY,
-    tagline: "Voor aanbieders en grotere organisaties die alles willen aantonen.",
+    tagline: "Voor aanbieders en grotere organisaties die hun naleving volledig willen documenteren.",
     freeFirstMonth: true,
     features: [
       "Alles uit Compliance-klaar",

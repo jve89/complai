@@ -100,8 +100,8 @@ export function KennisbankContent() {
           ))}
         </div>
         <p className="mt-3 text-xs text-muted-foreground">
-          Een Digital Omnibus-voorstel kan sommige data uitstellen; tot het is
-          aangenomen blijven de huidige data leidend.
+          Deze data volgen de officiële EU-tijdlijn (Art. 113). Wetgeving en
+          deadlines kunnen wijzigen; we houden de data in het platform actueel.
         </p>
       </section>
 
