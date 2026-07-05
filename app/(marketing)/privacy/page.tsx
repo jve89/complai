@@ -6,12 +6,13 @@ export const metadata: Metadata = { title: "Privacyverklaring" };
 
 export default function PrivacyPage() {
   return (
-    <LegalShell title="Privacyverklaring" updated="28 juni 2026">
+    <LegalShell title="Privacyverklaring" updated="5 juli 2026">
       <p>
-        ComplAI ([bedrijfsnaam], KvK [nummer], gevestigd te [adres]) hecht veel
-        waarde aan uw privacy. In deze verklaring leggen we uit welke
-        persoonsgegevens we verwerken, waarom en hoe we daarmee omgaan, conform
-        de Algemene verordening gegevensbescherming (AVG).
+        ComplAI is een dienst van DARO (eenmanszaak, KvK 77906934, gevestigd te
+        It Ankerplak 7, 8802 CS Franeker). We hechten veel waarde aan uw privacy.
+        In deze verklaring leggen we uit welke persoonsgegevens we verwerken,
+        waarom en hoe we daarmee omgaan, conform de Algemene verordening
+        gegevensbescherming (AVG).
       </p>
 
       <h2>1. Verwerkingsverantwoordelijke</h2>
@@ -41,17 +42,29 @@ export default function PrivacyPage() {
       <h2>4. Bewaartermijnen</h2>
       <p>
         We bewaren gegevens niet langer dan nodig. Account- en inhoudgegevens
-        bewaren we gedurende de looptijd van de overeenkomst en verwijderen we
-        daarna binnen [termijn]. Factuurgegevens bewaren we conform de wettelijke
-        bewaarplicht (7 jaar).
+        (waaronder scans, documenten en het AI-register) bewaren we gedurende de
+        looptijd van de overeenkomst en verwijderen we daarna binnen 60 dagen,
+        tenzij een wettelijke bewaarplicht geldt. Factuur- en administratiegegevens
+        bewaren we conform de fiscale bewaarplicht van 7 jaar. Contactberichten
+        bewaren we maximaal 24 maanden. Back-ups roteren binnen 35 dagen.
       </p>
 
-      <h2>5. Subverwerkers</h2>
+      <h2>5. Subverwerkers en gegevenslocatie</h2>
       <p>
         Voor het leveren van de dienst schakelen we zorgvuldig geselecteerde
-        partijen in, waaronder onze hostingprovider, database/auth-leverancier,
-        betaalprovider en e-mailprovider. Met elke subverwerker sluiten we een
-        verwerkersovereenkomst. Verwerking vindt binnen de EER plaats.
+        subverwerkers in:
+      </p>
+      <ul>
+        <li><strong>Supabase</strong> — database en authenticatie (opslag binnen de EU, regio eu-west-1);</li>
+        <li><strong>Vercel</strong> — hosting en levering van de applicatie;</li>
+        <li><strong>Stripe</strong> — betalingsverwerking;</li>
+        <li><strong>Resend</strong> — verzending van transactionele e-mail.</li>
+      </ul>
+      <p>
+        Met elke subverwerker sluiten we een verwerkersovereenkomst. Uw scans,
+        documenten en accountgegevens worden opgeslagen binnen de EU. Voor zover
+        een subverwerker persoonsgegevens buiten de EER verwerkt, gebeurt dit
+        onder passende waarborgen, zoals de EU-modelcontractbepalingen (SCC's).
       </p>
 
       <h2>6. Beveiliging</h2>
@@ -64,7 +77,7 @@ export default function PrivacyPage() {
       <h2>7. Uw rechten</h2>
       <p>
         U heeft recht op inzage, correctie, verwijdering, beperking, overdracht
-        en bezwaar. Neem hiervoor contact op via [e-mailadres]. U kunt ook een
+        en bezwaar. Neem hiervoor contact op via info@complai-eu.nl. U kunt ook een
         klacht indienen bij de Autoriteit Persoonsgegevens.
       </p>
 
@@ -76,7 +89,7 @@ export default function PrivacyPage() {
 
       <h2>9. Wijzigingen en contact</h2>
       <p>
-        We kunnen deze verklaring aanpassen. Vragen? Mail naar [e-mailadres].
+        We kunnen deze verklaring aanpassen. Vragen? Mail naar info@complai-eu.nl.
       </p>
     </LegalShell>
   );

@@ -6,7 +6,7 @@ export const metadata: Metadata = { title: "Cookiebeleid" };
 
 export default function CookiePage() {
   return (
-    <LegalShell title="Cookiebeleid" updated="28 juni 2026">
+    <LegalShell title="Cookiebeleid" updated="5 juli 2026">
       <h2>1. Wat zijn cookies?</h2>
       <p>
         Cookies zijn kleine tekstbestanden die bij een bezoek aan onze website op
@@ -41,7 +41,7 @@ export default function CookiePage() {
       </p>
 
       <h2>5. Contact</h2>
-      <p>Vragen over cookies? Mail naar [e-mailadres].</p>
+      <p>Vragen over cookies? Mail naar info@complai-eu.nl.</p>
     </LegalShell>
   );
 }

@@ -6,12 +6,13 @@ export const metadata: Metadata = { title: "Algemene voorwaarden" };
 
 export default function TermsPage() {
   return (
-    <LegalShell title="Algemene voorwaarden" updated="28 juni 2026">
+    <LegalShell title="Algemene voorwaarden" updated="5 juli 2026">
       <h2>1. Definities</h2>
       <p>
-        “ComplAI” verwijst naar [bedrijfsnaam] (KvK [nummer]). “Dienst” verwijst
-        naar het online platform. “Klant” verwijst naar de organisatie die een
-        account aanmaakt of een abonnement afsluit.
+        “ComplAI” verwijst naar de dienst van DARO (eenmanszaak, KvK 77906934,
+        gevestigd te It Ankerplak 7, 8802 CS Franeker). “Dienst” verwijst naar
+        het online platform. “Klant” verwijst naar de organisatie die een account
+        aanmaakt of een abonnement afsluit.
       </p>
 
       <h2>2. Toepasselijkheid</h2>
@@ -75,7 +76,8 @@ export default function TermsPage() {
       <h2>11. Toepasselijk recht</h2>
       <p>
         Op deze voorwaarden is Nederlands recht van toepassing. Geschillen worden
-        voorgelegd aan de bevoegde rechter te [plaats].
+        voorgelegd aan de bevoegde rechter van de Rechtbank Noord-Nederland,
+        locatie Leeuwarden.
       </p>
     </LegalShell>
   );
