@@ -196,7 +196,7 @@ export default function LandingPage() {
               height={900}
               priority
               sizes="(min-width: 1024px) 600px, 100vw"
-              className="h-auto w-full"
+              className="h-auto w-full brightness-105"
             />
           </div>
         </div>
