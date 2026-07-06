@@ -5,6 +5,7 @@ import { z } from "zod";
 
 import { prisma } from "@/lib/prisma";
 import { getActiveCompany } from "@/lib/auth";
+import { registerUnlocked, TIER_LABEL, REGISTER_MIN_TIER } from "@/lib/plan";
 
 const schema = z.object({
   id: z.string().optional(),
@@ -28,6 +29,15 @@ export async function upsertAiSystem(
   }
   const { id, ...data } = parsed.data;
   const { company } = await getActiveCompany();
+
+  // Register is a paid feature: on the free tier existing rows can be viewed and
+  // deleted, but not added or edited. (Delete stays open — see deleteAiSystem.)
+  if (!registerUnlocked(company.plan)) {
+    return {
+      ok: false,
+      error: `Het AI-register is beschikbaar vanaf het pakket ${TIER_LABEL[REGISTER_MIN_TIER]}. Upgrade om systemen toe te voegen of te bewerken.`,
+    };
+  }
 
   try {
     if (id) {

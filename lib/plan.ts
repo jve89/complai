@@ -52,3 +52,12 @@ export function minTierFor(slug: string): TierId {
 export function docUnlocked(plan: string | null | undefined, slug: string): boolean {
   return tierRank(plan) >= tierRank(minTierFor(slug));
 }
+
+/** The AI-register (unlimited systems) is a paid feature from Actief (starter).
+ * On Inzicht (gratis) existing rows stay visible but locked: no add/edit,
+ * delete still allowed so a downgraded company can clean up. */
+export const REGISTER_MIN_TIER: TierId = "starter";
+
+export function registerUnlocked(plan: string | null | undefined): boolean {
+  return tierRank(plan) >= tierRank(REGISTER_MIN_TIER);
+}
