@@ -8,20 +8,17 @@ import { env } from "@/lib/env";
  * Reads/writes the session from cookies. In a Server Component context cookie
  * writes are no-ops (handled by middleware), so we guard the set/remove calls.
  *
- * flowType is forced to "implicit" (rather than the @supabase/ssr default of
- * "pkce"): PKCE needs the *browser* to hold a code_verifier cookie between
- * signUp()/resetPasswordForEmail() and the user later clicking the emailed
- * link, but those calls happen here in a Server Action — there's no such
- * cookie to hand off, so exchangeCodeForSession always failed with "PKCE code
- * verifier not found in storage." Implicit flow makes Supabase email links use
- * a token_hash instead, which app/auth/confirm and app/auth/recover verify
- * statelessly via verifyOtp — no stored verifier needed.
+ * Email confirmation / password-reset links do NOT use the PKCE code exchange
+ * (a Server Action has no browser code_verifier cookie to hand off, so
+ * exchangeCodeForSession fails with "PKCE code verifier not found in storage").
+ * Instead the Supabase email templates are configured to send a token_hash
+ * link straight to /auth/confirm and /auth/recover, which verify it statelessly
+ * via verifyOtp — no stored verifier needed. So the default flowType is fine.
  */
 export function createClient() {
   const cookieStore = cookies();
 
   return createServerClient(env.supabaseUrl ?? "", env.supabaseAnonKey ?? "", {
-    auth: { flowType: "implicit" },
     cookies: {
       getAll() {
         return cookieStore.getAll();
