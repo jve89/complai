@@ -28,7 +28,7 @@ const columns = [
   {
     title: "Bedrijf",
     links: [
-      { href: "/contact", label: "Contact" },
+      { href: "/over-ons", label: "Over ons" },
       { href: "/login", label: "Inloggen" },
       { href: "/signup", label: "Gratis starten" },
     ],
