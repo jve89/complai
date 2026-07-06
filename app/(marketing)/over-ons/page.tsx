@@ -39,7 +39,7 @@ export default function AboutPage() {
             Over ons
           </p>
           <h1 className="mt-3 text-4xl font-bold tracking-tight sm:text-5xl">
-            Complexe regels werkbaar maken — dat leerde ik in de{" "}
+            Complexe regels werkbaar maken, met de discipline van de{" "}
             <span className="bg-gradient-to-r from-brand-500 to-violet-500 bg-clip-text text-transparent">
               luchtvaart
             </span>
@@ -56,31 +56,32 @@ export default function AboutPage() {
       <section className="py-16">
         <div className="container max-w-3xl space-y-6 text-[15px] leading-relaxed text-foreground/80">
           <p>
-            Ik ben Johan van Erkel, oprichter van ComplAI. Mijn achtergrond ligt
-            in <strong className="text-foreground">luchtvaartcompliance</strong> —
-            een van de meest gereguleerde en veiligheidskritische sectoren die er
-            bestaat. Daar leerde ik hoe je van een berg complexe regelgeving iets
-            werkbaars maakt: concreet, aantoonbaar, en te vertrouwen wanneer het
-            erop aankomt. In de luchtvaart is compliance geen bijzaak — het is de
-            reden dat mensen veilig aankomen.
+            ComplAI is gebouwd door mensen die weten wat compliance écht
+            betekent. Onze experts hebben jarenlange ervaring in zowel{" "}
+            <strong className="text-foreground">AI</strong> als{" "}
+            <strong className="text-foreground">luchtvaartcompliance</strong> — een
+            van de meest gereguleerde en veiligheidskritische sectoren die er
+            bestaat. Daar leer je hoe je een berg complexe regelgeving vertaalt
+            naar iets werkbaars: concreet, aantoonbaar, en te vertrouwen wanneer
+            het erop aankomt. In de luchtvaart is compliance geen bijzaak — het is
+            de reden dat mensen veilig aankomen.
           </p>
           <p>
-            Toen de EU AI Act eraan kwam, zag ik hetzelfde patroon. Nieuwe,
-            ingrijpende regels. Stevige boetes. En organisaties die door de bomen
-            het bos niet meer zien. Precies het probleem dat de luchtvaart
-            decennia geleden al oploste — met duidelijke processen, checklists en
-            documentatie in plaats van dure, ontoegankelijke rapporten.
+            Toen de EU AI Act eraan kwam, herkenden we het patroon meteen.
+            Nieuwe, ingrijpende regels. Stevige boetes. En organisaties die door
+            de bomen het bos niet meer zien. Precies het probleem dat de
+            luchtvaart decennia geleden al oploste — met duidelijke processen,
+            checklists en documentatie in plaats van dure, ontoegankelijke
+            rapporten.
           </p>
           <p>
-            Ik combineer die compliance-ervaring met{" "}
-            <strong className="text-foreground">diepgaande kennis van AI</strong>:
-            hoe de techniek werkt, waar de risico&rsquo;s zitten en wat de wet er
-            in de praktijk van vraagt. ComplAI is het resultaat — geen juridisch
-            adviesbureau, maar een werkomgeving die de AI Act voor u ontwart en
-            omzet in stappen die u zelf kunt zetten en aantonen.
+            Die combinatie — diepgaande AI-kennis en beproefde
+            compliance-discipline — zit in alles wat we bouwen. ComplAI is geen
+            juridisch adviesbureau, maar een werkomgeving die de AI Act voor u
+            ontwart en omzet in stappen die u zelf kunt zetten en aantonen.
           </p>
           <p>
-            De missie is simpel: de AI Act begrijpelijk en behapbaar maken voor
+            Onze missie is simpel: de AI Act begrijpelijk en behapbaar maken voor
             elke Nederlandse mkb-organisatie, zonder dat u een jurist of een duur
             adviestraject nodig heeft. Eerlijk over wat we wél en niet zijn, en
             met uw gegevens veilig binnen de EU.
