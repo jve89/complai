@@ -72,7 +72,7 @@ export function BillingSection({
         </Badge>
       </div>
 
-      <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
+      <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center">
         {isActive ? (
           <>
             <Button onClick={() => openPortal("update")} disabled={isPending}>
@@ -82,6 +82,14 @@ export function BillingSection({
             <Button variant="outline" onClick={() => openPortal()} disabled={isPending}>
               <CreditCard className="h-4 w-4" />
               Facturen & betaalgegevens
+            </Button>
+            <Button
+              variant="ghost"
+              onClick={() => openPortal("cancel")}
+              disabled={isPending}
+              className="text-muted-foreground hover:bg-destructive/10 hover:text-destructive sm:ml-auto"
+            >
+              Abonnement opzeggen
             </Button>
           </>
         ) : (
@@ -98,17 +106,6 @@ export function BillingSection({
           </>
         )}
       </div>
-
-      {isActive && (
-        <button
-          type="button"
-          onClick={() => openPortal("cancel")}
-          disabled={isPending}
-          className="w-fit text-sm font-medium text-muted-foreground underline underline-offset-4 hover:text-destructive disabled:opacity-50"
-        >
-          Abonnement opzeggen
-        </button>
-      )}
 
       {notice && (
         <p className="rounded-md border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800">
