@@ -104,15 +104,24 @@ export async function POST(req: Request) {
       case "customer.subscription.updated": {
         const sub = event.data.object as Stripe.Subscription;
         const sync = await syncSubscriptionToCompany(sub);
-        // Opzegging aangevraagd (cancel at period end): the only moment the
-        // "access until <date>" promise is true — confirm it here, once.
         const prev = event.data.previous_attributes as
           | Partial<Stripe.Subscription>
           | undefined;
-        if (sync && sub.cancel_at_period_end && prev?.cancel_at_period_end === false) {
+        // Opzegging aangevraagd: the subscription is now scheduled to end
+        // (cancel_at_period_end, OR a cancel_at timestamp — Stripe uses the
+        // latter when cancelling a *trialing* subscription) AND that scheduling
+        // just changed in this event, so we confirm it exactly once.
+        console.log(
+          `[stripe] sub.updated cape=${sub.cancel_at_period_end} cancel_at=${sub.cancel_at} status=${sub.status} prevKeys=${prev ? Object.keys(prev).join(",") : "none"}`
+        );
+        const scheduledToCancel = Boolean(sub.cancel_at_period_end) || Boolean(sub.cancel_at);
+        const cancelJustChanged =
+          !!prev && ("cancel_at_period_end" in prev || "cancel_at" in prev);
+        if (sync && scheduledToCancel && cancelJustChanged) {
+          const until = sub.cancel_at ? new Date(sub.cancel_at * 1000) : sync.renewsAt;
           await sendCancelRequested({
             companyId: sync.companyId,
-            accessUntil: sync.renewsAt ? formatDate(sync.renewsAt) : null,
+            accessUntil: until ? formatDate(until) : null,
             baseUrl,
           });
         }
