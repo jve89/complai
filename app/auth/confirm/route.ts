@@ -3,6 +3,7 @@ import type { EmailOtpType } from "@supabase/supabase-js";
 
 import { createClient } from "@/lib/supabase/server";
 import { baseUrlFrom } from "@/lib/request-url";
+import { sendWelcome } from "@/lib/email/send";
 
 /**
  * Landing point for Supabase's email-confirmation link. Establishes a session
@@ -13,8 +14,10 @@ import { baseUrlFrom } from "@/lib/request-url";
  * We don't pass `?next=...` on the emailRedirectTo used to build this link:
  * Supabase's redirect-URL allow-list check can reject a query string and
  * silently fall back to the bare Site URL, dropping the destination entirely.
- * So a picked plan is stashed in user_metadata at signup instead, and read
- * back here once the session exists.
+ * So a picked plan (and the welcome-email context) is stashed in user_metadata
+ * at signup instead, and read back here once the session exists. This is also
+ * where the welcome email fires when confirmation was required — signup()
+ * only sends it immediately if a session already existed there.
  */
 export async function GET(request: Request) {
   const url = new URL(request.url);
@@ -43,6 +46,14 @@ export async function GET(request: Request) {
     if (pendingPlan) {
       const pendingInterval = user?.user_metadata?.pendingInterval === "year" ? "year" : "month";
       next = `/api/stripe/checkout?plan=${encodeURIComponent(pendingPlan)}&interval=${pendingInterval}`;
+    }
+    if (user?.email) {
+      await sendWelcome({
+        to: user.email,
+        name: user.user_metadata?.name as string | undefined,
+        baseUrl: base,
+        withScan: Boolean(user.user_metadata?.withScan),
+      });
     }
   }
 

@@ -145,6 +145,7 @@ export async function signup(
   const confirmNext = plan
     ? `/api/stripe/checkout?plan=${encodeURIComponent(plan)}&interval=${intervalParam}`
     : "/dashboard";
+  const scanId = formData.get("scan") as string | null;
 
   const supabase = createClient();
   const { data, error } = await supabase.auth.signUp({
@@ -154,9 +155,15 @@ export async function signup(
       // Supabase's redirect-URL allow-list check can reject a query string on
       // emailRedirectTo and silently fall back to the bare Site URL, dropping
       // even the path — so the confirmation link carries no destination info.
-      // Instead, stash where to go after confirming in user_metadata, which
-      // /auth/confirm reads back once the session is established.
-      data: plan ? { name, pendingPlan: plan, pendingInterval: intervalParam } : { name },
+      // Instead, stash where to go (and the welcome-email context) in
+      // user_metadata, which /auth/confirm reads back once the session and
+      // profile exist — that's also where the welcome email fires when
+      // confirmation is required, so it never claims access is ready early.
+      data: {
+        name,
+        withScan: Boolean(scanId),
+        ...(plan ? { pendingPlan: plan, pendingInterval: intervalParam } : {}),
+      },
       emailRedirectTo: `${currentBaseUrl()}/auth/confirm`,
     },
   });
@@ -184,16 +191,19 @@ export async function signup(
     });
 
     // Bridge: if they came from an anonymous scan, populate the dashboard from it.
-    const scanId = formData.get("scan") as string | null;
     if (scanId) await applyScanToCompany(scanId, companyId, data.user.id);
 
     // Welcome email (never blocks signup — sendWelcome catches its own errors).
-    await sendWelcome({
-      to: email,
-      name,
-      baseUrl: currentBaseUrl(),
-      withScan: Boolean(scanId),
-    });
+    // Only send it now if the account is actually usable already; when
+    // confirmation is required, /auth/confirm sends it once they've confirmed.
+    if (data.session) {
+      await sendWelcome({
+        to: email,
+        name,
+        baseUrl: currentBaseUrl(),
+        withScan: Boolean(scanId),
+      });
+    }
   } catch (e) {
     console.error("Profiel aanmaken mislukt:", e);
     return {
