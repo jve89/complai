@@ -1,4 +1,5 @@
 import { getActiveCompany } from "@/lib/auth";
+import { stripe } from "@/lib/stripe";
 import { formatDate } from "@/lib/utils";
 import { TIER_LABEL, TIER_ORDER, tierRank } from "@/lib/plan";
 import { PageHeader } from "@/components/dashboard/page-header";
@@ -19,6 +20,23 @@ export default async function SettingsPage() {
 
   const planLabel = TIER_LABEL[TIER_ORDER[tierRank(company.plan)]];
   const hasSubscription = Boolean(company.stripeCustomerId);
+
+  // A cancel-at-period-end keeps the subscription active/trialing until it ends,
+  // so planStatus alone can't show it. Read the live cancel state from Stripe
+  // (best-effort — falls back to the stored renewal date if unreachable).
+  let canceling = false;
+  let accessOrRenewAt = company.planRenewsAt ? formatDate(company.planRenewsAt) : null;
+  if (stripe && company.stripeSubscriptionId) {
+    try {
+      const sub = await stripe.subscriptions.retrieve(company.stripeSubscriptionId);
+      if (sub.cancel_at_period_end || sub.cancel_at) {
+        canceling = true;
+        if (sub.cancel_at) accessOrRenewAt = formatDate(new Date(sub.cancel_at * 1000));
+      }
+    } catch {
+      // Stripe unreachable — fall back to the stored plan fields.
+    }
+  }
 
   return (
     <>
@@ -52,7 +70,8 @@ export default async function SettingsPage() {
               planLabel={planLabel}
               planStatus={company.planStatus}
               hasSubscription={hasSubscription}
-              renewsAt={company.planRenewsAt ? formatDate(company.planRenewsAt) : null}
+              canceling={canceling}
+              renewsAt={accessOrRenewAt}
             />
           </CardContent>
         </Card>

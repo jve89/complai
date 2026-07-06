@@ -19,16 +19,25 @@ export function BillingSection({
   planStatus,
   hasSubscription,
   renewsAt,
+  canceling = false,
 }: {
   planLabel: string;
   planStatus?: string | null;
   hasSubscription: boolean;
   renewsAt?: string | null;
+  /** Scheduled to end at period end (still active until then). */
+  canceling?: boolean;
 }) {
   const [isPending, startTransition] = useTransition();
   const [notice, setNotice] = useState<string | null>(null);
 
-  const status = hasSubscription && planStatus ? STATUS_LABEL[planStatus] : null;
+  // A scheduled cancellation overrides the raw status: the sub is still
+  // trialing/active but will end, so show that honestly.
+  const status = canceling
+    ? ({ label: "Wordt opgezegd", variant: "warning" } as const)
+    : hasSubscription && planStatus
+      ? STATUS_LABEL[planStatus]
+      : null;
   // Only a still-granting subscription can be switched or cancelled in the
   // portal; a canceled/lapsed one should re-pick a plan instead.
   const isActive =
@@ -63,7 +72,7 @@ export function BillingSection({
           <p className="text-lg font-semibold">{planLabel}</p>
           {hasSubscription && renewsAt && (
             <p className="text-xs text-muted-foreground">
-              {planStatus === "canceled" ? "Toegang tot" : "Verlengt op"} {renewsAt}
+              {canceling || planStatus === "canceled" ? "Toegang tot" : "Verlengt op"} {renewsAt}
             </p>
           )}
         </div>
@@ -83,14 +92,16 @@ export function BillingSection({
               <CreditCard className="h-4 w-4" />
               Facturen & betaalgegevens
             </Button>
-            <Button
-              variant="ghost"
-              onClick={() => openPortal("cancel")}
-              disabled={isPending}
-              className="text-muted-foreground hover:bg-destructive/10 hover:text-destructive sm:ml-auto"
-            >
-              Abonnement opzeggen
-            </Button>
+            {!canceling && (
+              <Button
+                variant="ghost"
+                onClick={() => openPortal("cancel")}
+                disabled={isPending}
+                className="text-muted-foreground hover:bg-destructive/10 hover:text-destructive sm:ml-auto"
+              >
+                Abonnement opzeggen
+              </Button>
+            )}
           </>
         ) : (
           <>
