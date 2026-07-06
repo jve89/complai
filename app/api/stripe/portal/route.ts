@@ -44,20 +44,35 @@ export async function POST(req: Request) {
   }
 
   const { flow } = (await req.json().catch(() => ({}))) as { flow?: string };
+  const returnUrl = `${baseUrlFrom(req)}/dashboard/settings`;
 
   // Deep-link to a specific flow on the current subscription when asked and one
-  // exists; otherwise just open the portal home.
+  // exists; otherwise just open the portal home. after_completion redirects the
+  // user straight back to the app once the flow finishes, instead of leaving
+  // them on Stripe's portal page.
   let flowData: Stripe.BillingPortal.SessionCreateParams.FlowData | undefined;
   const subId = company.stripeSubscriptionId;
+  const afterCompletion = {
+    type: "redirect" as const,
+    redirect: { return_url: returnUrl },
+  };
   if (subId && flow === "cancel") {
-    flowData = { type: "subscription_cancel", subscription_cancel: { subscription: subId } };
+    flowData = {
+      type: "subscription_cancel",
+      subscription_cancel: { subscription: subId },
+      after_completion: afterCompletion,
+    };
   } else if (subId && flow === "update") {
-    flowData = { type: "subscription_update", subscription_update: { subscription: subId } };
+    flowData = {
+      type: "subscription_update",
+      subscription_update: { subscription: subId },
+      after_completion: afterCompletion,
+    };
   }
 
   const session = await stripe.billingPortal.sessions.create({
     customer: company.stripeCustomerId,
-    return_url: `${baseUrlFrom(req)}/dashboard/settings`,
+    return_url: returnUrl,
     ...(flowData ? { flow_data: flowData } : {}),
   });
 
