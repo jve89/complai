@@ -49,6 +49,12 @@ export async function login(
   const supabase = createClient();
   const { error } = await supabase.auth.signInWithPassword(parsed.data);
   if (error) {
+    if (error.message === "Email not confirmed") {
+      return {
+        error:
+          "Bevestig eerst uw e-mailadres via de link die we u hebben gestuurd, en log daarna in.",
+      };
+    }
     return { error: "Inloggen mislukt. Controleer uw gegevens." };
   }
 
@@ -133,11 +139,21 @@ export async function signup(
     companyName = cn.data;
   }
 
+  const plan = (formData.get("plan") as string | null) || null;
+  const intervalParam =
+    (formData.get("interval") as string | null) === "year" ? "year" : "month";
+  const confirmNext = plan
+    ? `/api/stripe/checkout?plan=${encodeURIComponent(plan)}&interval=${intervalParam}`
+    : "/dashboard";
+
   const supabase = createClient();
   const { data, error } = await supabase.auth.signUp({
     email,
     password,
-    options: { data: { name } },
+    options: {
+      data: { name },
+      emailRedirectTo: `${currentBaseUrl()}/auth/confirm?next=${encodeURIComponent(confirmNext)}`,
+    },
   });
 
   if (error || !data.user) {
@@ -181,26 +197,15 @@ export async function signup(
     };
   }
 
-  // Account-first checkout: if they picked a paid plan, continue to Stripe after
-  // auth (carried through email confirmation via the login redirect).
-  const plan = (formData.get("plan") as string | null) || null;
-  const intervalParam =
-    (formData.get("interval") as string | null) === "year" ? "year" : "month";
-  const planQuery = plan
-    ? `&plan=${encodeURIComponent(plan)}&interval=${intervalParam}`
-    : "";
-
-  // If email confirmation is required there is no session yet.
+  // If email confirmation is required there is no session yet — the user
+  // continues via the confirmation link (emailRedirectTo above), which lands on
+  // /auth/confirm and forwards straight to confirmNext.
   if (!data.session) {
-    redirect(`/login?registered=1${planQuery}`);
+    redirect(`/login?registered=1${plan ? `&plan=${encodeURIComponent(plan)}` : ""}`);
   }
 
   revalidatePath("/", "layout");
-  redirect(
-    plan
-      ? `/api/stripe/checkout?plan=${encodeURIComponent(plan)}&interval=${intervalParam}`
-      : "/dashboard"
-  );
+  redirect(confirmNext);
 }
 
 /**

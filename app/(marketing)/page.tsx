@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import type { Metadata } from "next";
 import {
   AlertTriangle,
@@ -119,8 +120,8 @@ const features = [
   },
   {
     icon: Sparkles,
-    title: "Altijd actueel",
-    text: "Het platform beweegt mee met de gefaseerde invoering van de wet, zodat u nooit iets mist.",
+    title: "Meegroeien met de wet",
+    text: "De deadlines en verplichtingen in het platform werken we bij naarmate de AI Act gefaseerd in werking treedt, zodat u met de actuele stand werkt.",
   },
 ];
 
@@ -185,58 +186,18 @@ export default function LandingPage() {
             </p>
           </div>
 
-          {/* Dashboard mockup */}
+          {/* Product preview */}
           <div className="relative">
-            <div className="absolute -inset-4 -z-10 rounded-[28px] bg-gradient-to-br from-brand-500/15 to-violet-500/15 blur-2xl" />
-            <div className="rounded-2xl border bg-white p-2 shadow-xl shadow-brand-500/10 ring-1 ring-black/5">
-              <div className="rounded-xl border bg-card p-6">
-                <div className="mb-5 flex items-center justify-between">
-                  <span className="text-sm font-semibold">Compliance-score</span>
-                  <Badge variant="secondary" className="bg-accent text-accent-foreground">
-                    Voorbeeld
-                  </Badge>
-                </div>
-                <div className="flex items-center gap-6">
-                  <div className="relative grid h-28 w-28 place-items-center">
-                    <svg className="h-28 w-28 -rotate-90" viewBox="0 0 100 100">
-                      <circle cx="50" cy="50" r="42" fill="none" stroke="#ede9fe" strokeWidth="10" />
-                      <circle
-                        cx="50"
-                        cy="50"
-                        r="42"
-                        fill="none"
-                        stroke="#6366f1"
-                        strokeWidth="10"
-                        strokeLinecap="round"
-                        strokeDasharray={`${2 * Math.PI * 42}`}
-                        strokeDashoffset={`${2 * Math.PI * 42 * (1 - 0.58)}`}
-                      />
-                    </svg>
-                    <span className="absolute text-2xl font-bold">58</span>
-                  </div>
-                  <div className="space-y-2.5 text-sm">
-                    {[
-                      ["Art. 4 · AI-geletterdheid", "open"],
-                      ["Art. 5 · Verboden praktijken", "ok"],
-                      ["Art. 50 · Transparantie", "bezig"],
-                    ].map(([label, status]) => (
-                      <div key={label} className="flex items-center gap-2">
-                        <span
-                          className={
-                            status === "ok"
-                              ? "h-2 w-2 rounded-full bg-emerald-500"
-                              : status === "bezig"
-                                ? "h-2 w-2 rounded-full bg-amber-500"
-                                : "h-2 w-2 rounded-full bg-red-500"
-                          }
-                        />
-                        <span className="text-muted-foreground">{label}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            </div>
+            <div className="absolute inset-2 -z-10 rounded-[28px] bg-gradient-to-br from-brand-500/20 to-violet-500/20 blur-3xl" />
+            <Image
+              src="/hero-dashboard.png"
+              alt="ComplAI-dashboard: gereedheidsscore, AI-register, verplichtingen en aankomende deadlines in één omgeving"
+              width={1200}
+              height={900}
+              priority
+              sizes="(min-width: 1024px) 600px, 100vw"
+              className="h-auto w-full brightness-105"
+            />
           </div>
         </div>
       </section>
@@ -248,7 +209,7 @@ export default function LandingPage() {
             <Scale className="h-4 w-4 text-brand-500" /> Gebouwd op Verordening (EU) 2024/1689
           </span>
           <span className="hidden text-muted-foreground/40 sm:inline">·</span>
-          <span>Digital Omnibus-voorstel gesignaleerd (nog niet aangenomen)</span>
+          <span>Toepassingsdata volgens de officiële EU-tijdlijn (Art. 113)</span>
           <span className="hidden text-muted-foreground/40 sm:inline">·</span>
           <span>In het Nederlands</span>
           <span className="hidden text-muted-foreground/40 sm:inline">·</span>
@@ -308,9 +269,9 @@ export default function LandingPage() {
               </Link>
             </Button>
             <p className="max-w-2xl text-center text-xs text-white/50">
-              Toepassingsdata volgens Art. 113. Een Digital Omnibus-voorstel kan
-              sommige data uitstellen; tot het is aangenomen blijven de huidige data
-              leidend. Dit is beslissingsondersteuning, geen juridisch advies.
+              Toepassingsdata volgens de officiële EU-tijdlijn (Art. 113).
+              Wetgeving en deadlines kunnen wijzigen; we houden de data in het
+              platform actueel. Dit is beslissingsondersteuning, geen juridisch advies.
             </p>
           </div>
         </div>

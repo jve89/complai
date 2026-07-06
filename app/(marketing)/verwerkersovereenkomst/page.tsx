@@ -6,11 +6,13 @@ export const metadata: Metadata = { title: "Verwerkersovereenkomst" };
 
 export default function DpaPage() {
   return (
-    <LegalShell title="Verwerkersovereenkomst (DPA)" updated="28 juni 2026">
+    <LegalShell title="Verwerkersovereenkomst (DPA)" updated="5 juli 2026">
       <p>
-        Deze verwerkersovereenkomst is van toepassing wanneer ComplAI namens uw
-        organisatie persoonsgegevens verwerkt bij het leveren van de Dienst. Uw
-        organisatie is verwerkingsverantwoordelijke; ComplAI is verwerker.
+        Deze verwerkersovereenkomst is van toepassing wanneer ComplAI — een dienst
+        van DARO (eenmanszaak, KvK 77906934, gevestigd te It Ankerplak 7, 8802 CS
+        Franeker) — namens uw organisatie persoonsgegevens verwerkt bij het leveren
+        van de Dienst. Uw organisatie is verwerkingsverantwoordelijke; ComplAI is
+        verwerker.
       </p>
 
       <h2>1. Onderwerp en instructies</h2>
@@ -35,9 +37,21 @@ export default function DpaPage() {
 
       <h2>4. Subverwerkers</h2>
       <p>
-        ComplAI mag subverwerkers inschakelen (zoals hosting-, auth-, betaal- en
-        e-mailproviders) en legt hen gelijkwaardige verplichtingen op. Een
-        actueel overzicht is op aanvraag beschikbaar.
+        ComplAI schakelt de volgende subverwerkers in en legt hen gelijkwaardige
+        verplichtingen op:
+      </p>
+      <ul>
+        <li><strong>Supabase</strong> — database en authenticatie (opslag binnen de EU, regio eu-west-1);</li>
+        <li><strong>Vercel</strong> — hosting en levering van de applicatie;</li>
+        <li><strong>Stripe</strong> — betalingsverwerking;</li>
+        <li><strong>Resend</strong> — verzending van transactionele e-mail.</li>
+      </ul>
+      <p>
+        Uw gegevens worden opgeslagen binnen de EU. Voor zover een subverwerker
+        persoonsgegevens buiten de EER verwerkt, gebeurt dit onder passende
+        waarborgen (EU-modelcontractbepalingen). ComplAI informeert de
+        verwerkingsverantwoordelijke bij voorgenomen wijzigingen in de
+        subverwerkers.
       </p>
 
       <h2>5. Rechten van betrokkenen</h2>

@@ -301,12 +301,12 @@ export default async function ScanResultsPage({
         </div>
       )}
 
-      {/* Omnibus dual-date note */}
+      {/* High-risk application-date note */}
       {hasFuture && (
         <p className="mb-8 rounded-lg border border-dashed px-4 py-3 text-xs text-muted-foreground">
           De grote verplichtingen voor hoog-risico AI gelden vanaf 2 augustus 2026 (Annex III) en 2
-          augustus 2027 (Annex I als product). Een Digital Omnibus-voorstel kan deze data uitstellen;
-          tot het is aangenomen blijven de huidige data leidend.
+          augustus 2027 (Annex I als product), volgens de officiële EU-tijdlijn (Art. 113). Wetgeving
+          en deadlines kunnen wijzigen; we houden de data in het platform actueel.
         </p>
       )}
 

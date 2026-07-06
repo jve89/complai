@@ -6,6 +6,7 @@ import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { getActiveCompany } from "@/lib/auth";
 import { sendEmail } from "@/lib/resend";
+import { inviteEmail } from "@/lib/email/templates";
 import { env } from "@/lib/env";
 
 export type ActionResult = { ok: true; message?: string } | { ok: false; error: string };
@@ -150,12 +151,12 @@ export async function inviteMember(input: {
   }
 
   const link = `${env.appUrl}/signup?invite=${token}`;
-  const result = await sendEmail({
-    to: email,
-    subject: `Uitnodiging voor ${company.name} op ComplAI`,
-    html: `<p>U bent uitgenodigd om deel te nemen aan <strong>${company.name}</strong> op ComplAI als <strong>${ROLE_LABEL[parsed.data.role] ?? parsed.data.role}</strong>.</p>
-           <p><a href="${link}">Accepteer de uitnodiging en maak uw account aan</a>.</p>`,
+  const { subject, html } = inviteEmail({
+    companyName: company.name,
+    roleLabel: ROLE_LABEL[parsed.data.role] ?? parsed.data.role,
+    url: link,
   });
+  const result = await sendEmail({ to: email, subject, html });
 
   return {
     ok: true,

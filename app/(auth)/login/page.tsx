@@ -36,8 +36,8 @@ export default function LoginPage({
         {searchParams.registered && (
           <div className="rounded-md bg-emerald-50 p-3 text-sm text-emerald-700">
             {searchParams.plan
-              ? "Account aangemaakt. Log in om door te gaan naar de betaling."
-              : "Account aangemaakt. Bevestig eventueel uw e-mailadres en log in."}
+              ? "Bijna klaar! Bevestig uw e-mailadres via de link die we u zojuist stuurden om door te gaan naar de betaling."
+              : "Bijna klaar! Bevestig uw e-mailadres via de link die we u zojuist stuurden om toegang te krijgen tot uw dashboard."}
           </div>
         )}
         <AuthForm

@@ -7,10 +7,11 @@ const columns = [
     title: "Product",
     links: [
       { href: "/scan", label: "Risicoscan" },
-      { href: "/#functies", label: "AI-register" },
-      { href: "/#functies", label: "Documenten" },
-      { href: "/#functies", label: "E-learning" },
-      { href: "/#functies", label: "Governance" },
+      { href: "/demo/register", label: "AI-register" },
+      { href: "/demo/schaduw-ai", label: "Schaduw-AI" },
+      { href: "/demo/documents", label: "Documenten" },
+      { href: "/demo/training", label: "E-learning" },
+      { href: "/demo/governance", label: "Governance" },
       { href: "/pricing", label: "Prijzen" },
     ],
   },
@@ -27,7 +28,7 @@ const columns = [
   {
     title: "Bedrijf",
     links: [
-      { href: "/contact", label: "Contact" },
+      { href: "/over-ons", label: "Over ons" },
       { href: "/login", label: "Inloggen" },
       { href: "/signup", label: "Gratis starten" },
     ],
