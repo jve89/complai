@@ -61,3 +61,12 @@ export const REGISTER_MIN_TIER: TierId = "starter";
 export function registerUnlocked(plan: string | null | undefined): boolean {
   return tierRank(plan) >= tierRank(REGISTER_MIN_TIER);
 }
+
+/** E-learning (modules, quizzes, certificates) is a paid feature from Actief
+ * (starter). On Inzicht (gratis) the learning paths are visible as a teaser but
+ * modules can't be started and certificates aren't issued. */
+export const TRAINING_MIN_TIER: TierId = "starter";
+
+export function trainingUnlocked(plan: string | null | undefined): boolean {
+  return tierRank(plan) >= tierRank(TRAINING_MIN_TIER);
+}
