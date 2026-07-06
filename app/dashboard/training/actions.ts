@@ -6,6 +6,7 @@ import { prisma } from "@/lib/prisma";
 import { getActiveCompany } from "@/lib/auth";
 import { getLearnerEmployee } from "@/lib/training/learner";
 import { getModule, modulesForPath, PASS_THRESHOLD } from "@/lib/training/content";
+import { trainingUnlocked, TIER_LABEL, TRAINING_MIN_TIER } from "@/lib/plan";
 
 export type CompleteResult =
   | {
@@ -37,6 +38,15 @@ export async function completeModule(
   const passed = score >= PASS_THRESHOLD;
 
   const { company, user } = await getActiveCompany();
+
+  // E-learning is a paid feature: on the free tier modules can't be completed.
+  if (!trainingUnlocked(company.plan)) {
+    return {
+      ok: false,
+      error: `E-learning is beschikbaar vanaf het pakket ${TIER_LABEL[TRAINING_MIN_TIER]}. Upgrade om modules te volgen.`,
+    };
+  }
+
   const employee = await getLearnerEmployee(company, user);
 
   if (!passed) {

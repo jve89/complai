@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { getActiveCompany } from "@/lib/auth";
 import { DEMO_COMPANY_NAME } from "@/lib/demo";
 import { getModule, getPath, moduleCountForPath } from "@/lib/training/content";
+import { trainingUnlocked } from "@/lib/plan";
 import { CertificatePdf } from "@/components/pdf/certificate-pdf";
 
 export const runtime = "nodejs";
@@ -27,6 +28,13 @@ export async function GET(
     const { company } = await getActiveCompany();
     if (employee.companyId !== company.id) {
       return new Response("Geen certificaat beschikbaar", { status: 404 });
+    }
+    // Certificates are a paid deliverable — a downgraded free company can't pull
+    // one via the direct URL either.
+    if (!trainingUnlocked(company.plan)) {
+      return new Response("Certificaten zijn beschikbaar vanaf het pakket Actief", {
+        status: 403,
+      });
     }
   }
 

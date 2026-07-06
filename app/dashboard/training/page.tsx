@@ -1,7 +1,10 @@
-import { Award, CheckCircle2, Circle, Download, Users } from "lucide-react";
+import Link from "next/link";
+import { Award, CheckCircle2, Circle, Download, Lock, Users } from "lucide-react";
 
 import { prisma } from "@/lib/prisma";
 import { getActiveCompany } from "@/lib/auth";
+import { cn } from "@/lib/utils";
+import { trainingUnlocked, TIER_LABEL, TRAINING_MIN_TIER } from "@/lib/plan";
 import { getLearnerEmployee } from "@/lib/training/learner";
 import {
   PATHS,
@@ -34,6 +37,7 @@ export const dynamic = "force-dynamic";
 
 export default async function TrainingPage() {
   const { company, user } = await getActiveCompany();
+  const unlocked = trainingUnlocked(company.plan);
   const learner = await getLearnerEmployee(company, user);
 
   const [employees, learnerCompletions] = await Promise.all([
@@ -67,6 +71,23 @@ export default async function TrainingPage() {
         title="E-learning"
         description="Borg AI-geletterdheid (Art. 4) met rolgerichte leerpaden en certificaten."
       />
+
+      {!unlocked && (
+        <div className="mb-8 flex flex-col gap-3 rounded-lg border border-navy-100 bg-navy-50 p-4 text-navy-900 sm:flex-row sm:items-center sm:justify-between">
+          <div className="text-sm">
+            <p className="font-semibold">
+              E-learning is beschikbaar vanaf {TIER_LABEL[TRAINING_MIN_TIER]}
+            </p>
+            <p className="text-muted-foreground">
+              Hieronder ziet u welke leerpaden en modules u krijgt. Upgrade om ze te
+              volgen, de voortgang van uw team te bewaken en certificaten te behalen.
+            </p>
+          </div>
+          <Button asChild size="sm" className="shrink-0">
+            <Link href="/pricing">Bekijk pakketten</Link>
+          </Button>
+        </div>
+      )}
 
       {/* Paths */}
       <div className="mb-8 grid gap-4 sm:grid-cols-3">
@@ -106,7 +127,8 @@ export default async function TrainingPage() {
         })}
       </div>
 
-      {/* Learner progress */}
+      {/* Learner progress — hidden on the free tier (no completions possible). */}
+      {unlocked && (
       <Card className="mb-8">
         <CardHeader>
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -136,17 +158,20 @@ export default async function TrainingPage() {
           <Progress value={(learnerDone / learnerTotal) * 100} />
         </CardContent>
       </Card>
+      )}
 
       {/* Modules */}
       <h2 className="mb-4 text-lg font-semibold">Modules</h2>
       <div className="mb-10 space-y-3">
         {learnerModules.map((module, i) => {
-          const done = doneIds.has(module.id);
+          const done = unlocked && doneIds.has(module.id);
           return (
-            <Card key={module.id}>
+            <Card key={module.id} className={cn(!unlocked && "opacity-75")}>
               <CardContent className="flex flex-col gap-4 py-5 sm:flex-row sm:items-center sm:justify-between">
                 <div className="flex items-start gap-4">
-                  {done ? (
+                  {!unlocked ? (
+                    <Lock className="mt-0.5 h-6 w-6 shrink-0 text-muted-foreground/50" />
+                  ) : done ? (
                     <CheckCircle2 className="mt-0.5 h-6 w-6 shrink-0 text-brand-600" />
                   ) : (
                     <Circle className="mt-0.5 h-6 w-6 shrink-0 text-muted-foreground/40" />
@@ -161,15 +186,26 @@ export default async function TrainingPage() {
                   </div>
                 </div>
                 <div className="flex items-center gap-3 pl-10 sm:pl-0">
-                  {done && <Badge variant="success">Afgerond</Badge>}
-                  <ModuleQuiz
-                    module={module}
-                    trigger={
-                      <Button variant={done ? "outline" : "default"} size="sm">
-                        {done ? "Opnieuw doen" : "Start module"}
-                      </Button>
-                    }
-                  />
+                  {unlocked ? (
+                    <>
+                      {done && <Badge variant="success">Afgerond</Badge>}
+                      <ModuleQuiz
+                        module={module}
+                        trigger={
+                          <Button variant={done ? "outline" : "default"} size="sm">
+                            {done ? "Opnieuw doen" : "Start module"}
+                          </Button>
+                        }
+                      />
+                    </>
+                  ) : (
+                    <Button asChild variant="outline" size="sm">
+                      <Link href="/pricing">
+                        <Lock className="h-4 w-4" /> Beschikbaar vanaf{" "}
+                        {TIER_LABEL[TRAINING_MIN_TIER]}
+                      </Link>
+                    </Button>
+                  )}
                 </div>
               </CardContent>
             </Card>
@@ -177,7 +213,9 @@ export default async function TrainingPage() {
         })}
       </div>
 
-      {/* Overview */}
+      {/* Overview — team tracking is part of the paid e-learning feature. */}
+      {unlocked && (
+      <>
       <div className="mb-4 flex items-center gap-2">
         <Users className="h-5 w-5 text-muted-foreground" />
         <h2 className="text-lg font-semibold">Voortgang medewerkers</h2>
@@ -244,6 +282,8 @@ export default async function TrainingPage() {
           </Table>
         </CardContent>
       </Card>
+      </>
+      )}
     </>
   );
 }
