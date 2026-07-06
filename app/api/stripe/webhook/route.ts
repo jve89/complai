@@ -110,10 +110,9 @@ export async function POST(req: Request) {
         // Opzegging aangevraagd: the subscription is now scheduled to end
         // (cancel_at_period_end, OR a cancel_at timestamp — Stripe uses the
         // latter when cancelling a *trialing* subscription) AND that scheduling
-        // just changed in this event, so we confirm it exactly once.
-        console.log(
-          `[stripe] sub.updated cape=${sub.cancel_at_period_end} cancel_at=${sub.cancel_at} status=${sub.status} prevKeys=${prev ? Object.keys(prev).join(",") : "none"}`
-        );
+        // just changed in this event, so we confirm it exactly once. (Stripe can
+        // emit several updated events for one cancel; the `in prev` check keeps
+        // this to the single event where the schedule actually changed.)
         const scheduledToCancel = Boolean(sub.cancel_at_period_end) || Boolean(sub.cancel_at);
         const cancelJustChanged =
           !!prev && ("cancel_at_period_end" in prev || "cancel_at" in prev);
