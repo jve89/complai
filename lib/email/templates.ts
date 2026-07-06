@@ -25,7 +25,11 @@ function layout(opts: {
   paragraphs: string[];
   cta?: { label: string; url: string };
   footnote?: string;
+  footerText?: string;
 }): string {
+  const footerText =
+    opts.footerText ??
+    "ComplAI — grip op de EU AI Act. Dit is een automatisch bericht naar aanleiding van uw account of aankoop.";
   const paragraphs = opts.paragraphs
     .map(
       (p) =>
@@ -59,7 +63,7 @@ function layout(opts: {
         ${footnote}
       </td></tr>
       <tr><td style="padding:16px 28px;border-top:1px solid #e2e8f0;font-family:Arial,Helvetica,sans-serif;">
-        <p style="margin:0;font-size:12px;color:#94a3b8;">ComplAI — grip op de EU AI Act. Dit is een automatisch bericht naar aanleiding van uw account of aankoop.</p>
+        <p style="margin:0;font-size:12px;color:#94a3b8;">${escapeHtml(footerText)}</p>
       </td></tr>
     </table>
   </td></tr></table>
@@ -228,6 +232,53 @@ export function subscriptionEndedEmail(opts: {
         "Het genereren van nieuwe documenten is nu vergrendeld. U kunt op elk moment opnieuw een pakket kiezen — u gaat dan direct verder waar u was gebleven.",
       ],
       cta: { label: "Bekijk pakketten", url: `${opts.baseUrl}/pricing` },
+    }),
+  };
+}
+
+/** Team-uitnodiging: nu op dezelfde branded shell als de overige e-mails. */
+export function inviteEmail(opts: {
+  companyName: string;
+  roleLabel: string;
+  url: string;
+}): EmailContent {
+  return {
+    subject: `Uitnodiging voor ${opts.companyName} op ComplAI`,
+    html: layout({
+      preview: `U bent uitgenodigd voor ${opts.companyName} op ComplAI.`,
+      title: "U bent uitgenodigd 👋",
+      paragraphs: [
+        `U bent uitgenodigd om deel te nemen aan <strong>${escapeHtml(opts.companyName)}</strong> op ComplAI als <strong>${escapeHtml(opts.roleLabel)}</strong>.`,
+        "Klik op de knop hieronder om de uitnodiging te accepteren en uw account aan te maken.",
+      ],
+      cta: { label: "Uitnodiging accepteren", url: opts.url },
+      footerText:
+        "ComplAI — grip op de EU AI Act. U ontvangt dit bericht omdat u bent uitgenodigd voor een ComplAI-omgeving.",
+    }),
+  };
+}
+
+/** Interne notificatie van het contactformulier (naar het team-adres). */
+export function contactNotificationEmail(opts: {
+  name: string;
+  email: string;
+  company?: string | null;
+  formSubject?: string | null;
+  message: string;
+}): EmailContent {
+  const who = `${escapeHtml(opts.name)} (${escapeHtml(opts.email)}${
+    opts.company ? `, ${escapeHtml(opts.company)}` : ""
+  })`;
+  return {
+    subject: `Nieuw contactbericht — ${opts.formSubject || "Algemeen"}`,
+    html: layout({
+      preview: `Nieuw contactbericht van ${opts.name}.`,
+      title: "Nieuw contactbericht",
+      paragraphs: [
+        `<strong>${who}</strong> schreef via het contactformulier:`,
+        `<span style="display:block;white-space:pre-wrap;padding:12px 14px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;color:#334155;">${escapeHtml(opts.message)}</span>`,
+      ],
+      footerText: "Intern bericht van het ComplAI-contactformulier.",
     }),
   };
 }
