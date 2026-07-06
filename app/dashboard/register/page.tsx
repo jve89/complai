@@ -1,9 +1,11 @@
+import Link from "next/link";
 import type { Prisma, RiskLevel } from "@prisma/client";
-import { Download, Pencil, Plus, Database } from "lucide-react";
+import { Download, Lock, Pencil, Plus, Database } from "lucide-react";
 
 import { prisma } from "@/lib/prisma";
 import { getActiveCompany } from "@/lib/auth";
-import { formatDate } from "@/lib/utils";
+import { cn, formatDate } from "@/lib/utils";
+import { registerUnlocked, TIER_LABEL, REGISTER_MIN_TIER } from "@/lib/plan";
 import {
   RISK_LEVELS,
   RISK_LABEL,
@@ -40,6 +42,7 @@ export default async function RegisterPage({
   searchParams: { risk?: string; status?: string };
 }) {
   const { company, demo } = await getActiveCompany();
+  const unlocked = registerUnlocked(company.plan);
 
   const riskFilter = RISK_LEVELS.includes(searchParams.risk as RiskLevel)
     ? (searchParams.risk as RiskLevel)
@@ -72,14 +75,40 @@ export default async function RegisterPage({
             <Download className="h-4 w-4" /> Exporteer CSV
           </a>
         </Button>
-        <AiSystemDialog
-          trigger={
-            <Button>
-              <Plus className="h-4 w-4" /> Nieuw systeem
-            </Button>
-          }
-        />
+        {unlocked ? (
+          <AiSystemDialog
+            trigger={
+              <Button>
+                <Plus className="h-4 w-4" /> Nieuw systeem
+              </Button>
+            }
+          />
+        ) : (
+          <Button asChild variant="outline">
+            <Link href="/pricing">
+              <Lock className="h-4 w-4" /> Beschikbaar vanaf {TIER_LABEL[REGISTER_MIN_TIER]}
+            </Link>
+          </Button>
+        )}
       </PageHeader>
+
+      {!unlocked && (
+        <div className="mb-6 flex flex-col gap-3 rounded-lg border border-navy-100 bg-navy-50 p-4 text-navy-900 sm:flex-row sm:items-center sm:justify-between">
+          <div className="text-sm">
+            <p className="font-semibold">
+              Het AI-register is beschikbaar vanaf {TIER_LABEL[REGISTER_MIN_TIER]}
+            </p>
+            <p className="text-muted-foreground">
+              Uw bestaande systemen blijven zichtbaar, maar zijn vergrendeld: u kunt
+              niets toevoegen of bewerken. Verwijderen kan wel. Upgrade om het
+              register weer volledig te gebruiken.
+            </p>
+          </div>
+          <Button asChild size="sm" className="shrink-0">
+            <Link href="/pricing">Bekijk pakketten</Link>
+          </Button>
+        </div>
+      )}
 
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
         <RegisterFilters />
@@ -100,15 +129,22 @@ export default async function RegisterPage({
                   ? "Nog geen AI-systemen geregistreerd."
                   : "Geen systemen die aan de filters voldoen."}
               </p>
-              {total === 0 && (
-                <AiSystemDialog
-                  trigger={
-                    <Button>
-                      <Plus className="h-4 w-4" /> Eerste systeem toevoegen
-                    </Button>
-                  }
-                />
-              )}
+              {total === 0 &&
+                (unlocked ? (
+                  <AiSystemDialog
+                    trigger={
+                      <Button>
+                        <Plus className="h-4 w-4" /> Eerste systeem toevoegen
+                      </Button>
+                    }
+                  />
+                ) : (
+                  <Button asChild variant="outline">
+                    <Link href="/pricing">
+                      <Lock className="h-4 w-4" /> Beschikbaar vanaf {TIER_LABEL[REGISTER_MIN_TIER]}
+                    </Link>
+                  </Button>
+                ))}
             </div>
           ) : (
             <Table>
@@ -124,7 +160,7 @@ export default async function RegisterPage({
               </TableHeader>
               <TableBody>
                 {systems.map((system) => (
-                  <TableRow key={system.id}>
+                  <TableRow key={system.id} className={cn(!unlocked && "opacity-60")}>
                     <TableCell>
                       <p className="font-medium">{system.name}</p>
                       <p className="text-xs text-muted-foreground">
@@ -149,19 +185,21 @@ export default async function RegisterPage({
                     </TableCell>
                     <TableCell>
                       <div className="flex justify-end gap-1">
-                        <AiSystemDialog
-                          system={system}
-                          trigger={
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              aria-label="Bewerken"
-                              className="text-muted-foreground hover:text-foreground"
-                            >
-                              <Pencil className="h-4 w-4" />
-                            </Button>
-                          }
-                        />
+                        {unlocked && (
+                          <AiSystemDialog
+                            system={system}
+                            trigger={
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                aria-label="Bewerken"
+                                className="text-muted-foreground hover:text-foreground"
+                              >
+                                <Pencil className="h-4 w-4" />
+                              </Button>
+                            }
+                          />
+                        )}
                         <DeleteSystemButton id={system.id} name={system.name} />
                       </div>
                     </TableCell>
