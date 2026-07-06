@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import type Stripe from "stripe";
 
 import { stripe } from "@/lib/stripe";
 import { prisma } from "@/lib/prisma";
@@ -8,9 +9,13 @@ import { baseUrlFrom } from "@/lib/request-url";
 export const runtime = "nodejs";
 
 /**
- * Opens the Stripe billing portal for the current company (upgrade / downgrade /
- * cancel / invoices). Requires a stored Stripe customer id, which the checkout
- * flow sets. Returns a friendly message otherwise.
+ * Opens the Stripe billing portal for the current company. An optional `flow`
+ * deep-links straight to a task on the existing subscription:
+ *   - "update" → switch plan (swaps the price on the ONE subscription and
+ *     prorates, so upgrading never stacks a second subscription)
+ *   - "cancel" → the cancel-subscription flow
+ * With no flow, it opens the portal home (invoices, payment method). Requires a
+ * stored Stripe customer id, which the checkout flow sets.
  */
 export async function POST(req: Request) {
   if (!stripe) {
@@ -38,9 +43,22 @@ export async function POST(req: Request) {
     });
   }
 
+  const { flow } = (await req.json().catch(() => ({}))) as { flow?: string };
+
+  // Deep-link to a specific flow on the current subscription when asked and one
+  // exists; otherwise just open the portal home.
+  let flowData: Stripe.BillingPortal.SessionCreateParams.FlowData | undefined;
+  const subId = company.stripeSubscriptionId;
+  if (subId && flow === "cancel") {
+    flowData = { type: "subscription_cancel", subscription_cancel: { subscription: subId } };
+  } else if (subId && flow === "update") {
+    flowData = { type: "subscription_update", subscription_update: { subscription: subId } };
+  }
+
   const session = await stripe.billingPortal.sessions.create({
     customer: company.stripeCustomerId,
     return_url: `${baseUrlFrom(req)}/dashboard/settings`,
+    ...(flowData ? { flow_data: flowData } : {}),
   });
 
   return NextResponse.json({ url: session.url });

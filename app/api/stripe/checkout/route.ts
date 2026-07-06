@@ -11,7 +11,12 @@ export const runtime = "nodejs";
 type CheckoutResult =
   | { url: string }
   | { needsAccount: true }
+  | { alreadySubscribed: true; message: string }
   | { configured: false; message: string };
+
+/** Statuses under which a subscription still grants a plan — a company in one of
+ * these must change plans via the portal, not stack a second subscription. */
+const ACTIVE_STATUSES = new Set(["active", "trialing", "past_due"]);
 
 /**
  * Builds a Stripe Checkout session for a plan. Account-first: an anonymous
@@ -43,6 +48,17 @@ async function createCheckout(
 
   const company = await prisma.company.findUnique({ where: { id: user.company.id } });
   if (!company) return { needsAccount: true };
+
+  // Never stack a second subscription: an existing subscriber changes plans via
+  // the billing portal (which swaps the price on the one subscription and
+  // prorates), so checkout is for NEW subscriptions only.
+  if (company.stripeSubscriptionId && ACTIVE_STATUSES.has(company.planStatus ?? "")) {
+    return {
+      alreadySubscribed: true,
+      message:
+        "U heeft al een actief abonnement. Wijzig uw pakket via Instellingen → Abonnement.",
+    };
+  }
 
   const customerId = await ensureStripeCustomer(company, user.email);
 
@@ -92,6 +108,10 @@ export async function GET(req: Request) {
       `${appUrl}/signup?plan=${planId ?? ""}&interval=${interval}`,
       303
     );
+  }
+  // Already subscribed — send them to settings to change plan via the portal.
+  if ("alreadySubscribed" in result) {
+    return NextResponse.redirect(`${appUrl}/dashboard/settings`, 303);
   }
   // Stub / misconfigured — land in the dashboard rather than a dead end.
   return NextResponse.redirect(`${appUrl}/dashboard?checkout=unavailable`, 303);
