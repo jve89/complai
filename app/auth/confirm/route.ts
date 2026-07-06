@@ -5,19 +5,22 @@ import { createClient } from "@/lib/supabase/server";
 import { baseUrlFrom } from "@/lib/request-url";
 
 /**
- * Landing point for Supabase email links (password recovery, email confirm).
- * Establishes a session from either a PKCE `code` or a `token_hash`/`type`
- * pair, then forwards to `next`. Route Handlers can write cookies, so the
- * session persists. `next` is constrained to a same-site path (no open redirect).
+ * Landing point for Supabase's email-confirmation link. Establishes a session
+ * from either a PKCE `code` or a `token_hash`/`type` pair, then forwards to
+ * the dashboard (or Stripe checkout, if a plan was picked at signup). Route
+ * Handlers can write cookies, so the session persists.
+ *
+ * We don't pass `?next=...` on the emailRedirectTo used to build this link:
+ * Supabase's redirect-URL allow-list check can reject a query string and
+ * silently fall back to the bare Site URL, dropping the destination entirely.
+ * So a picked plan is stashed in user_metadata at signup instead, and read
+ * back here once the session exists.
  */
 export async function GET(request: Request) {
   const url = new URL(request.url);
   const code = url.searchParams.get("code");
   const tokenHash = url.searchParams.get("token_hash");
   const type = url.searchParams.get("type") as EmailOtpType | null;
-
-  const rawNext = url.searchParams.get("next") ?? "/dashboard";
-  const next = rawNext.startsWith("/") && !rawNext.startsWith("//") ? rawNext : "/dashboard";
 
   const base = baseUrlFrom(request);
   const supabase = createClient();
@@ -29,6 +32,18 @@ export async function GET(request: Request) {
   } else if (tokenHash && type) {
     const { error } = await supabase.auth.verifyOtp({ type, token_hash: tokenHash });
     ok = !error;
+  }
+
+  let next = "/dashboard";
+  if (ok) {
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    const pendingPlan = user?.user_metadata?.pendingPlan as string | undefined;
+    if (pendingPlan) {
+      const pendingInterval = user?.user_metadata?.pendingInterval === "year" ? "year" : "month";
+      next = `/api/stripe/checkout?plan=${encodeURIComponent(pendingPlan)}&interval=${pendingInterval}`;
+    }
   }
 
   return NextResponse.redirect(`${base}${ok ? next : "/wachtwoord-vergeten?error=1"}`);

@@ -151,8 +151,13 @@ export async function signup(
     email,
     password,
     options: {
-      data: { name },
-      emailRedirectTo: `${currentBaseUrl()}/auth/confirm?next=${encodeURIComponent(confirmNext)}`,
+      // Supabase's redirect-URL allow-list check can reject a query string on
+      // emailRedirectTo and silently fall back to the bare Site URL, dropping
+      // even the path — so the confirmation link carries no destination info.
+      // Instead, stash where to go after confirming in user_metadata, which
+      // /auth/confirm reads back once the session is established.
+      data: plan ? { name, pendingPlan: plan, pendingInterval: intervalParam } : { name },
+      emailRedirectTo: `${currentBaseUrl()}/auth/confirm`,
     },
   });
 
@@ -209,9 +214,12 @@ export async function signup(
 }
 
 /**
- * Sends a Supabase password-recovery email. The link lands on /auth/confirm,
- * which establishes a session and forwards to /wachtwoord-herstellen. We always
- * report success so the form never reveals whether an address has an account.
+ * Sends a Supabase password-recovery email. The link lands on /auth/recover,
+ * which establishes a session and forwards to /wachtwoord-herstellen. Uses a
+ * dedicated query-free route rather than /auth/confirm?next=... because
+ * Supabase's redirect-URL allow-list check can reject a query string and fall
+ * back to the bare Site URL. We always report success so the form never
+ * reveals whether an address has an account.
  */
 export async function requestPasswordReset(
   _prev: ResetState,
@@ -232,7 +240,7 @@ export async function requestPasswordReset(
 
   const supabase = createClient();
   await supabase.auth.resetPasswordForEmail(parsed.data, {
-    redirectTo: `${currentBaseUrl()}/auth/confirm?next=/wachtwoord-herstellen`,
+    redirectTo: `${currentBaseUrl()}/auth/recover`,
   });
   return { sent: true };
 }
