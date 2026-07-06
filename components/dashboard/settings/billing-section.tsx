@@ -81,7 +81,7 @@ export function BillingSection({
             </Button>
             <Button variant="outline" onClick={() => openPortal()} disabled={isPending}>
               <CreditCard className="h-4 w-4" />
-              Beheer facturatie
+              Facturen & betaalgegevens
             </Button>
           </>
         ) : (
@@ -92,7 +92,7 @@ export function BillingSection({
             {hasSubscription && (
               <Button variant="outline" onClick={() => openPortal()} disabled={isPending}>
                 <CreditCard className="h-4 w-4" />
-                Beheer facturatie
+                Facturen & betaalgegevens
               </Button>
             )}
           </>
@@ -104,7 +104,7 @@ export function BillingSection({
           type="button"
           onClick={() => openPortal("cancel")}
           disabled={isPending}
-          className="text-sm text-muted-foreground underline-offset-4 hover:text-foreground hover:underline disabled:opacity-50"
+          className="w-fit text-sm font-medium text-muted-foreground underline underline-offset-4 hover:text-destructive disabled:opacity-50"
         >
           Abonnement opzeggen
         </button>
