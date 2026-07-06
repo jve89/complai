@@ -32,9 +32,13 @@ export async function GET(request: Request) {
   if (code) {
     const { error } = await supabase.auth.exchangeCodeForSession(code);
     ok = !error;
+    if (error) console.error("[auth/confirm] exchangeCodeForSession failed:", error.message, error.status);
   } else if (tokenHash && type) {
     const { error } = await supabase.auth.verifyOtp({ type, token_hash: tokenHash });
     ok = !error;
+    if (error) console.error("[auth/confirm] verifyOtp failed:", error.message, error.status);
+  } else {
+    console.error("[auth/confirm] no code or token_hash/type in request:", url.search);
   }
 
   let next = "/dashboard";
