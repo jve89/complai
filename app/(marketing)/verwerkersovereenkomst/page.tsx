@@ -9,8 +9,9 @@ export default function DpaPage() {
     <LegalShell title="Verwerkersovereenkomst (DPA)" updated="5 juli 2026">
       <p>
         Deze verwerkersovereenkomst is van toepassing wanneer ComplAI — een dienst
-        van DARO (eenmanszaak, KvK 77906934, gevestigd te It Ankerplak 7, 8802 CS
-        Franeker) — namens uw organisatie persoonsgegevens verwerkt bij het leveren
+        van AIF OÜ (besloten vennootschap naar Ests recht, registratiecode
+        16654436, btw-nr. EE102744992, gevestigd te Tehnika 27-5, 10149 Tallinn,
+        Estland) — namens uw organisatie persoonsgegevens verwerkt bij het leveren
         van de Dienst. Uw organisatie is verwerkingsverantwoordelijke; ComplAI is
         verwerker.
       </p>

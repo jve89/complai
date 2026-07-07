@@ -8,8 +8,9 @@ export default function PrivacyPage() {
   return (
     <LegalShell title="Privacyverklaring" updated="5 juli 2026">
       <p>
-        ComplAI is een dienst van DARO (eenmanszaak, KvK 77906934, gevestigd te
-        It Ankerplak 7, 8802 CS Franeker). We hechten veel waarde aan uw privacy.
+        ComplAI is een dienst van AIF OÜ (besloten vennootschap naar Ests recht,
+        registratiecode 16654436, btw-nr. EE102744992, gevestigd te Tehnika
+        27-5, 10149 Tallinn, Estland). We hechten veel waarde aan uw privacy.
         In deze verklaring leggen we uit welke persoonsgegevens we verwerken,
         waarom en hoe we daarmee omgaan, conform de Algemene verordening
         gegevensbescherming (AVG).
@@ -78,7 +79,9 @@ export default function PrivacyPage() {
       <p>
         U heeft recht op inzage, correctie, verwijdering, beperking, overdracht
         en bezwaar. Neem hiervoor contact op via info@complai-eu.nl. U kunt ook een
-        klacht indienen bij de Autoriteit Persoonsgegevens.
+        klacht indienen bij uw lokale toezichthouder — in Nederland de Autoriteit
+        Persoonsgegevens — of bij de Estse toezichthouder (Andmekaitse
+        Inspektsioon), de leidende autoriteit voor AIF OÜ.
       </p>
 
       <h2>8. Cookies</h2>
