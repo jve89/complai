@@ -9,8 +9,9 @@ export default function TermsPage() {
     <LegalShell title="Algemene voorwaarden" updated="5 juli 2026">
       <h2>1. Definities</h2>
       <p>
-        “ComplAI” verwijst naar de dienst van DARO (eenmanszaak, KvK 77906934,
-        gevestigd te It Ankerplak 7, 8802 CS Franeker). “Dienst” verwijst naar
+        “ComplAI” verwijst naar de dienst van AIF OÜ (besloten vennootschap naar
+        Ests recht, registratiecode 16654436, btw-nr. EE102744992, gevestigd te
+        Tehnika 27-5, 10149 Tallinn, Estland). “Dienst” verwijst naar
         het online platform. “Klant” verwijst naar de organisatie die een account
         aanmaakt of een abonnement afsluit.
       </p>
@@ -75,9 +76,10 @@ export default function TermsPage() {
 
       <h2>11. Toepasselijk recht</h2>
       <p>
-        Op deze voorwaarden is Nederlands recht van toepassing. Geschillen worden
-        voorgelegd aan de bevoegde rechter van de Rechtbank Noord-Nederland,
-        locatie Leeuwarden.
+        Op deze voorwaarden is Ests recht van toepassing. Geschillen worden
+        voorgelegd aan de bevoegde rechter te Tallinn, Estland (Harju Maakohus).
+        Dwingendrechtelijke bescherming die de consument geniet op grond van het
+        recht van zijn woonland blijft onverlet.
       </p>
     </LegalShell>
   );
