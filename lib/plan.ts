@@ -44,6 +44,8 @@ export const DOC_MIN_TIER: Record<string, TierId> = {
   tech_doc: "schaal",
   doc_conformity: "schaal",
   gpai_docs: "schaal",
+  // The full consolidated handbook is the headline deliverable of Audit-klaar.
+  compliance_manual: "schaal",
 };
 
 export function minTierFor(slug: string): TierId {
