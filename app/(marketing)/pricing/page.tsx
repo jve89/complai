@@ -6,16 +6,16 @@ import { PricingTable } from "@/components/marketing/pricing-table";
 export const metadata: Metadata = {
   title: "Prijzen",
   description:
-    "Heldere prijzen voor AI Act-compliance. Start gratis met Inzicht en groei mee met Actief, Compliance-klaar of Audit-klaar.",
+    "Heldere prijzen voor AI Act-compliance. Start gratis met de Scan en groei mee met Basis, Compliance of Audit.",
   alternates: { canonical: "/pricing" },
 };
 
-const COLUMNS = ["Inzicht", "Actief", "Compliance-klaar", "Audit-klaar"];
-const HIGHLIGHT = "Compliance-klaar";
+const COLUMNS = ["Scan", "Basis", "Compliance", "Audit"];
+const HIGHLIGHT = "Compliance";
 
 const COMPARISON: { feature: string; values: (string | boolean)[] }[] = [
   { feature: "Risicoscan + PDF-rapport", values: [true, true, true, true] },
-  { feature: "AI-register", values: ["Max. 3", "Onbeperkt", "Onbeperkt", "Onbeperkt"] },
+  { feature: "AI-register", values: [false, "Onbeperkt", "Onbeperkt", "Onbeperkt"] },
   { feature: "AI-beleid + transparantieverklaring", values: [false, true, true, true] },
   { feature: "FRIA + risicobeoordeling (gebruik hoog-risico AI)", values: [false, false, true, true] },
   { feature: "Technische documentatie, conformiteit, GPAI (aanbieder)", values: [false, false, false, true] },

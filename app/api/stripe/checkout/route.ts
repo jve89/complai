@@ -67,8 +67,8 @@ async function createCheckout(
     customer: customerId,
     line_items: [{ price: priceId, quantity: 1 }],
     allow_promotion_codes: true,
-    // Free first month: 30-day trial, card collected up front, auto-converts.
-    subscription_data: plan.freeFirstMonth ? { trial_period_days: 30 } : undefined,
+    // No free trial: the card is charged on signup, so the paid deliverables
+    // can't be extracted for free and then cancelled.
     success_url: `${appUrl}/dashboard?checkout=success`,
     cancel_url: `${appUrl}/pricing?checkout=cancel`,
     metadata: { companyId: company.id, tier: planIdToTier(plan.id) },

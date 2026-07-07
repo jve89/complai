@@ -29,14 +29,12 @@ export interface Plan {
   tagline: string;
   features: string[];
   highlighted?: boolean;
-  /** Paid plans start with a free first month (Stripe trial); the scan is free without an account. */
-  freeFirstMonth?: boolean;
 }
 
 export const PLANS: Plan[] = [
   {
     id: "free",
-    name: "Inzicht",
+    name: "Scan",
     monthly: 0,
     yearly: 0,
     tagline: "Gratis scan + persoonlijk stappenplan. Geen account, geen abonnement nodig.",
@@ -49,15 +47,14 @@ export const PLANS: Plan[] = [
   },
   {
     id: "starter",
-    name: "Actief",
-    monthly: 29,
-    yearly: 290,
+    name: "Basis",
+    monthly: 19.99,
+    yearly: 199.9,
     priceIdMonthly: process.env.STRIPE_PRICE_STARTER_MONTHLY,
     priceIdYearly: process.env.STRIPE_PRICE_STARTER_YEARLY,
     tagline: "Voor wie nu de eerste verplichtingen wil regelen.",
-    freeFirstMonth: true,
     features: [
-      "Alles uit Inzicht",
+      "Alles uit Scan",
       "Onbeperkt AI-register",
       "AI-beleid & transparantieverklaring",
       "AI-geletterdheid e-learning",
@@ -66,16 +63,15 @@ export const PLANS: Plan[] = [
   },
   {
     id: "professional",
-    name: "Compliance-klaar",
-    monthly: 69,
-    yearly: 690,
+    name: "Compliance",
+    monthly: 29.99,
+    yearly: 299.9,
     priceIdMonthly: process.env.STRIPE_PRICE_PRO_MONTHLY,
     priceIdYearly: process.env.STRIPE_PRICE_PRO_YEARLY,
     tagline: "Voor hoog-risico AI of een documentatieplicht.",
     highlighted: true,
-    freeFirstMonth: true,
     features: [
-      "Alles uit Actief",
+      "Alles uit Basis",
       "FRIA, risicobeoordeling & beoordelingsdossier",
       "E-learning met certificaten",
       "Governance-dashboard",
@@ -84,15 +80,14 @@ export const PLANS: Plan[] = [
   },
   {
     id: "corporate",
-    name: "Audit-klaar",
-    monthly: 149,
-    yearly: 1490,
+    name: "Audit",
+    monthly: 39.99,
+    yearly: 399.9,
     priceIdMonthly: process.env.STRIPE_PRICE_CORP_MONTHLY,
     priceIdYearly: process.env.STRIPE_PRICE_CORP_YEARLY,
     tagline: "Voor aanbieders en grotere organisaties die hun naleving volledig willen documenteren.",
-    freeFirstMonth: true,
     features: [
-      "Alles uit Compliance-klaar",
+      "Alles uit Compliance",
       "Technische documentatie, EU-conformiteit & GPAI-docs",
       "Onbeperkt gebruikers & vestigingen",
       "Audit-export & API-toegang",

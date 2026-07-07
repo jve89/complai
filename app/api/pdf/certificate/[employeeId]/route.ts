@@ -32,7 +32,7 @@ export async function GET(
     // Certificates are a paid deliverable — a downgraded free company can't pull
     // one via the direct URL either.
     if (!trainingUnlocked(company.plan)) {
-      return new Response("Certificaten zijn beschikbaar vanaf het pakket Actief", {
+      return new Response("Certificaten zijn beschikbaar vanaf het pakket Basis", {
         status: 403,
       });
     }

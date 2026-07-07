@@ -135,9 +135,7 @@ export function purchaseEmail(opts: {
       title: "Bedankt voor uw aankoop 🎉",
       paragraphs: [
         `Uw ${pakket} is geactiveerd. Alle documenten die bij uw pakket horen zijn nu ontgrendeld in uw dashboard.`,
-        opts.trialing
-          ? `De eerste maand is gratis${opts.renewsAt ? ` — de eerste afschrijving volgt op <strong>${escapeHtml(opts.renewsAt)}</strong>` : ""}. Opzeggen kan op elk moment via Instellingen → Abonnement.`
-          : `${opts.renewsAt ? `Uw abonnement verlengt op <strong>${escapeHtml(opts.renewsAt)}</strong>. ` : ""}Facturen en betaalgegevens beheert u via Instellingen → Abonnement.`,
+        `${opts.renewsAt ? `Uw abonnement verlengt op <strong>${escapeHtml(opts.renewsAt)}</strong>. ` : ""}Opzeggen kan op elk moment via Instellingen → Abonnement.`,
       ],
       cta: { label: "Naar uw documenten", url: `${opts.baseUrl}/dashboard/documents` },
     }),
