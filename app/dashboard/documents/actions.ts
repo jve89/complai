@@ -5,28 +5,21 @@ import type { Prisma } from "@prisma/client";
 
 import { prisma } from "@/lib/prisma";
 import { getActiveCompany } from "@/lib/auth";
-import { buildDocument, type DocumentType } from "@/lib/documents/templates";
+import { buildDocument, DOCUMENT_META, type DocumentType } from "@/lib/documents/templates";
 import { docUnlocked, TIER_LABEL, minTierFor } from "@/lib/plan";
 
 export type GenerateResult =
   | { ok: true; id: string }
   | { ok: false; error: string };
 
-const VALID_TYPES: DocumentType[] = [
-  "ai_policy",
-  "risk_assessment",
-  "fria",
-  "transparency",
-  "tech_doc",
-  "doc_conformity",
-  "assessment_record",
-  "gpai_docs",
-];
+// Single source of truth — every catalogued document is generatable. (A stale
+// hardcoded list here previously blocked new types like the audit report.)
+const VALID_TYPES = new Set<DocumentType>(DOCUMENT_META.map((m) => m.type));
 
 export async function generateDocument(
   type: DocumentType
 ): Promise<GenerateResult> {
-  if (!VALID_TYPES.includes(type)) {
+  if (!VALID_TYPES.has(type)) {
     return { ok: false, error: "Onbekend documenttype." };
   }
 
