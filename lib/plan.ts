@@ -53,19 +53,45 @@ export function docUnlocked(plan: string | null | undefined, slug: string): bool
   return tierRank(plan) >= tierRank(minTierFor(slug));
 }
 
-/** The AI-register (unlimited systems) is a paid feature from Actief (starter).
- * On Inzicht (gratis) existing rows stay visible but locked: no add/edit,
- * delete still allowed so a downgraded company can clean up. */
+/** The AI-register is a paid feature from Basis (starter). On Scan (gratis)
+ * existing rows stay visible but locked: no add/edit, delete still allowed so a
+ * downgraded company can clean up. */
 export const REGISTER_MIN_TIER: TierId = "starter";
 
 export function registerUnlocked(plan: string | null | undefined): boolean {
   return tierRank(plan) >= tierRank(REGISTER_MIN_TIER);
 }
 
-/** E-learning (modules, quizzes, certificates) is a paid feature from Actief
- * (starter). On Inzicht (gratis) the learning paths are visible as a teaser but
- * modules can't be started and certificates aren't issued. */
-export const TRAINING_MIN_TIER: TierId = "starter";
+/** Max number of AI-systems per tier (enforced on add): Basis 3, Compliance 10,
+ * Audit unlimited. Scan can't add at all (registerUnlocked is false). */
+export const REGISTER_LIMIT: Record<TierId, number> = {
+  gratis: 0,
+  starter: 3,
+  groei: 10,
+  schaal: Infinity,
+};
+
+export function registerLimit(plan: string | null | undefined): number {
+  return REGISTER_LIMIT[TIER_ORDER[tierRank(plan)]];
+}
+
+/** Max number of team members per tier (enforced on invite): Scan 1, Basis 5,
+ * Compliance 25, Audit unlimited. */
+export const USER_LIMIT: Record<TierId, number> = {
+  gratis: 1,
+  starter: 5,
+  groei: 25,
+  schaal: Infinity,
+};
+
+export function userLimit(plan: string | null | undefined): number {
+  return USER_LIMIT[TIER_ORDER[tierRank(plan)]];
+}
+
+/** E-learning (modules, quizzes, certificates) is a paid feature from Compliance
+ * (groei) — Basis and below see the learning paths as a teaser but can't start
+ * modules or earn certificates. */
+export const TRAINING_MIN_TIER: TierId = "groei";
 
 export function trainingUnlocked(plan: string | null | undefined): boolean {
   return tierRank(plan) >= tierRank(TRAINING_MIN_TIER);

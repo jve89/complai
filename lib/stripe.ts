@@ -55,9 +55,8 @@ export const PLANS: Plan[] = [
     tagline: "Voor wie nu de eerste verplichtingen wil regelen.",
     features: [
       "Alles uit Scan",
-      "Onbeperkt AI-register",
+      "AI-register (max. 3 systemen)",
       "AI-beleid & transparantieverklaring",
-      "AI-geletterdheid e-learning",
       "Tot 5 gebruikers",
     ],
   },
@@ -72,9 +71,9 @@ export const PLANS: Plan[] = [
     highlighted: true,
     features: [
       "Alles uit Basis",
+      "AI-register (max. 10 systemen)",
       "FRIA, risicobeoordeling & beoordelingsdossier",
       "E-learning met certificaten",
-      "Governance-dashboard",
       "Tot 25 gebruikers",
     ],
   },
@@ -89,8 +88,7 @@ export const PLANS: Plan[] = [
     features: [
       "Alles uit Compliance",
       "Technische documentatie, EU-conformiteit & GPAI-docs",
-      "Onbeperkt gebruikers & vestigingen",
-      "Audit-export & API-toegang",
+      "Onbeperkt AI-systemen & gebruikers",
       "Persoonlijke onboarding",
     ],
   },

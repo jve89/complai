@@ -15,15 +15,12 @@ const HIGHLIGHT = "Compliance";
 
 const COMPARISON: { feature: string; values: (string | boolean)[] }[] = [
   { feature: "Risicoscan + PDF-rapport", values: [true, true, true, true] },
-  { feature: "AI-register", values: [false, "Onbeperkt", "Onbeperkt", "Onbeperkt"] },
+  { feature: "AI-register", values: [false, "Max. 3", "Max. 10", "Onbeperkt"] },
   { feature: "AI-beleid + transparantieverklaring", values: [false, true, true, true] },
   { feature: "FRIA + risicobeoordeling (gebruik hoog-risico AI)", values: [false, false, true, true] },
   { feature: "Technische documentatie, conformiteit, GPAI (aanbieder)", values: [false, false, false, true] },
   { feature: "E-learning & certificaten", values: [false, false, true, true] },
-  { feature: "Governance-dashboard", values: [false, false, true, true] },
   { feature: "Gebruikers", values: ["1", "5", "25", "Onbeperkt"] },
-  { feature: "Meerdere vestigingen", values: [false, false, false, true] },
-  { feature: "Audit-export & API", values: [false, false, false, true] },
   { feature: "Ondersteuning", values: ["—", "E-mail", "Prioriteit", "Persoonlijk"] },
 ];
 
