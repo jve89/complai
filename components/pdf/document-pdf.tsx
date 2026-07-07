@@ -115,6 +115,13 @@ const styles = StyleSheet.create({
     opacity: 0.08,
     transform: "rotate(-32deg)",
   },
+  fieldLabel: { fontSize: 9.5, color: MUTED, marginTop: 8, marginBottom: 6 },
+  fillLine: {
+    borderBottomWidth: 1,
+    borderBottomColor: "#cbd5e1",
+    height: 22,
+    marginBottom: 4,
+  },
   redactRow: { flexDirection: "row", flexWrap: "wrap", marginBottom: 4 },
   redactBar: {
     height: 7,
@@ -239,7 +246,7 @@ export function DocumentPdf({
                         ))}
                       </View>
                       {section.table.rows.map((row, r) => (
-                        <View key={r} style={styles.tableRow}>
+                        <View style={styles.tableRow} key={r}>
                           {row.map((cell, c) => (
                             <Text key={c} style={styles.td}>
                               {cell}
@@ -249,6 +256,15 @@ export function DocumentPdf({
                       ))}
                     </View>
                   )}
+
+                  {section.fields?.map((f, k) => (
+                    <View key={k}>
+                      <Text style={styles.fieldLabel}>{f.label}</Text>
+                      {Array.from({ length: f.lines }).map((_, li) => (
+                        <View key={li} style={styles.fillLine} />
+                      ))}
+                    </View>
+                  ))}
                 </>
               )}
             </View>
