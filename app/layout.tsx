@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
+import { Analytics } from "@vercel/analytics/next";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 import "./globals.css";
 
 import { CookieConsent } from "@/components/cookie-consent";
@@ -60,6 +62,9 @@ export default function RootLayout({
       <body className={`${inter.variable} font-sans antialiased`}>
         {children}
         <CookieConsent />
+        {/* Vercel telemetry — cookieless, production-only, no consent needed. */}
+        <SpeedInsights />
+        <Analytics />
       </body>
     </html>
   );
