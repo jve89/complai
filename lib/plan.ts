@@ -39,6 +39,8 @@ export const DOC_MIN_TIER: Record<string, TierId> = {
   fria: "groei",
   risk_assessment: "groei",
   assessment_record: "groei",
+  // The consolidated readiness audit is the headline deliverable of Compliance-klaar.
+  audit_report: "groei",
   tech_doc: "schaal",
   doc_conformity: "schaal",
   gpai_docs: "schaal",

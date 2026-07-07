@@ -8,6 +8,7 @@ import {
   FileCog,
   FileText,
   Lock,
+  ScanSearch,
   ScrollText,
   ShieldQuestion,
   type LucideIcon,
@@ -38,6 +39,7 @@ const ICONS: Record<string, LucideIcon> = {
   doc_conformity: BadgeCheck,
   assessment_record: ClipboardCheck,
   gpai_docs: Cpu,
+  audit_report: ScanSearch,
 };
 
 // Slugs the generator can actually build today.

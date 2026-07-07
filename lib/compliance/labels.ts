@@ -11,6 +11,7 @@ export const DOC_LABELS: Record<string, string> = {
   doc_conformity: "EU-conformiteitsverklaring",
   assessment_record: "Beoordelingsdossier (Art. 6(4))",
   gpai_docs: "GPAI-documentatie",
+  audit_report: "AI Act Readiness Audit",
 };
 
 export const docLabel = (slug: string): string => DOC_LABELS[slug] ?? slug;
