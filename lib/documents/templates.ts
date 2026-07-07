@@ -10,7 +10,8 @@ export type DocumentType =
   | "tech_doc"
   | "doc_conformity"
   | "assessment_record"
-  | "gpai_docs";
+  | "gpai_docs"
+  | "audit_report";
 
 export interface DocSection {
   heading: string;
@@ -85,6 +86,12 @@ export const DOCUMENT_META: DocumentMeta[] = [
     name: "GPAI-documentatie",
     description:
       "Modeldocumentatie voor AI-modellen voor algemene doeleinden (Artikel 53).",
+  },
+  {
+    type: "audit_report",
+    name: "AI Act Readiness Audit",
+    description:
+      "Consolidatierapport: inventarisatie, risicoclassificatie (verkeerslicht) en een verbeterplan per systeem.",
   },
 ];
 
@@ -572,6 +579,209 @@ function buildGpaiDocs(company: Company): DocumentContent {
   };
 }
 
+// ── Audit report (readiness audit, traffic-light) ────────────────────────────
+
+type TrafficLight = "rood" | "oranje" | "geel" | "groen";
+
+const LIGHT_META: Record<TrafficLight, { label: string; term: string }> = {
+  rood: { label: "ROOD — verboden / kritiek", term: "Per direct" },
+  oranje: { label: "ORANJE — hoog-risico / serieus", term: "Vóór 2 augustus 2026" },
+  geel: { label: "GEEL — transparantie / gering", term: "Overeengekomen termijn" },
+  groen: { label: "GROEN — in orde", term: "N.v.t." },
+};
+
+function lightFor(riskLevel: AiSystem["riskLevel"]): TrafficLight {
+  return riskLevel === "unacceptable"
+    ? "rood"
+    : riskLevel === "high"
+      ? "oranje"
+      : riskLevel === "limited"
+        ? "geel"
+        : "groen";
+}
+
+/** Per-finding diagnosis, legal basis and remediation — derived by rule from a
+ * system's risk level and role. Exported for unit testing. */
+export function auditFinding(s: AiSystem): {
+  light: TrafficLight;
+  diagnosis: string;
+  legalBasis: string;
+  remediation: string[];
+} {
+  const light = lightFor(s.riskLevel);
+  const isProvider = s.role === "provider";
+  const name = s.name;
+
+  if (light === "rood") {
+    return {
+      light,
+      diagnosis: `${name} kan onder de verboden praktijken van Artikel 5 vallen (bijvoorbeeld ongeoorloofde biometrische identificatie, manipulatie of social scoring). Dit vraagt directe aandacht vóór verder gebruik.`,
+      legalBasis:
+        "Wettelijke basis: Art. 5 · van kracht sinds 2 februari 2025 · boeterisico tot € 35 mln of 7% van de wereldwijde jaaromzet.",
+      remediation: [
+        "Staak of beperk de toepassing tot de toelaatbaarheid is vastgesteld.",
+        "Laat juridisch toetsen of het systeem onder een verbod van Art. 5 valt.",
+        "Leg de uitkomst en de gemaakte keuze vast in het beoordelingsdossier.",
+      ],
+    };
+  }
+  if (light === "oranje") {
+    return {
+      light,
+      diagnosis: `${name} is een hoog-risico AI-systeem${
+        isProvider ? " dat u onder eigen naam aanbiedt" : " dat u onder eigen verantwoordelijkheid inzet"
+      }. Daarvoor gelden de zwaarste verplichtingen, die nog niet volledig zijn ingevuld.`,
+      legalBasis:
+        "Wettelijke basis: Art. 6 + Annex III (classificatie), Art. 27 (FRIA), Art. 11/Annex IV (technische documentatie) · handhaafbaar vanaf 2 augustus 2026 · boeterisico tot € 15 mln of 3% omzet.",
+      remediation: [
+        "Voer een grondrechtentoets (FRIA) uit — ComplAI genereert deze op basis van uw register.",
+        "Stel de technische documentatie (Annex IV) op en houd deze actueel.",
+        "Borg betekenisvol menselijk toezicht (Art. 14) en logging (Art. 12).",
+        isProvider
+          ? "Rond de conformiteitsbeoordeling af (Art. 43) en registreer het systeem in de EU-databank (Art. 49)."
+          : "Gebruik het systeem volgens de instructies van de aanbieder en bewaar de logs (Art. 26).",
+      ],
+    };
+  }
+  if (light === "geel") {
+    return {
+      light,
+      diagnosis: `${name} heeft directe interactie met mensen of genereert content. Gebruikers moeten kunnen weten dat zij met AI te maken hebben of dat content door AI is gemaakt.`,
+      legalBasis:
+        "Wettelijke basis: Art. 50 · handhaafbaar vanaf 2 augustus 2026 · boeterisico tot € 15 mln of 3% omzet.",
+      remediation: [
+        "Voeg een zichtbare AI-vermelding toe bij interacties en AI-gegenereerde content.",
+        "Markeer synthetische beeld-, audio- of videocontent, waar mogelijk machineleesbaar (bijv. C2PA).",
+        "Leg deze werkafspraak vast in het AI-gebruiksbeleid.",
+      ],
+    };
+  }
+  return {
+    light,
+    diagnosis: `${name} is minimaal risico en kent geen specifieke verplichtingen onder de AI Act.`,
+    legalBasis: "Geen specifieke verplichtingen · AI-geletterdheid (Art. 4) geldt wel.",
+    remediation: ["Neem het systeem op in het AI-register voor de aantoonbaarheid."],
+  };
+}
+
+function buildAuditReport(company: Company, systems: AiSystem[]): DocumentContent {
+  const counts: Record<TrafficLight, number> = { rood: 0, oranje: 0, geel: 0, groen: 0 };
+  systems.forEach((s) => (counts[lightFor(s.riskLevel)] += 1));
+  const flagged = systems.filter((s) => lightFor(s.riskLevel) !== "groen");
+  const green = systems.filter((s) => lightFor(s.riskLevel) === "groen");
+  const anyProvider = systems.some((s) => s.role === "provider");
+
+  const highlights: string[] = [];
+  if (counts.rood) highlights.push("Er zijn mogelijk verboden praktijken (Art. 5) — behandel deze met voorrang.");
+  if (counts.oranje) highlights.push("Het zwaartepunt ligt bij de hoog-risico systemen: regel met voorrang de FRIA en technische documentatie.");
+  if (counts.geel) highlights.push("De transparantieplicht (Art. 50) is structureel relevant: maak AI-interacties en AI-content herkenbaar.");
+  if (anyProvider) highlights.push("Doordat u AI onder eigen naam aanbiedt of wijzigt, kunnen de zwaardere aanbiedersverplichtingen gelden (let op de rolverschuiving, Art. 25).");
+  if (!highlights.length) highlights.push("Er zijn geen openstaande aandachtspunten aangetroffen. Houd het register actueel en herhaal de audit jaarlijks.");
+
+  const sections: DocSection[] = [
+    {
+      heading: "1. Managementsamenvatting",
+      paragraphs: [
+        systems.length
+          ? `${company.name} heeft ${systems.length} AI-syste${systems.length === 1 ? "em" : "men"} laten inventariseren: ${counts.rood} kritiek, ${counts.oranje} hoog-risico, ${counts.geel} transparantie en ${counts.groen} in orde.`
+          : `Er zijn nog geen AI-systemen geregistreerd. Registreer uw systemen in het AI-register; dit rapport vult zich daarna automatisch.`,
+      ],
+      table: {
+        headers: ["Classificatie", "Aantal", "Richttermijn"],
+        rows: (Object.keys(LIGHT_META) as TrafficLight[]).map((l) => [
+          LIGHT_META[l].label,
+          String(counts[l]),
+          LIGHT_META[l].term,
+        ]),
+      },
+    },
+    {
+      heading: "Belangrijkste aandachtspunten",
+      bullets: highlights,
+    },
+    {
+      heading: "2. Scope, methode en beperkingen",
+      paragraphs: [
+        `Deze audit beoordeelt de AI-systemen die ${company.name} inzet, getoetst aan Verordening (EU) 2024/1689 (de EU AI Act). De classificatie is gebaseerd op de door u geregistreerde systemen en opgaven.`,
+      ],
+      table: {
+        headers: ["Niveau", "Betekenis", "Richttermijn"],
+        rows: [
+          ["ROOD", "Verboden praktijk (Art. 5) of hoog-risico zonder enige naleving", "Per direct"],
+          ["ORANJE", "Hoog-risico met nog ontbrekende verplichtingen", "Vóór de wettelijke deadline"],
+          ["GEEL", "Transparantieplicht of klein documentatiegebrek", "Overeengekomen termijn"],
+          ["GROEN", "Voldoet, buiten scope of vrijgesteld", "N.v.t."],
+        ],
+      },
+    },
+    {
+      heading: "3. Geïnventariseerde systemen",
+      table: systems.length
+        ? {
+            headers: ["#", "Systeem", "Leverancier", "Rol", "Risicoklasse"],
+            rows: systems.map((s, i) => [
+              String(i + 1),
+              s.name,
+              s.vendor || "—",
+              ROLE_LABEL[s.role],
+              RISK_LABEL[s.riskLevel],
+            ]),
+          }
+        : { headers: ["Systeem"], rows: [["Geen systemen geregistreerd"]] },
+    },
+    {
+      heading: "4. Bevindingen en verbeteracties",
+      paragraphs: [
+        flagged.length
+          ? "Per bevinding: een korte diagnose, de wettelijke basis met deadline en boeterisico, en concrete verbeteracties."
+          : "Er zijn geen bevindingen die actie vereisen. Alle geregistreerde systemen zijn in orde.",
+      ],
+    },
+  ];
+
+  // One section per flagged system.
+  flagged.forEach((s, i) => {
+    const f = auditFinding(s);
+    sections.push({
+      heading: `Bevinding ${String(i + 1).padStart(2, "0")} — ${s.name} · ${LIGHT_META[f.light].label.split(" — ")[0]}`,
+      paragraphs: [f.diagnosis, f.legalBasis],
+      bullets: f.remediation,
+    });
+  });
+
+  sections.push({
+    heading: "5. Systemen in orde (GROEN)",
+    paragraphs: green.length
+      ? ["Deze systemen vragen geen actie onder de AI Act. Neem ze wel op in het register voor de aantoonbaarheid."]
+      : ["Er zijn geen systemen als 'in orde' geclassificeerd."],
+    table: green.length
+      ? {
+          headers: ["Systeem", "Leverancier", "Aandachtspunt"],
+          rows: green.map((s) => [
+            s.name,
+            s.vendor || "—",
+            "Opnemen in AI-register; geen vertrouwelijke data in prompts.",
+          ]),
+        }
+      : undefined,
+  });
+
+  sections.push({
+    heading: "6. Status van deze audit en beperkingen",
+    paragraphs: [
+      "Dit is een readiness-audit op basis van uw eigen opgaven en de geregistreerde systemen — géén wettelijke conformiteitscertificering in de zin van de AI Act. Die laatste is voorbehouden aan aangewezen instanties (notified bodies) en geldt alleen voor bepaalde hoog-risico systemen.",
+      "Dit rapport is geen juridisch advies. Voor bindende juridische, auteursrechtelijke of privacyvragen schakelt u een specialist in. Herhaal de audit bij een substantiële wijziging van uw AI-gebruik of minimaal jaarlijks.",
+    ],
+  });
+
+  return {
+    title: "AI Act Readiness Audit",
+    subtitle: company.name,
+    intro: `Dit rapport inventariseert de AI-systemen van ${company.name}, classificeert ze volgens een verkeerslichtmodel en geeft per systeem een concreet verbeterplan, conform de EU AI Act.`,
+    sections,
+  };
+}
+
 const BUILDERS: Record<
   DocumentType,
   (company: Company, systems: AiSystem[]) => DocumentContent
@@ -584,6 +794,7 @@ const BUILDERS: Record<
   doc_conformity: buildDocConformity,
   assessment_record: buildAssessmentRecord,
   gpai_docs: (company) => buildGpaiDocs(company),
+  audit_report: buildAuditReport,
 };
 
 export function buildDocument(
