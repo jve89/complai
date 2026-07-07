@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 
 import { stripe, PLANS, planIdToTier, priceIdFor } from "@/lib/stripe";
 import { prisma } from "@/lib/prisma";
-import { getCurrentUser } from "@/lib/auth";
+import { getCurrentUser, canAdminister } from "@/lib/auth";
 import { ensureStripeCustomer } from "@/lib/billing";
 import { baseUrlFrom } from "@/lib/request-url";
 
@@ -48,6 +48,14 @@ async function createCheckout(
 
   const company = await prisma.company.findUnique({ where: { id: user.company.id } });
   if (!company) return { needsAccount: true };
+
+  // Managing the subscription is beheerder-only.
+  if (!canAdminister(user)) {
+    return {
+      configured: false,
+      message: "Alleen de beheerder kan een abonnement afsluiten of wijzigen.",
+    };
+  }
 
   // Never stack a second subscription: an existing subscriber changes plans via
   // the billing portal (which swaps the price on the one subscription and

@@ -154,6 +154,7 @@ export function DocumentPdf({
   version,
   date,
   preview = false,
+  versionLabel,
 }: {
   content: DocumentContent;
   companyName: string;
@@ -161,6 +162,8 @@ export function DocumentPdf({
   date: string;
   /** Demo preview: watermark + only a teaser, the rest redacted. */
   preview?: boolean;
+  /** Overrides "Versie N" in the header (e.g. an unsaved, live copy). */
+  versionLabel?: string;
 }) {
   return (
     <Document title={preview ? `${content.title} (voorbeeld)` : content.title} author="ComplAI">
@@ -180,7 +183,7 @@ export function DocumentPdf({
           <View>
             <Text style={styles.meta}>{companyName}</Text>
             <Text style={styles.meta}>
-              {preview ? "Voorbeeld" : `Versie ${version}`} · {date}
+              {preview ? "Voorbeeld" : versionLabel ?? `Versie ${version}`} · {date}
             </Text>
           </View>
         </View>

@@ -30,13 +30,16 @@ export function Sidebar({
   nav = "dashboard",
   logoHref = "/dashboard",
   showAdmin = false,
+  isAdmin = true,
 }: {
   nav?: "dashboard" | "demo";
   logoHref?: string;
   showAdmin?: boolean;
+  /** Company beheerder — false hides adminOnly items (e.g. Medewerkers). */
+  isAdmin?: boolean;
 }) {
   const pathname = usePathname();
-  const items = navFor(nav);
+  const items = navFor(nav).filter((i) => !i.adminOnly || isAdmin);
 
   return (
     <aside className="fixed inset-y-0 left-0 z-30 hidden w-64 flex-col border-r border-white/10 bg-navy-900 text-white md:flex">
@@ -90,14 +93,17 @@ export function MobileNav({
   nav = "dashboard",
   actions,
   showAdmin = false,
+  isAdmin = true,
 }: {
   nav?: "dashboard" | "demo";
   actions?: ReactNode;
   showAdmin?: boolean;
+  /** Company beheerder — false hides adminOnly items (e.g. Medewerkers). */
+  isAdmin?: boolean;
 }) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
-  const items = navFor(nav);
+  const items = navFor(nav).filter((i) => !i.adminOnly || isAdmin);
 
   return (
     <div className="md:hidden">

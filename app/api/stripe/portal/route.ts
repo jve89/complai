@@ -3,7 +3,7 @@ import type Stripe from "stripe";
 
 import { stripe } from "@/lib/stripe";
 import { prisma } from "@/lib/prisma";
-import { getCurrentUser } from "@/lib/auth";
+import { getCurrentUser, canAdminister } from "@/lib/auth";
 import { baseUrlFrom } from "@/lib/request-url";
 
 export const runtime = "nodejs";
@@ -31,6 +31,12 @@ export async function POST(req: Request) {
     return NextResponse.json({
       configured: false,
       message: "Log in om uw abonnement te beheren.",
+    });
+  }
+  if (!canAdminister(user)) {
+    return NextResponse.json({
+      configured: false,
+      message: "Alleen de beheerder kan het abonnement beheren.",
     });
   }
 

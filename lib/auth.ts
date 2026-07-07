@@ -50,6 +50,29 @@ export async function requireUser() {
   return user;
 }
 
+/**
+ * Authorization gate for account-administering actions: editing the AI-register,
+ * running the risicoscan, generating shared documents, and managing the
+ * subscription, business profile and team.
+ *
+ * - Beheerder (role "admin") and ComplAI super-admins → true.
+ * - Managers and medewerkers → false.
+ * - No authenticated user (local dev / public /demo) → true, so demo stays fully
+ *   usable. The security boundary is "block real workers", not "block demo".
+ *
+ * Accepts the `user` object from getCurrentUser()/getActiveCompany(). Compute the
+ * boolean in a Server Component and pass it to Client Components as a prop.
+ */
+export function canAdminister(
+  user?: {
+    superAdmin?: boolean;
+    profile?: { role?: string | null } | null;
+  } | null
+): boolean {
+  if (!user) return true;
+  return Boolean(user.superAdmin) || user.profile?.role === "admin";
+}
+
 export type CurrentUser = NonNullable<Awaited<ReturnType<typeof getCurrentUser>>>;
 
 export interface ActiveCompany {

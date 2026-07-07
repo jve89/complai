@@ -1,6 +1,6 @@
 import { Globe } from "lucide-react";
 
-import { getActiveCompany } from "@/lib/auth";
+import { getActiveCompany, canAdminister } from "@/lib/auth";
 import { logout } from "@/app/(auth)/actions";
 import { stopImpersonation } from "@/app/dashboard/admin/actions";
 import { Sidebar, MobileNav } from "@/components/dashboard/sidebar";
@@ -15,6 +15,7 @@ export default async function DashboardLayout({
 }) {
   const { company, user, demo, impersonating } = await getActiveCompany();
   const showAdmin = !demo && Boolean(user?.superAdmin);
+  const isAdmin = canAdminister(user);
 
   const websiteBtn = (
     <Button asChild variant="outline" size="sm" className="w-full justify-start md:w-auto md:justify-center">
@@ -37,7 +38,7 @@ export default async function DashboardLayout({
 
   return (
     <div className="min-h-screen bg-secondary/30">
-      <Sidebar showAdmin={showAdmin} />
+      <Sidebar showAdmin={showAdmin} isAdmin={isAdmin} />
 
       <div className="md:pl-64">
         <header className="sticky top-0 z-20 border-b bg-background/95 backdrop-blur">
@@ -66,6 +67,7 @@ export default async function DashboardLayout({
               </div>
               <MobileNav
                 showAdmin={showAdmin}
+                isAdmin={isAdmin}
                 actions={
                   <>
                     {websiteBtn}

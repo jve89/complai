@@ -13,7 +13,7 @@ import {
   ShieldAlert,
 } from "lucide-react";
 
-import { getActiveCompany } from "@/lib/auth";
+import { getActiveCompany, canAdminister } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { formatDate } from "@/lib/utils";
 import { TIER_LABEL, TIER_ORDER, tierRank } from "@/lib/plan";
@@ -56,7 +56,8 @@ export default async function DashboardPage({
 }: {
   searchParams: { checkout?: string };
 }) {
-  const { company, demo } = await getActiveCompany();
+  const { company, demo, user } = await getActiveCompany();
+  const isAdmin = canAdminister(user);
   const profile = (company.profileJson as unknown as ComplianceProfile | null) ?? null;
 
   const [aiSystems, documents, employees, items] = await Promise.all([
@@ -74,7 +75,8 @@ export default async function DashboardPage({
   // scan-results CTA via onboardingState so both surfaces stay in sync.
   const { scanDone, packageDone: planDone } = onboardingState(company);
   const planLabel = TIER_LABEL[TIER_ORDER[tierRank(company.plan)]];
-  let showChecklist = !demo && !company.onboardingDismissedAt;
+  // Onboarding (scan + pakket) is beheerder work, so only admins see the checklist.
+  let showChecklist = isAdmin && !demo && !company.onboardingDismissedAt;
   if (showChecklist && scanDone && planDone) {
     // All steps done → persist, so the checklist never returns (even after a
     // later opzegging drops the plan back to gratis).
@@ -113,14 +115,17 @@ export default async function DashboardPage({
                 <Search className="h-6 w-6" />
               </div>
               <p className="max-w-md text-muted-foreground">
-                Doe eerst de risicoscan. Daarna ziet u hier precies welke AI Act-verplichtingen
-                voor uw organisatie gelden en hoe ver u bent.
+                {isAdmin
+                  ? "Doe eerst de risicoscan. Daarna ziet u hier precies welke AI Act-verplichtingen voor uw organisatie gelden en hoe ver u bent."
+                  : "Er is nog geen risicoscan gedaan. Zodra de beheerder de scan uitvoert, ziet u hier de AI Act-status van uw organisatie."}
               </p>
-              <Button asChild>
-                <Link href="/scan">
-                  Start de risicoscan <ArrowRight className="h-4 w-4" />
-                </Link>
-              </Button>
+              {isAdmin && (
+                <Button asChild>
+                  <Link href="/scan">
+                    Start de risicoscan <ArrowRight className="h-4 w-4" />
+                  </Link>
+                </Button>
+              )}
             </CardContent>
           </Card>
         )}
@@ -234,9 +239,11 @@ export default async function DashboardPage({
         title={`Welkom bij ${company.name}`}
         description="Uw AI Act-status op basis van uw scan."
       >
-        <Button asChild variant="outline">
-          <Link href="/scan">Scan bijwerken</Link>
-        </Button>
+        {isAdmin && (
+          <Button asChild variant="outline">
+            <Link href="/scan">Scan bijwerken</Link>
+          </Button>
+        )}
       </PageHeader>
 
       {checkoutBanner}

@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import type { Prisma } from "@prisma/client";
 
 import { prisma } from "@/lib/prisma";
-import { getActiveCompany } from "@/lib/auth";
+import { getActiveCompany, canAdminister } from "@/lib/auth";
 import { buildDocument, DOCUMENT_META, type DocumentType } from "@/lib/documents/templates";
 import { docUnlocked, TIER_LABEL, minTierFor } from "@/lib/plan";
 
@@ -23,7 +23,13 @@ export async function generateDocument(
     return { ok: false, error: "Onbekend documenttype." };
   }
 
-  const { company } = await getActiveCompany();
+  const { company, user } = await getActiveCompany();
+
+  // Saving a new shared company version is admin-only; managers/medewerkers get
+  // a local, non-persisted copy via /api/pdf/document-live instead.
+  if (!canAdminister(user)) {
+    return { ok: false, error: "Alleen de beheerder kan een nieuwe versie opslaan." };
+  }
 
   // The document package is what the plan buys — gate generation server-side.
   if (!docUnlocked(company.plan, type)) {

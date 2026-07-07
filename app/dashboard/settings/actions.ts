@@ -4,7 +4,8 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 
 import { prisma } from "@/lib/prisma";
-import { getActiveCompany } from "@/lib/auth";
+import { getActiveCompany, canAdminister, getCurrentUser } from "@/lib/auth";
+import { createClient } from "@/lib/supabase/server";
 import { sendEmail } from "@/lib/resend";
 import { inviteEmail } from "@/lib/email/templates";
 import { userLimit } from "@/lib/plan";
@@ -44,7 +45,10 @@ export async function updateCompanyProfile(input: {
   if (!parsed.success) {
     return { ok: false, error: parsed.error.issues[0]?.message ?? "Ongeldige invoer." };
   }
-  const { company } = await getActiveCompany();
+  const { company, user } = await getActiveCompany();
+  if (!canAdminister(user)) {
+    return { ok: false, error: "Alleen de beheerder kan het bedrijfsprofiel wijzigen." };
+  }
   const d = parsed.data;
   try {
     await prisma.company.update({
@@ -204,4 +208,42 @@ export async function inviteMember(input: {
       ? `Uitnodiging klaargezet voor ${email} (e-mail is gelogd; voeg RESEND_API_KEY toe om echt te versturen).`
       : `Uitnodiging verzonden naar ${email}.`,
   };
+}
+
+// ── Personal account (self-service, every signed-in user) ───────────────────
+// Not admin-gated: any user manages their own name and password. These never
+// touch company-level data.
+
+export async function updateOwnName(name: string): Promise<ActionResult> {
+  const trimmed = name.trim();
+  if (trimmed.length < 2) return { ok: false, error: "Naam is te kort." };
+
+  const user = await getCurrentUser();
+  if (!user) return { ok: false, error: "Log in om uw gegevens te wijzigen." };
+
+  try {
+    await prisma.user.updateMany({ where: { id: user.id }, data: { name: trimmed } });
+    // Keep the linked employee (learning/certificate) record in sync.
+    await prisma.employee.updateMany({ where: { userId: user.id }, data: { name: trimmed } });
+  } catch {
+    return { ok: false, error: "Naam bijwerken mislukt." };
+  }
+  revalidatePath("/dashboard/settings");
+  revalidatePath("/dashboard", "layout");
+  return { ok: true, message: "Naam opgeslagen." };
+}
+
+export async function updateOwnPassword(password: string): Promise<ActionResult> {
+  if (password.length < 8) {
+    return { ok: false, error: "Wachtwoord moet minstens 8 tekens bevatten." };
+  }
+
+  const user = await getCurrentUser();
+  if (!user) return { ok: false, error: "Log in om uw wachtwoord te wijzigen." };
+
+  const supabase = createClient();
+  const { error } = await supabase.auth.updateUser({ password });
+  if (error) return { ok: false, error: "Wachtwoord bijwerken mislukt." };
+
+  return { ok: true, message: "Wachtwoord bijgewerkt." };
 }

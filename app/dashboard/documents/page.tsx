@@ -16,7 +16,7 @@ import {
 import type { Document as DocumentRow } from "@prisma/client";
 
 import { prisma } from "@/lib/prisma";
-import { getActiveCompany } from "@/lib/auth";
+import { getActiveCompany, canAdminister } from "@/lib/auth";
 import { cn, formatDate } from "@/lib/utils";
 import { DOCUMENT_META, type DocumentType } from "@/lib/documents/templates";
 import { docLabel } from "@/lib/compliance/labels";
@@ -55,10 +55,12 @@ function DocCard({
   item,
   versions,
   plan,
+  isAdmin,
 }: {
   item: DocItem;
   versions: DocumentRow[];
   plan: string | null;
+  isAdmin: boolean;
 }) {
   const latest = versions[0];
   const Icon = ICONS[item.slug] ?? FileText;
@@ -118,7 +120,21 @@ function DocCard({
               </Link>
             </Button>
           ) : canGenerate ? (
-            <GenerateButton type={item.slug as DocumentType} hasExisting={Boolean(latest)} />
+            isAdmin ? (
+              <GenerateButton type={item.slug as DocumentType} hasExisting={Boolean(latest)} />
+            ) : (
+              // Managers/medewerkers get a fresh local copy from current data —
+              // it is never saved as a shared company version.
+              <Button asChild size="sm" variant="outline">
+                <a
+                  href={`/api/pdf/document-live/${item.slug}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <Download className="h-4 w-4" /> Download actuele versie
+                </a>
+              </Button>
+            )
           ) : (
             <Badge variant="secondary" className="font-normal">
               Zelf opstellen · sjabloon volgt
@@ -168,7 +184,8 @@ function DocCard({
 }
 
 export default async function DocumentsPage() {
-  const { company } = await getActiveCompany();
+  const { company, user } = await getActiveCompany();
+  const isAdmin = canAdminister(user);
 
   const documents = await prisma.document.findMany({
     where: { companyId: company.id },
@@ -271,7 +288,13 @@ export default async function DocumentsPage() {
           </p>
           <div className="grid gap-6 lg:grid-cols-2">
             {owned.map((item) => (
-              <DocCard key={item.slug} item={item} versions={versionsFor(item.slug)} plan={plan} />
+              <DocCard
+                key={item.slug}
+                item={item}
+                versions={versionsFor(item.slug)}
+                plan={plan}
+                isAdmin={isAdmin}
+              />
             ))}
           </div>
         </section>
@@ -285,7 +308,13 @@ export default async function DocumentsPage() {
           </p>
           <div className="grid gap-6 lg:grid-cols-2">
             {locked.map((item) => (
-              <DocCard key={item.slug} item={item} versions={versionsFor(item.slug)} plan={plan} />
+              <DocCard
+                key={item.slug}
+                item={item}
+                versions={versionsFor(item.slug)}
+                plan={plan}
+                isAdmin={isAdmin}
+              />
             ))}
           </div>
         </section>
