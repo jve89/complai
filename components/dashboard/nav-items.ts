@@ -14,6 +14,8 @@ export interface NavItem {
   label: string;
   description: string;
   icon: LucideIcon;
+  /** Hidden from managers/medewerkers (only the beheerder sees it). */
+  adminOnly?: boolean;
 }
 
 export const DASHBOARD_NAV: NavItem[] = [
@@ -52,6 +54,7 @@ export const DASHBOARD_NAV: NavItem[] = [
     label: "Medewerkers",
     description: "Nodig collega's uit en beheer rollen",
     icon: Users,
+    adminOnly: true,
   },
   {
     href: "/dashboard/settings",

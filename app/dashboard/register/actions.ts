@@ -4,8 +4,11 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 
 import { prisma } from "@/lib/prisma";
-import { getActiveCompany } from "@/lib/auth";
+import { getActiveCompany, canAdminister } from "@/lib/auth";
 import { registerUnlocked, registerLimit, TIER_LABEL, REGISTER_MIN_TIER } from "@/lib/plan";
+
+/** Only a beheerder (or ComplAI super-admin) may edit the AI-register. */
+const NOT_ADMIN = "Alleen de beheerder kan het AI-register wijzigen.";
 
 const schema = z.object({
   id: z.string().optional(),
@@ -28,7 +31,8 @@ export async function upsertAiSystem(
     return { ok: false, error: parsed.error.issues[0]?.message ?? "Ongeldige invoer." };
   }
   const { id, ...data } = parsed.data;
-  const { company } = await getActiveCompany();
+  const { company, user } = await getActiveCompany();
+  if (!canAdminister(user)) return { ok: false, error: NOT_ADMIN };
 
   // Register is a paid feature: on the free tier existing rows can be viewed and
   // deleted, but not added or edited. (Delete stays open — see deleteAiSystem.)
@@ -76,7 +80,8 @@ export async function upsertAiSystem(
 }
 
 export async function deleteAiSystem(id: string): Promise<ActionResult> {
-  const { company } = await getActiveCompany();
+  const { company, user } = await getActiveCompany();
+  if (!canAdminister(user)) return { ok: false, error: NOT_ADMIN };
   try {
     await prisma.aiSystem.deleteMany({ where: { id, companyId: company.id } });
   } catch {

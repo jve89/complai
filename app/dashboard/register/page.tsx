@@ -3,7 +3,7 @@ import type { Prisma, RiskLevel } from "@prisma/client";
 import { Download, Lock, Pencil, Plus, Database } from "lucide-react";
 
 import { prisma } from "@/lib/prisma";
-import { getActiveCompany } from "@/lib/auth";
+import { getActiveCompany, canAdminister } from "@/lib/auth";
 import { cn, formatDate } from "@/lib/utils";
 import { registerUnlocked, registerLimit, TIER_LABEL, REGISTER_MIN_TIER } from "@/lib/plan";
 import {
@@ -41,7 +41,8 @@ export default async function RegisterPage({
 }: {
   searchParams: { risk?: string; status?: string };
 }) {
-  const { company, demo } = await getActiveCompany();
+  const { company, demo, user } = await getActiveCompany();
+  const isAdmin = canAdminister(user);
   const unlocked = registerUnlocked(company.plan);
   const limit = registerLimit(company.plan);
 
@@ -78,28 +79,36 @@ export default async function RegisterPage({
             <Download className="h-4 w-4" /> Exporteer CSV
           </a>
         </Button>
-        {!unlocked ? (
-          <Button asChild variant="outline">
-            <Link href="/pricing">
-              <Lock className="h-4 w-4" /> Beschikbaar vanaf {TIER_LABEL[REGISTER_MIN_TIER]}
-            </Link>
-          </Button>
-        ) : atLimit ? (
-          <Button asChild variant="outline">
-            <Link href="/pricing">
-              <Lock className="h-4 w-4" /> Max. {limitLabel} bereikt — upgrade
-            </Link>
-          </Button>
-        ) : (
-          <AiSystemDialog
-            trigger={
-              <Button>
-                <Plus className="h-4 w-4" /> Nieuw systeem
-              </Button>
-            }
-          />
-        )}
+        {isAdmin &&
+          (!unlocked ? (
+            <Button asChild variant="outline">
+              <Link href="/pricing">
+                <Lock className="h-4 w-4" /> Beschikbaar vanaf {TIER_LABEL[REGISTER_MIN_TIER]}
+              </Link>
+            </Button>
+          ) : atLimit ? (
+            <Button asChild variant="outline">
+              <Link href="/pricing">
+                <Lock className="h-4 w-4" /> Max. {limitLabel} bereikt — upgrade
+              </Link>
+            </Button>
+          ) : (
+            <AiSystemDialog
+              trigger={
+                <Button>
+                  <Plus className="h-4 w-4" /> Nieuw systeem
+                </Button>
+              }
+            />
+          ))}
       </PageHeader>
+
+      {!isAdmin && (
+        <div className="mb-6 rounded-lg border bg-secondary/30 p-4 text-sm text-muted-foreground">
+          U heeft alleen-leestoegang tot het AI-register. Alleen de beheerder kan
+          systemen toevoegen, bewerken of verwijderen.
+        </div>
+      )}
 
       {!unlocked && (
         <div className="mb-6 flex flex-col gap-3 rounded-lg border border-navy-100 bg-navy-50 p-4 text-navy-900 sm:flex-row sm:items-center sm:justify-between">
@@ -154,6 +163,7 @@ export default async function RegisterPage({
                   : "Geen systemen die aan de filters voldoen."}
               </p>
               {total === 0 &&
+                isAdmin &&
                 (unlocked ? (
                   <AiSystemDialog
                     trigger={
@@ -209,22 +219,28 @@ export default async function RegisterPage({
                     </TableCell>
                     <TableCell>
                       <div className="flex justify-end gap-1">
-                        {unlocked && (
-                          <AiSystemDialog
-                            system={system}
-                            trigger={
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                aria-label="Bewerken"
-                                className="text-muted-foreground hover:text-foreground"
-                              >
-                                <Pencil className="h-4 w-4" />
-                              </Button>
-                            }
-                          />
+                        {isAdmin ? (
+                          <>
+                            {unlocked && (
+                              <AiSystemDialog
+                                system={system}
+                                trigger={
+                                  <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    aria-label="Bewerken"
+                                    className="text-muted-foreground hover:text-foreground"
+                                  >
+                                    <Pencil className="h-4 w-4" />
+                                  </Button>
+                                }
+                              />
+                            )}
+                            <DeleteSystemButton id={system.id} name={system.name} />
+                          </>
+                        ) : (
+                          <span className="text-xs text-muted-foreground">—</span>
                         )}
-                        <DeleteSystemButton id={system.id} name={system.name} />
                       </div>
                     </TableCell>
                   </TableRow>

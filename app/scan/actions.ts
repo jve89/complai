@@ -3,7 +3,7 @@
 import type { Prisma } from "@prisma/client";
 
 import { prisma } from "@/lib/prisma";
-import { getCurrentUser } from "@/lib/auth";
+import { getCurrentUser, canAdminister } from "@/lib/auth";
 import { buildProfile } from "@/lib/compliance/profile";
 import { buildEvidence } from "@/lib/compliance/evidence";
 import {
@@ -33,7 +33,10 @@ export async function submitScan(
   if (!rl.ok) throw new Error(rl.error);
 
   const user = await getCurrentUser().catch(() => null);
-  const companyId = user?.company?.id ?? null;
+  // The risicoscan rewrites company-wide readiness + obligations, so only a
+  // beheerder's scan writes to the company. Managers/medewerkers can still run
+  // the scan and get their own report, but it won't alter shared company state.
+  const companyId = canAdminister(user) ? user?.company?.id ?? null : null;
 
   // The readiness answers are always the floor of evidence (works with no
   // account); for logged-in companies we merge in real DB evidence (DB wins).
