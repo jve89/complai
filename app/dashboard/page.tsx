@@ -18,7 +18,8 @@ import { prisma } from "@/lib/prisma";
 import { formatDate } from "@/lib/utils";
 import { TIER_LABEL, TIER_ORDER, tierRank } from "@/lib/plan";
 import { computeGovernance } from "@/lib/governance/score";
-import type { ComplianceProfile } from "@/lib/compliance/types";
+import { resolveStatus } from "@/lib/compliance/resolve";
+import type { ComplianceProfile, CompanyEvidence } from "@/lib/compliance/types";
 import { onboardingState } from "@/lib/onboarding";
 import { DASHBOARD_NAV } from "@/components/dashboard/nav-items";
 import { OnboardingChecklist } from "@/components/dashboard/onboarding-checklist";
@@ -127,38 +128,98 @@ export default async function DashboardPage({
     );
   }
 
-  const obligations =
+  // Live evidence from the CURRENT dashboard state (mirrors buildEvidence, reusing
+  // data we already fetched) — so obligations reflect real activity, not just the
+  // scan snapshot.
+  const evidence: CompanyEvidence = {
+    documentSlugs: Array.from(new Set(documents.map((d) => d.type))),
+    systemsRegistered: aiSystems.length,
+    employeesTotal: employees.length,
+    employeesTrained: employees.filter((e) => e.trainingCompleted).length,
+    completedTrainingPaths: Array.from(
+      new Set(employees.filter((e) => e.trainingCompleted).map((e) => e.role))
+    ),
+  };
+  // Activity can only ADD progress — never downgrade what the scan established
+  // (protects self-reported readiness and manual/process obligations).
+  const rank: Record<string, number> = { compliant: 2, done: 2, in_progress: 1, open: 0 };
+  const liveStatus = (code: string, frozen: string): string => {
+    const resolved = resolveStatus(code, evidence);
+    return (rank[resolved] ?? 0) >= (rank[frozen] ?? 0) ? resolved : frozen;
+  };
+
+  const obligationsFrozen =
     profile?.obligations ??
     items.map((i) => ({
-      code: i.id,
+      code: i.code ?? i.id,
       title: i.title,
       article: i.article,
       status: i.status as string,
       required: i.required ?? true,
     }));
+  // Obligations list reflects live activity (additive overlay).
+  const obligations = obligationsFrozen.map((o) => ({
+    ...o,
+    status: liveStatus(o.code, o.status),
+  }));
 
   const required = obligations.filter((o) => o.required);
   const open = required.filter((o) => o.status !== "done" && o.status !== "compliant");
-  const score =
+
+  // Gereedheid = the frozen scan snapshot; it does NOT move with dashboard
+  // activity (only a re-scan changes it). The Voortgang dial below is the live one.
+  const gereedheidScore =
     profile?.score ??
-    (required.length
-      ? Math.round(
-          (required.filter((o) => o.status === "compliant" || o.status === "done").length /
-            required.length) *
-            100
-        )
-      : 0);
+    (() => {
+      const req = obligationsFrozen.filter((o) => o.required);
+      return req.length
+        ? Math.round(
+            (req.filter((o) => o.status === "compliant" || o.status === "done").length /
+              req.length) *
+              100
+          )
+        : 0;
+    })();
+
   const trained = employees.filter((e) => e.trainingCompleted).length;
-  const deadlines = items
+
+  // Live-status the compliance items too, so deadlines drop off once done and the
+  // governance/Voortgang score moves with activity. ComplianceStatus has no
+  // "done" — resolveStatus's "done" maps to "compliant".
+  const liveItemStatus = (
+    code: string,
+    frozen: "compliant" | "open" | "in_progress"
+  ): "compliant" | "open" | "in_progress" => {
+    const resolved = resolveStatus(code, evidence);
+    // Map ObligationStatus → ComplianceStatus vocabulary (done→compliant,
+    // not_applicable→open which ranks 0, so it never upgrades anything).
+    const norm: "compliant" | "open" | "in_progress" =
+      resolved === "done"
+        ? "compliant"
+        : resolved === "in_progress"
+          ? "in_progress"
+          : "open";
+    return (rank[norm] ?? 0) >= (rank[frozen] ?? 0) ? norm : frozen;
+  };
+  const liveItems = items.map((i) => ({
+    ...i,
+    status: liveItemStatus(i.code ?? i.id, i.status),
+  }));
+  const deadlines = liveItems
     .filter((i) => i.deadline && i.status !== "compliant")
     .slice(0, 4);
 
   // Ongoing-health view (was the separate Governance tab): quarterly checks and
-  // drift signals, folded into the home dashboard.
+  // drift signals, folded into the home dashboard. Also drives the Voortgang dial.
   const governance = computeGovernance(
-    { aiSystems, documents, employees, complianceItems: items, profile },
+    { aiSystems, documents, employees, complianceItems: liveItems, profile },
     new Date()
   );
+  const voortgangScore = governance.score;
+  const voortgangVariant =
+    voortgangScore >= 75 ? "success" : voortgangScore >= 45 ? "warning" : "danger";
+  const voortgangLabel =
+    voortgangScore >= 75 ? "Goed op weg" : voortgangScore >= 45 ? "Halverwege" : "Net begonnen";
 
   const stats = [
     { label: "AI-systemen", value: aiSystems.length, icon: Database },
@@ -194,36 +255,55 @@ export default async function DashboardPage({
         </Button>
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-3">
-        <Card className="lg:col-span-1">
+      {/* Two dials: Voortgang (live, moves with activity) + Gereedheid (scan snapshot). */}
+      <div className="grid gap-6 lg:grid-cols-2">
+        <Card className="border-brand-200 bg-brand-50/30">
+          <CardHeader>
+            <CardTitle className="text-base">Voortgang</CardTitle>
+          </CardHeader>
+          <CardContent className="flex flex-col items-center gap-3 text-center">
+            <ScoreRing score={voortgangScore} label="voortgang" />
+            <Badge variant={voortgangVariant}>{voortgangLabel}</Badge>
+            <p className="max-w-xs text-xs text-muted-foreground">
+              Beweegt mee met wat u doet: AI-systemen registreren, documenten
+              genereren en medewerkers trainen.
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card>
           <CardHeader>
             <CardTitle className="text-base">Gereedheid</CardTitle>
           </CardHeader>
-          <CardContent className="flex flex-col items-center gap-3">
-            <ScoreRing score={score} label="gereedheid" />
+          <CardContent className="flex flex-col items-center gap-3 text-center">
+            <ScoreRing score={gereedheidScore} label="gereedheid" />
             {profile && (
               <Badge variant={HEADLINE[profile.headline].variant}>
                 {HEADLINE[profile.headline].label}
               </Badge>
             )}
+            <p className="max-w-xs text-xs text-muted-foreground">
+              Op basis van uw laatste risicoscan. Loop de scan elk kwartaal opnieuw
+              door om dit actueel te houden.
+            </p>
           </CardContent>
         </Card>
+      </div>
 
-        <div className="grid grid-cols-2 gap-4 lg:col-span-2">
-          {stats.map((stat) => (
-            <Card key={stat.label}>
-              <CardContent className="flex h-full flex-col justify-between gap-4 py-6">
-                <div className="inline-flex h-10 w-10 items-center justify-center rounded-lg bg-brand-50 text-brand-600">
-                  <stat.icon className="h-5 w-5" />
-                </div>
-                <div>
-                  <p className="text-3xl font-bold tabular-nums">{stat.value}</p>
-                  <p className="text-sm text-muted-foreground">{stat.label}</p>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+      <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        {stats.map((stat) => (
+          <Card key={stat.label}>
+            <CardContent className="flex h-full flex-col justify-between gap-4 py-6">
+              <div className="inline-flex h-10 w-10 items-center justify-center rounded-lg bg-brand-50 text-brand-600">
+                <stat.icon className="h-5 w-5" />
+              </div>
+              <div>
+                <p className="text-3xl font-bold tabular-nums">{stat.value}</p>
+                <p className="text-sm text-muted-foreground">{stat.label}</p>
+              </div>
+            </CardContent>
+          </Card>
+        ))}
       </div>
 
       {/* Signalen — what needs attention now (from the former Governance tab). */}
