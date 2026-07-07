@@ -36,10 +36,10 @@ const HEADLINE: Record<
 };
 
 const TIER_LABEL: Record<string, string> = {
-  gratis: "Inzicht",
-  starter: "Actief",
-  groei: "Compliance-klaar",
-  schaal: "Audit-klaar",
+  gratis: "Scan",
+  starter: "Basis",
+  groei: "Compliance",
+  schaal: "Audit",
 };
 
 const ROLE_NL: Record<EntityRole, string> = {
@@ -338,8 +338,7 @@ export default async function ScanResultsPage({
         <CardContent className="space-y-2">
           <p>
             Op basis van uw profiel adviseren wij het pakket{" "}
-            <span className="font-semibold">{TIER_LABEL[profile.recommendedTier]}</span>
-            {profile.recommendedTier !== "gratis" && " (eerste maand gratis)"}.
+            <span className="font-semibold">{TIER_LABEL[profile.recommendedTier]}</span>.
           </p>
           {profile.advisoryUpsell && (
             <p className="rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800">

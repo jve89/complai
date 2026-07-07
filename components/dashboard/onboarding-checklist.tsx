@@ -45,7 +45,7 @@ export function OnboardingChecklist({
       title: planDone ? `Pakket gekozen: ${planLabel}` : "Kies uw pakket",
       text: planDone
         ? "Uw documenten zijn ontgrendeld."
-        : "Ontgrendel de documenten die bij uw verplichtingen horen. Eerste maand gratis.",
+        : "Ontgrendel de documenten die bij uw verplichtingen horen.",
       done: planDone,
       optional: true,
       cta: { label: "Bekijk pakketten", href: "/pricing" },

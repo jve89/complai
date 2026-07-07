@@ -8,10 +8,10 @@ import type { TierId } from "@/lib/compliance/types";
 export const TIER_ORDER: TierId[] = ["gratis", "starter", "groei", "schaal"];
 
 export const TIER_LABEL: Record<TierId, string> = {
-  gratis: "Inzicht",
-  starter: "Actief",
-  groei: "Compliance-klaar",
-  schaal: "Audit-klaar",
+  gratis: "Scan",
+  starter: "Basis",
+  groei: "Compliance",
+  schaal: "Audit",
 };
 
 export function tierRank(plan: string | null | undefined): number {

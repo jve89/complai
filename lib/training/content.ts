@@ -855,7 +855,7 @@ const ROLE_MODULES: TrainingModule[] = [
       },
       {
         question: "Kan een organisatie meerdere beheerders hebben?",
-        options: ["Ja", "Nee, maximaal één", "Alleen met een Audit-klaar-pakket", "Alleen tijdens de proefperiode"],
+        options: ["Ja", "Nee, maximaal één", "Alleen met een Audit-pakket", "Alleen met een betaald pakket"],
         answer: 0,
       },
     ],

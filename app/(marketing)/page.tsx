@@ -27,6 +27,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Faq } from "@/components/marketing/faq";
 import { PLANS } from "@/lib/stripe";
+import { formatEuro } from "@/lib/utils";
 
 export const metadata: Metadata = { alternates: { canonical: "/" } };
 
@@ -43,7 +44,7 @@ const startSteps = [
   {
     icon: Package,
     title: "Kies uw pakket",
-    text: "Van de eerste basis tot een audit-klaar documentenpakket. Eerste maand gratis, maandelijks opzegbaar.",
+    text: "Van de eerste basis tot een audit-klaar documentenpakket. Maandelijks opzegbaar, geen setupkosten.",
     cta: { label: "Bekijk pakketten", href: "/pricing" },
   },
   {
@@ -447,15 +448,13 @@ export default function LandingPage() {
                 )}
                 <h3 className="font-semibold">{plan.name}</h3>
                 <p className="mt-2 text-3xl font-bold">
-                  €{plan.monthly}
+                  €{formatEuro(plan.monthly)}
                   <span className="text-sm font-normal text-muted-foreground">
                     /mnd
                   </span>
                 </p>
                 <p className="mt-1 min-h-[1rem] text-xs font-medium text-brand-600">
-                  {plan.freeFirstMonth
-                    ? "Eerste maand gratis"
-                    : "Geen abonnement nodig"}
+                  {plan.monthly === 0 ? "Geen abonnement nodig" : "Maandelijks opzegbaar"}
                 </p>
                 <p className="mt-2 min-h-[2.5rem] text-sm text-muted-foreground">
                   {plan.tagline}

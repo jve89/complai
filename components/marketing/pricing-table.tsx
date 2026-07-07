@@ -7,7 +7,7 @@ import { Check, Loader2 } from "lucide-react";
 import { PLANS, type PlanId } from "@/lib/stripe";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { cn } from "@/lib/utils";
+import { cn, formatEuro } from "@/lib/utils";
 
 type Interval = "month" | "year";
 
@@ -96,11 +96,7 @@ export function PricingTable({ scanId }: { scanId?: string }) {
         {PLANS.map((plan) => {
           const isYear = interval === "year";
           const perMonth =
-            plan.monthly === 0
-              ? 0
-              : isYear
-                ? Math.round(plan.yearly / 12)
-                : plan.monthly;
+            plan.monthly === 0 ? 0 : isYear ? plan.yearly / 12 : plan.monthly;
 
           return (
             <div
@@ -116,18 +112,15 @@ export function PricingTable({ scanId }: { scanId?: string }) {
 
               <h3 className="font-semibold">{plan.name}</h3>
               <div className="mt-3 flex items-baseline gap-1">
-                <span className="text-3xl font-bold">€{perMonth}</span>
+                <span className="text-3xl font-bold">€{formatEuro(perMonth)}</span>
                 <span className="text-sm text-muted-foreground">/mnd</span>
               </div>
               <p className="mt-1 min-h-[1.25rem] text-xs text-muted-foreground">
                 {plan.monthly === 0
                   ? "Geen account, geen abonnement"
                   : isYear
-                    ? `€${plan.yearly}/jaar, jaarlijks gefactureerd`
+                    ? `€${formatEuro(plan.yearly)}/jaar, jaarlijks gefactureerd`
                     : "Maandelijks opzegbaar"}
-              </p>
-              <p className="mt-1 min-h-[1rem] text-xs font-medium text-brand-600">
-                {plan.freeFirstMonth ? "Eerste maand gratis" : " "}
               </p>
 
               <p className="mt-3 min-h-[2.5rem] text-sm text-muted-foreground">
