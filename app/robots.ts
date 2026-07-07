@@ -12,8 +12,10 @@ export default function robots(): MetadataRoute.Robots {
     rules: {
       userAgent: "*",
       allow: "/",
-      disallow: ["/dashboard/", "/api/"],
+      // Private/app surfaces + the read-only demo (thin, duplicate of the app).
+      disallow: ["/dashboard/", "/api/", "/auth/", "/demo/"],
     },
     sitemap: `${env.appUrl}/sitemap.xml`,
+    host: env.appUrl,
   };
 }

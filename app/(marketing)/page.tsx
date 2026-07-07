@@ -26,6 +26,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Faq } from "@/components/marketing/faq";
+import { StructuredData } from "@/components/marketing/structured-data";
 import { PLANS } from "@/lib/stripe";
 import { formatEuro } from "@/lib/utils";
 
@@ -149,6 +150,7 @@ function CellValue({ value }: { value: string | boolean }) {
 export default function LandingPage() {
   return (
     <>
+      <StructuredData />
       {/* Hero */}
       <section className="relative overflow-hidden border-b bg-white">
         <div className="pointer-events-none absolute inset-0 -z-10">
