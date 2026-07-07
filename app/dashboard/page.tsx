@@ -2,6 +2,7 @@ import Link from "next/link";
 import {
   AlertTriangle,
   ArrowRight,
+  CalendarCheck,
   CalendarClock,
   CheckCircle2,
   Circle,
@@ -9,12 +10,14 @@ import {
   GraduationCap,
   ListChecks,
   Search,
+  ShieldAlert,
 } from "lucide-react";
 
 import { getActiveCompany } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { formatDate } from "@/lib/utils";
 import { TIER_LABEL, TIER_ORDER, tierRank } from "@/lib/plan";
+import { computeGovernance } from "@/lib/governance/score";
 import type { ComplianceProfile } from "@/lib/compliance/types";
 import { onboardingState } from "@/lib/onboarding";
 import { DASHBOARD_NAV } from "@/components/dashboard/nav-items";
@@ -23,6 +26,7 @@ import { ScoreRing } from "@/components/score-ring";
 import { PageHeader } from "@/components/dashboard/page-header";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Progress } from "@/components/ui/progress";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 export const dynamic = "force-dynamic";
@@ -54,8 +58,9 @@ export default async function DashboardPage({
   const { company, demo } = await getActiveCompany();
   const profile = (company.profileJson as unknown as ComplianceProfile | null) ?? null;
 
-  const [aiSystems, employees, items] = await Promise.all([
-    prisma.aiSystem.count({ where: { companyId: company.id } }),
+  const [aiSystems, documents, employees, items] = await Promise.all([
+    prisma.aiSystem.findMany({ where: { companyId: company.id } }),
+    prisma.document.findMany({ where: { companyId: company.id } }),
     prisma.employee.findMany({ where: { companyId: company.id } }),
     prisma.complianceItem.findMany({
       where: { companyId: company.id },
@@ -148,8 +153,15 @@ export default async function DashboardPage({
     .filter((i) => i.deadline && i.status !== "compliant")
     .slice(0, 4);
 
+  // Ongoing-health view (was the separate Governance tab): quarterly checks and
+  // drift signals, folded into the home dashboard.
+  const governance = computeGovernance(
+    { aiSystems, documents, employees, complianceItems: items, profile },
+    new Date()
+  );
+
   const stats = [
-    { label: "AI-systemen", value: aiSystems, icon: Database },
+    { label: "AI-systemen", value: aiSystems.length, icon: Database },
     { label: "Getrainde medewerkers", value: `${trained}/${employees.length}`, icon: GraduationCap },
     { label: "Open verplichtingen", value: open.length, icon: ListChecks },
     { label: "Aankomende deadlines", value: deadlines.length, icon: CalendarClock },
@@ -214,6 +226,40 @@ export default async function DashboardPage({
         </div>
       </div>
 
+      {/* Signalen — what needs attention now (from the former Governance tab). */}
+      <div className="mb-4 mt-10 flex items-center gap-2">
+        <ShieldAlert className="h-5 w-5 text-muted-foreground" />
+        <h2 className="text-lg font-semibold">Signalen</h2>
+        {governance.alerts.length > 0 && (
+          <Badge variant="danger">{governance.alerts.length}</Badge>
+        )}
+      </div>
+      <Card>
+        <CardContent className="py-5">
+          {governance.alerts.length === 0 ? (
+            <p className="flex items-center gap-2 text-sm text-muted-foreground">
+              <CheckCircle2 className="h-4 w-4 text-brand-600" />
+              Geen openstaande signalen. Alles is up-to-date.
+            </p>
+          ) : (
+            <ul className="space-y-3">
+              {governance.alerts.map((alert, i) => (
+                <li key={i} className="flex items-start gap-3">
+                  <AlertTriangle
+                    className={
+                      alert.severity === "danger"
+                        ? "mt-0.5 h-4 w-4 shrink-0 text-red-500"
+                        : "mt-0.5 h-4 w-4 shrink-0 text-amber-500"
+                    }
+                  />
+                  <span className="text-sm">{alert.message}</span>
+                </li>
+              ))}
+            </ul>
+          )}
+        </CardContent>
+      </Card>
+
       {/* Obligations */}
       <h2 className="mb-4 mt-10 text-lg font-semibold">Uw verplichtingen</h2>
       <div className="grid gap-3">
@@ -244,6 +290,37 @@ export default async function DashboardPage({
           ))
         )}
       </div>
+
+      {/* Kwartaalcheck — recurring health view (from the former Governance tab). */}
+      <div className="mb-4 mt-10 flex items-center gap-2">
+        <CalendarCheck className="h-5 w-5 text-muted-foreground" />
+        <h2 className="text-lg font-semibold">Kwartaalcheck — {governance.quarter}</h2>
+      </div>
+      <Card>
+        <CardContent className="space-y-4 py-5">
+          {governance.checks.map((check) => (
+            <div
+              key={check.id}
+              className="flex items-start justify-between gap-4 border-b pb-4 last:border-0 last:pb-0"
+            >
+              <div className="flex items-start gap-3">
+                {check.done ? (
+                  <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-brand-600" />
+                ) : (
+                  <Circle className="mt-0.5 h-5 w-5 shrink-0 text-muted-foreground/40" />
+                )}
+                <div>
+                  <p className="font-medium">{check.label}</p>
+                  <p className="text-sm text-muted-foreground">{check.detail}</p>
+                </div>
+              </div>
+              <div className="w-20 shrink-0 pt-1">
+                <Progress value={check.progress * 100} />
+              </div>
+            </div>
+          ))}
+        </CardContent>
+      </Card>
 
       {/* Deadlines */}
       {deadlines.length > 0 && (

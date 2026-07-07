@@ -117,6 +117,16 @@ export default async function RegisterPage({
         </p>
       </div>
 
+      <div className="mb-4 rounded-lg border bg-secondary/30 px-4 py-3 text-sm text-muted-foreground">
+        Niet zeker of u alle AI in beeld heeft?{" "}
+        <Link
+          href={demo ? "/demo/kennisbank#schaduw-ai" : "/dashboard/kennisbank#schaduw-ai"}
+          className="font-medium text-primary hover:underline"
+        >
+          Zo spoort u schaduw-AI op →
+        </Link>
+      </div>
+
       <Card>
         <CardContent className="p-0">
           {systems.length === 0 ? (

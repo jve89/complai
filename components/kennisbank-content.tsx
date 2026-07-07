@@ -1,5 +1,6 @@
-import { Ban, CircleCheck, Eye, Scale, ShieldAlert } from "lucide-react";
+import { Ban, CircleCheck, Eye, Scale, ScanSearch, ShieldAlert } from "lucide-react";
 
+import { TOOL_GROUPS } from "@/lib/compliance/questions";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 
@@ -62,6 +63,13 @@ const fines = [
   { amount: "€ 7,5 mln / 1%", text: "voor onjuiste of misleidende informatie aan toezichthouders" },
 ];
 
+const shadowSteps = [
+  "Vraag elk team welke AI-tools, plug-ins en browserextensies zij gebruiken.",
+  "Loop de SaaS-abonnementen en facturen langs op AI-functies (vaak 'AI', 'Copilot' of 'Assistant').",
+  "Controleer of standaardsoftware (Microsoft 365, Google Workspace, CRM) AI-functies aan heeft staan.",
+  "Leg elk gevonden systeem vast in het AI-register met rol, doel en risicoklasse.",
+];
+
 /** The AI-Act explainer, shared by the public /kennisbank and the in-dashboard one. */
 export function KennisbankContent() {
   return (
@@ -117,6 +125,64 @@ export function KennisbankContent() {
             </Card>
           ))}
         </div>
+      </section>
+
+      <section id="schaduw-ai" className="mb-16 scroll-mt-24">
+        <div className="mb-2 flex items-center gap-2">
+          <ScanSearch className="h-6 w-6 text-brand-600" />
+          <h2 className="text-2xl font-bold tracking-tight">Schaduw-AI opsporen</h2>
+        </div>
+        <p className="mb-6 max-w-3xl text-sm text-muted-foreground">
+          Schaduw-AI is AI die in uw organisatie wordt gebruikt zonder dat het is
+          vastgelegd — de grootste blinde vlek bij een audit. De AI Act gaat ervan
+          uit dat u wéét welke AI u inzet: een gebruiksverantwoordelijke moet AI
+          volgens de instructies inzetten, menselijk toezicht borgen en logs bewaren
+          (Art. 26). Ook AI-geletterdheid (Art. 4) en de transparantieplichten
+          (Art. 50) gelden alleen aantoonbaar met het volledige plaatje.
+        </p>
+
+        <h3 className="mb-3 text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+          Veelgebruikte AI-tools — welke herkent u?
+        </h3>
+        <div className="mb-8 grid gap-4 sm:grid-cols-2">
+          {TOOL_GROUPS.filter((g) => g.label !== "Anders").map((group) => (
+            <Card key={group.label}>
+              <CardContent className="py-5">
+                <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                  {group.label}
+                </p>
+                <div className="mt-3 flex flex-wrap gap-1.5">
+                  {group.options.map((opt) => (
+                    <span
+                      key={opt.value}
+                      className="rounded-md border bg-secondary/60 px-2 py-1 text-xs"
+                    >
+                      {opt.label}
+                    </span>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+
+        <h3 className="mb-3 text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+          Zo spoort u schaduw-AI op
+        </h3>
+        <Card>
+          <CardContent className="py-5">
+            <ol className="space-y-3">
+              {shadowSteps.map((step, i) => (
+                <li key={i} className="flex items-start gap-3 text-sm">
+                  <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-brand-50 text-xs font-semibold text-brand-700">
+                    {i + 1}
+                  </span>
+                  <span>{step}</span>
+                </li>
+              ))}
+            </ol>
+          </CardContent>
+        </Card>
       </section>
 
       <section>
