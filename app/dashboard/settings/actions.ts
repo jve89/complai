@@ -21,6 +21,11 @@ const profileSchema = z.object({
     .url("Voer een geldige URL in.")
     .optional()
     .or(z.literal("")),
+  // Optional legal-identity fields — blank is fine (see schema).
+  kvk: z.string().optional(),
+  address: z.string().optional(),
+  legalRepName: z.string().optional(),
+  legalRepRole: z.string().optional(),
 });
 
 export async function updateCompanyProfile(input: {
@@ -29,16 +34,29 @@ export async function updateCompanyProfile(input: {
   sector?: string;
   country?: string;
   logoUrl?: string;
+  kvk?: string;
+  address?: string;
+  legalRepName?: string;
+  legalRepRole?: string;
 }): Promise<ActionResult> {
   const parsed = profileSchema.safeParse(input);
   if (!parsed.success) {
     return { ok: false, error: parsed.error.issues[0]?.message ?? "Ongeldige invoer." };
   }
   const { company } = await getActiveCompany();
+  const d = parsed.data;
   try {
     await prisma.company.update({
       where: { id: company.id },
-      data: { ...parsed.data, logoUrl: parsed.data.logoUrl || null },
+      data: {
+        ...d,
+        logoUrl: d.logoUrl || null,
+        // Normalise empty strings to null so blanks stay truly blank.
+        kvk: d.kvk?.trim() || null,
+        address: d.address?.trim() || null,
+        legalRepName: d.legalRepName?.trim() || null,
+        legalRepRole: d.legalRepRole?.trim() || null,
+      },
     });
   } catch {
     return { ok: false, error: "Opslaan mislukt." };

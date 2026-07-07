@@ -385,6 +385,11 @@ function buildTechDoc(company: Company, systems: AiSystem[]): DocumentContent {
 
 function buildDocConformity(company: Company, systems: AiSystem[]): DocumentContent {
   const high = highRiskSystems(systems);
+  // Filled identity fields render; blanks keep a [marker] to complete before use.
+  const addr = company.address?.trim() || "[adres]";
+  const kvk = company.kvk?.trim() ? `KvK ${company.kvk.trim()}` : "[KvK-nummer]";
+  const repName = company.legalRepName?.trim() || "[naam]";
+  const repRole = company.legalRepRole?.trim() || "[functie]";
   return {
     title: "EU-conformiteitsverklaring",
     subtitle: company.name,
@@ -393,7 +398,7 @@ function buildDocConformity(company: Company, systems: AiSystem[]): DocumentCont
       {
         heading: "1. Aanbieder",
         paragraphs: [
-          `${company.name}, [adres], [KvK-nummer], [contactgegevens].`,
+          `${company.name}, ${addr}, ${kvk}, [contactgegevens].`,
         ],
       },
       {
@@ -424,7 +429,7 @@ function buildDocConformity(company: Company, systems: AiSystem[]): DocumentCont
       {
         heading: "6. Ondertekening",
         paragraphs: [
-          `Namens ${company.name}: [naam], [functie], [plaats], [datum], [handtekening].`,
+          `Namens ${company.name}: ${repName}, ${repRole}, [plaats], [datum], [handtekening].`,
         ],
       },
     ],

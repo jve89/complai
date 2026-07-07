@@ -42,6 +42,13 @@ model Company {
   sector    String?
   country   String   @default("NL")
   logoUrl   String?  @map("logo_url")
+  // Optional legal-identity fields — filled once in Settings, interpolated into
+  // documents (conformity declaration, technical file). Never mandatory: a blank
+  // just leaves a fill-in marker in the concept document.
+  kvk          String? // KvK-nummer
+  address      String?
+  legalRepName String? @map("legal_rep_name") // signatory name
+  legalRepRole String? @map("legal_rep_role") // signatory function
   // Compliance profile (Phase 1): recommended tier, derived roles/tiers, and the
   // full ComplianceProfile snapshot the dashboard reads.
   plan        String?  // PURCHASED/active tier: gratis|starter|groei|schaal

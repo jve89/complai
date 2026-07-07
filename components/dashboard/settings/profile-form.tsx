@@ -39,6 +39,10 @@ export function ProfileForm({ company }: { company: Company }) {
     sector: company.sector ?? "",
     country: company.country,
     logoUrl: company.logoUrl ?? "",
+    kvk: company.kvk ?? "",
+    address: company.address ?? "",
+    legalRepName: company.legalRepName ?? "",
+    legalRepRole: company.legalRepRole ?? "",
   });
 
   function set<K extends keyof typeof form>(k: K, v: (typeof form)[K]) {
@@ -132,6 +136,56 @@ export function ProfileForm({ company }: { company: Company }) {
             onChange={(e) => set("country", e.target.value)}
             required
           />
+        </div>
+      </div>
+
+      {/* Optional legal-identity details for documents. Never required. */}
+      <div className="space-y-4 rounded-lg border bg-secondary/20 p-4">
+        <div>
+          <p className="text-sm font-medium">Juridische gegevens voor documenten</p>
+          <p className="text-xs text-muted-foreground">
+            Optioneel. Vult u dit in, dan komen deze gegevens automatisch in uw
+            documenten (zoals de conformiteitsverklaring). Laat u het leeg, dan
+            blijft er simpelweg een invulveld staan — u kunt altijd later aanvullen.
+          </p>
+        </div>
+        <div className="grid gap-4 sm:grid-cols-2">
+          <div className="space-y-1.5">
+            <Label htmlFor="kvk">KvK-nummer</Label>
+            <Input
+              id="kvk"
+              value={form.kvk}
+              onChange={(e) => set("kvk", e.target.value)}
+              placeholder="bijv. 12345678"
+            />
+          </div>
+          <div className="space-y-1.5">
+            <Label htmlFor="address">Adres</Label>
+            <Input
+              id="address"
+              value={form.address}
+              onChange={(e) => set("address", e.target.value)}
+              placeholder="Straat 1, 1234 AB Plaats"
+            />
+          </div>
+          <div className="space-y-1.5">
+            <Label htmlFor="legalRepName">Tekenbevoegde — naam</Label>
+            <Input
+              id="legalRepName"
+              value={form.legalRepName}
+              onChange={(e) => set("legalRepName", e.target.value)}
+              placeholder="bijv. J. de Vries"
+            />
+          </div>
+          <div className="space-y-1.5">
+            <Label htmlFor="legalRepRole">Tekenbevoegde — functie</Label>
+            <Input
+              id="legalRepRole"
+              value={form.legalRepRole}
+              onChange={(e) => set("legalRepRole", e.target.value)}
+              placeholder="bijv. Directeur"
+            />
+          </div>
         </div>
       </div>
 
