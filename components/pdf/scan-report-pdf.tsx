@@ -159,7 +159,7 @@ export function ScanReportPdf({
         )}
 
         <Text style={styles.footer}>
-          Gegenereerd door ComplAI · Beslissingsondersteuning, geen juridisch advies · complai.nl
+          Gegenereerd door ComplAI · Beslissingsondersteuning, geen juridisch advies · complai-eu.nl
         </Text>
       </Page>
     </Document>
