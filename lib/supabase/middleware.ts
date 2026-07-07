@@ -40,6 +40,12 @@ export async function updateSession(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const isProtected = pathname.startsWith("/dashboard");
   const isAuthPage = pathname === "/login" || pathname === "/signup";
+  // A logged-in visitor is normally bounced off auth pages to the dashboard.
+  // Exception: an invite link (/signup?invite=…) must be allowed to load, so the
+  // page can offer to log out and accept it instead of silently dropping the
+  // token. Without this, an already-logged-in invitee just lands on /dashboard.
+  const isInviteSignup =
+    pathname === "/signup" && request.nextUrl.searchParams.has("invite");
 
   if (isProtected && !user) {
     const url = request.nextUrl.clone();
@@ -48,7 +54,7 @@ export async function updateSession(request: NextRequest) {
     return NextResponse.redirect(url);
   }
 
-  if (isAuthPage && user) {
+  if (isAuthPage && user && !isInviteSignup) {
     const url = request.nextUrl.clone();
     url.pathname = "/dashboard";
     url.search = "";
