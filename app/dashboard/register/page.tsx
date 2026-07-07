@@ -5,7 +5,7 @@ import { Download, Lock, Pencil, Plus, Database } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { getActiveCompany } from "@/lib/auth";
 import { cn, formatDate } from "@/lib/utils";
-import { registerUnlocked, TIER_LABEL, REGISTER_MIN_TIER } from "@/lib/plan";
+import { registerUnlocked, registerLimit, TIER_LABEL, REGISTER_MIN_TIER } from "@/lib/plan";
 import {
   RISK_LEVELS,
   RISK_LABEL,
@@ -43,6 +43,7 @@ export default async function RegisterPage({
 }) {
   const { company, demo } = await getActiveCompany();
   const unlocked = registerUnlocked(company.plan);
+  const limit = registerLimit(company.plan);
 
   const riskFilter = RISK_LEVELS.includes(searchParams.risk as RiskLevel)
     ? (searchParams.risk as RiskLevel)
@@ -63,6 +64,8 @@ export default async function RegisterPage({
     prisma.aiSystem.findMany({ where, orderBy: { createdAt: "asc" } }),
     prisma.aiSystem.count({ where: { companyId: company.id } }),
   ]);
+  const atLimit = unlocked && total >= limit;
+  const limitLabel = limit === Infinity ? "onbeperkt" : String(limit);
 
   return (
     <>
@@ -75,7 +78,19 @@ export default async function RegisterPage({
             <Download className="h-4 w-4" /> Exporteer CSV
           </a>
         </Button>
-        {unlocked ? (
+        {!unlocked ? (
+          <Button asChild variant="outline">
+            <Link href="/pricing">
+              <Lock className="h-4 w-4" /> Beschikbaar vanaf {TIER_LABEL[REGISTER_MIN_TIER]}
+            </Link>
+          </Button>
+        ) : atLimit ? (
+          <Button asChild variant="outline">
+            <Link href="/pricing">
+              <Lock className="h-4 w-4" /> Max. {limitLabel} bereikt — upgrade
+            </Link>
+          </Button>
+        ) : (
           <AiSystemDialog
             trigger={
               <Button>
@@ -83,12 +98,6 @@ export default async function RegisterPage({
               </Button>
             }
           />
-        ) : (
-          <Button asChild variant="outline">
-            <Link href="/pricing">
-              <Lock className="h-4 w-4" /> Beschikbaar vanaf {TIER_LABEL[REGISTER_MIN_TIER]}
-            </Link>
-          </Button>
         )}
       </PageHeader>
 
@@ -114,6 +123,11 @@ export default async function RegisterPage({
         <RegisterFilters />
         <p className="text-sm text-muted-foreground">
           {systems.length} van {total} systemen
+          {unlocked && limit !== Infinity && (
+            <span className={atLimit ? "ml-1 font-medium text-amber-600" : "ml-1"}>
+              · {total}/{limitLabel} gebruikt
+            </span>
+          )}
         </p>
       </div>
 

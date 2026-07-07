@@ -5,7 +5,7 @@ import { z } from "zod";
 
 import { prisma } from "@/lib/prisma";
 import { getActiveCompany } from "@/lib/auth";
-import { registerUnlocked, TIER_LABEL, REGISTER_MIN_TIER } from "@/lib/plan";
+import { registerUnlocked, registerLimit, TIER_LABEL, REGISTER_MIN_TIER } from "@/lib/plan";
 
 const schema = z.object({
   id: z.string().optional(),
@@ -50,6 +50,18 @@ export async function upsertAiSystem(
         return { ok: false, error: "Systeem niet gevonden." };
       }
     } else {
+      // Enforce the per-tier system cap when adding a NEW system.
+      const limit = registerLimit(company.plan);
+      const count = await prisma.aiSystem.count({ where: { companyId: company.id } });
+      if (count >= limit) {
+        return {
+          ok: false,
+          error:
+            limit === 0
+              ? `Het AI-register is beschikbaar vanaf het pakket ${TIER_LABEL[REGISTER_MIN_TIER]}.`
+              : `U heeft het maximum van ${limit} AI-systemen voor uw pakket bereikt. Upgrade voor meer ruimte.`,
+        };
+      }
       await prisma.aiSystem.create({
         data: { ...data, companyId: company.id },
       });

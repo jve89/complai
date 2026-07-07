@@ -7,6 +7,7 @@ import { prisma } from "@/lib/prisma";
 import { getActiveCompany } from "@/lib/auth";
 import { sendEmail } from "@/lib/resend";
 import { inviteEmail } from "@/lib/email/templates";
+import { userLimit } from "@/lib/plan";
 import { env } from "@/lib/env";
 
 export type ActionResult = { ok: true; message?: string } | { ok: false; error: string };
@@ -154,6 +155,27 @@ export async function inviteMember(input: {
   const existing = await prisma.user.findUnique({ where: { email } });
   if (existing?.companyId === company.id) {
     return { ok: false, error: "Deze persoon is al lid van uw team." };
+  }
+
+  // Enforce the per-tier team-size cap: current members + still-open invites.
+  const limit = userLimit(company.plan);
+  if (limit !== Infinity) {
+    const [members, pending] = await Promise.all([
+      prisma.user.count({ where: { companyId: company.id } }),
+      prisma.invite.count({
+        where: {
+          companyId: company.id,
+          accepted: false,
+          OR: [{ expiresAt: null }, { expiresAt: { gt: new Date() } }],
+        },
+      }),
+    ]);
+    if (members + pending >= limit) {
+      return {
+        ok: false,
+        error: `Uw pakket staat maximaal ${limit} teamleden toe. Upgrade om meer collega's uit te nodigen.`,
+      };
+    }
   }
 
   // Create a pending invite with a token; the invitee joins this company + role
