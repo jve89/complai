@@ -106,12 +106,40 @@ function systemsTable(systems: AiSystem[]): DocSection["table"] {
   };
 }
 
+/** Per-system, plain-language obligation summary derived from role + risk level —
+ * so the document speaks to the client's actual systems, not generic AI. */
+function systemObligationNote(s: AiSystem): string {
+  switch (s.riskLevel) {
+    case "unacceptable":
+      return "Onaanvaardbaar risico (Art. 5): deze toepassing kan onder de verboden praktijken vallen en mag dan niet worden ingezet. Toets dit met voorrang.";
+    case "high":
+      return (
+        "Hoog risico: FRIA (Art. 27), technische documentatie (Annex IV), menselijk toezicht (Art. 14) en logging (Art. 12) zijn van toepassing" +
+        (s.role === "provider"
+          ? " — als aanbieder draagt u bovendien de conformiteitsbeoordeling (Art. 43) en registratie."
+          : " — als gebruiksverantwoordelijke zorgt u voor correcte inzet, toezicht en het bewaren van logs (Art. 26).")
+      );
+    case "limited":
+      return "Beperkt risico: transparantieplicht (Art. 50) — informeer gebruikers dat zij met AI te maken hebben of dat content door AI is gemaakt.";
+    default:
+      return "Minimaal risico: geen specifieke verplichtingen. AI-geletterdheid (Art. 4) geldt wel voor iedereen die met het systeem werkt.";
+  }
+}
+
+/** Bullet describing a single system: name (vendor) — obligation note. */
+function systemBullets(systems: AiSystem[]): string[] {
+  return systems.map(
+    (s) => `${s.name}${s.vendor ? ` (${s.vendor})` : ""} — ${systemObligationNote(s)}`
+  );
+}
+
 // ── Builders ─────────────────────────────────────────────────────────────────
 
 function buildAiPolicy(
   company: Company,
   systems: AiSystem[]
 ): DocumentContent {
+  const highCount = highRiskSystems(systems).length;
   return {
     title: "AI-gebruiksbeleid",
     subtitle: company.name,
@@ -160,7 +188,9 @@ function buildAiPolicy(
         heading: "7. Register van AI-systemen",
         paragraphs: [
           systems.length
-            ? "De organisatie houdt een actueel register bij van de ingezette AI-systemen:"
+            ? `De organisatie houdt een actueel register bij van ${systems.length} ingezette AI-systemen${
+                highCount ? `, waarvan ${highCount} met een hoog risico` : ""
+              }:`
             : "Er zijn op dit moment geen AI-systemen geregistreerd. Registreer uw systemen in het AI-register.",
         ],
         table: systems.length ? systemsTable(systems) : undefined,
@@ -182,6 +212,8 @@ function buildRiskAssessment(
   const high = systems.filter(
     (s) => s.riskLevel === "high" || s.riskLevel === "unacceptable"
   );
+  const providers = systems.filter((s) => s.role === "provider").length;
+  const deployers = systems.length - providers;
   return {
     title: "Risicobeoordeling AI-systemen",
     subtitle: company.name,
@@ -190,7 +222,9 @@ function buildRiskAssessment(
       {
         heading: "1. Samenvatting",
         paragraphs: [
-          `Er zijn ${systems.length} AI-systemen beoordeeld, waarvan ${high.length} als hoog of onaanvaardbaar risico zijn geclassificeerd.`,
+          systems.length
+            ? `Er zijn ${systems.length} AI-systemen beoordeeld, waarvan ${high.length} als hoog of onaanvaardbaar risico ${high.length === 1 ? "is" : "zijn"} geclassificeerd. ${providers} hiervan zet ${company.name} in als aanbieder en ${deployers} als gebruiksverantwoordelijke — de rol bepaalt mede welke verplichtingen gelden.`
+            : "Er zijn nog geen AI-systemen geregistreerd. Registreer uw systemen in het AI-register; daarna vult deze beoordeling zich automatisch.",
         ],
       },
       {
@@ -200,7 +234,14 @@ function buildRiskAssessment(
           : { headers: ["Systeem"], rows: [["Geen systemen geregistreerd"]] },
       },
       {
-        heading: "3. Hoog-risico systemen",
+        heading: "3. Beoordeling per systeem",
+        paragraphs: systems.length
+          ? ["Per geregistreerd systeem gelden op basis van rol en risiconiveau de volgende verplichtingen:"]
+          : ["Zodra u systemen registreert, verschijnt hier per systeem een beoordeling."],
+        bullets: systems.length ? systemBullets(systems) : undefined,
+      },
+      {
+        heading: "4. Hoog-risico systemen",
         paragraphs: high.length
           ? [
               "De volgende systemen vereisen aanvullende maatregelen (zoals een FRIA, technische documentatie en menselijk toezicht):",
@@ -211,7 +252,7 @@ function buildRiskAssessment(
         ),
       },
       {
-        heading: "4. Aanbevolen vervolgstappen",
+        heading: "5. Aanbevolen vervolgstappen",
         bullets: [
           "Bepaal per hoog-risico systeem de benodigde technische en organisatorische maatregelen.",
           "Voer voor hoog-risico systemen een FRIA uit.",
@@ -235,7 +276,9 @@ function buildFria(company: Company, systems: AiSystem[]): DocumentContent {
       {
         heading: "1. Betrokken systemen",
         paragraphs: high.length
-          ? ["De volgende hoog-risico systemen zijn in scope van deze toets:"]
+          ? [
+              `De volgende ${high.length === 1 ? "hoog-risico systeem is" : `${high.length} hoog-risico systemen zijn`} in scope van deze toets. Beoordeel per systeem de impact op de betrokkenen (bijvoorbeeld sollicitanten, klanten, medewerkers of burgers) en leg de mitigerende maatregelen vast:`,
+            ]
           : [
               "Er zijn geen hoog-risico systemen geregistreerd. Registreer en classificeer eerst uw systemen; een FRIA is met name vereist voor hoog-risico AI.",
             ],
