@@ -8,10 +8,9 @@ const columns = [
     links: [
       { href: "/scan", label: "Risicoscan" },
       { href: "/demo/register", label: "AI-register" },
-      { href: "/demo/schaduw-ai", label: "Schaduw-AI" },
       { href: "/demo/documents", label: "Documenten" },
       { href: "/demo/training", label: "E-learning" },
-      { href: "/demo/governance", label: "Governance" },
+      { href: "/demo/kennisbank", label: "Kennisbank" },
       { href: "/pricing", label: "Prijzen" },
     ],
   },

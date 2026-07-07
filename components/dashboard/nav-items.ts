@@ -1,11 +1,9 @@
 import {
-  BarChart3,
   BookOpen,
   Database,
   FileText,
   GraduationCap,
   LayoutDashboard,
-  ScanSearch,
   Settings,
   Users,
   type LucideIcon,
@@ -32,12 +30,6 @@ export const DASHBOARD_NAV: NavItem[] = [
     icon: Database,
   },
   {
-    href: "/dashboard/schaduw-ai",
-    label: "Schaduw-AI",
-    description: "Spoor ongeregistreerd AI-gebruik op",
-    icon: ScanSearch,
-  },
-  {
     href: "/dashboard/documents",
     label: "Documenten",
     description: "Genereer beleid, FRIA en beoordelingen",
@@ -48,12 +40,6 @@ export const DASHBOARD_NAV: NavItem[] = [
     label: "E-learning",
     description: "Leerpaden, quizzen en certificaten",
     icon: GraduationCap,
-  },
-  {
-    href: "/dashboard/governance",
-    label: "Governance",
-    description: "Kwartaalchecks en signalen",
-    icon: BarChart3,
   },
   {
     href: "/dashboard/kennisbank",
