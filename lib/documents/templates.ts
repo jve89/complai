@@ -11,7 +11,8 @@ export type DocumentType =
   | "doc_conformity"
   | "assessment_record"
   | "gpai_docs"
-  | "audit_report";
+  | "audit_report"
+  | "compliance_manual";
 
 export interface DocSection {
   heading: string;
@@ -92,6 +93,12 @@ export const DOCUMENT_META: DocumentMeta[] = [
     name: "AI Act Readiness Audit",
     description:
       "Consolidatierapport: inventarisatie, risicoclassificatie (verkeerslicht) en een verbeterplan per systeem.",
+  },
+  {
+    type: "compliance_manual",
+    name: "AI Act Compliancehandboek",
+    description:
+      "Eén compleet dossier: alle voor u geldende documenten samengebracht met voorblad, inhoudsopgave en samenvatting.",
   },
 ];
 
@@ -782,6 +789,123 @@ function buildAuditReport(company: Company, systems: AiSystem[]): DocumentConten
   };
 }
 
+// ── Compliance manual (consolidated dossier) ─────────────────────────────────
+
+/** Ordered chapters of the manual and when each applies. */
+const MANUAL_CHAPTERS: {
+  type: Exclude<DocumentType, "audit_report" | "compliance_manual">;
+  label: string;
+  when: "always" | "highRisk" | "gpai";
+}[] = [
+  { type: "ai_policy", label: "AI-gebruiksbeleid", when: "always" },
+  { type: "risk_assessment", label: "Risicobeoordeling", when: "always" },
+  { type: "transparency", label: "Transparantieverklaring", when: "always" },
+  { type: "assessment_record", label: "Beoordelingsdossier (Art. 6(3))", when: "always" },
+  { type: "fria", label: "Grondrechtentoets (FRIA)", when: "highRisk" },
+  { type: "tech_doc", label: "Technische documentatie (Annex IV)", when: "highRisk" },
+  { type: "doc_conformity", label: "EU-conformiteitsverklaring", when: "highRisk" },
+  { type: "gpai_docs", label: "GPAI-documentatie", when: "gpai" },
+];
+
+function chapterContent(
+  type: MANUAL_CHAPTER_TYPE,
+  company: Company,
+  systems: AiSystem[]
+): DocumentContent {
+  switch (type) {
+    case "ai_policy":
+      return buildAiPolicy(company, systems);
+    case "risk_assessment":
+      return buildRiskAssessment(company, systems);
+    case "transparency":
+      return buildTransparency(company, systems);
+    case "assessment_record":
+      return buildAssessmentRecord(company, systems);
+    case "fria":
+      return buildFria(company, systems);
+    case "tech_doc":
+      return buildTechDoc(company, systems);
+    case "doc_conformity":
+      return buildDocConformity(company, systems);
+    case "gpai_docs":
+      return buildGpaiDocs(company);
+  }
+}
+type MANUAL_CHAPTER_TYPE = (typeof MANUAL_CHAPTERS)[number]["type"];
+
+function buildComplianceManual(company: Company, systems: AiSystem[]): DocumentContent {
+  const hasHighRisk = highRiskSystems(systems).length > 0;
+  // Loosely read the scan profile for the GPAI-model-provider flag (optional).
+  const profile = company.profileJson as
+    | { systemFlags?: { gpaiModelProvider?: boolean } }
+    | null;
+  const gpaiProvider = Boolean(profile?.systemFlags?.gpaiModelProvider);
+
+  const applicable = MANUAL_CHAPTERS.filter((ch) =>
+    ch.when === "always"
+      ? true
+      : ch.when === "highRisk"
+        ? hasHighRisk
+        : gpaiProvider
+  );
+
+  const counts: Record<TrafficLight, number> = { rood: 0, oranje: 0, geel: 0, groen: 0 };
+  systems.forEach((s) => (counts[lightFor(s.riskLevel)] += 1));
+
+  const sections: DocSection[] = [];
+
+  sections.push({
+    heading: "Documentbeheer",
+    table: {
+      headers: ["Onderdeel", "Waarde"],
+      rows: [
+        ["Organisatie", company.name],
+        ["Toetsingskader", "Verordening (EU) 2024/1689 (EU AI Act)"],
+        ["Aantal AI-systemen", String(systems.length)],
+        ["Status", "Concept — zelfverklaard, ter interne vaststelling"],
+      ],
+    },
+  });
+
+  sections.push({
+    heading: "Inhoudsopgave",
+    bullets: applicable.map((ch, i) => `Hoofdstuk ${i + 1} — ${ch.label}`),
+  });
+
+  sections.push({
+    heading: "Managementsamenvatting",
+    paragraphs: [
+      systems.length
+        ? `Dit handboek bundelt de documenten die voor ${company.name} gelden op basis van ${systems.length} geregistreerde AI-syste${systems.length === 1 ? "em" : "men"}: ${counts.oranje} hoog-risico, ${counts.geel} met een transparantieplicht en ${counts.groen} in orde. Zie de AI Act Readiness Audit voor het verbeterplan per systeem.`
+        : `Er zijn nog geen AI-systemen geregistreerd. Registreer uw systemen in het AI-register; dit handboek vult zich daarna automatisch.`,
+    ],
+  });
+
+  applicable.forEach((ch, i) => {
+    const sub = chapterContent(ch.type, company, systems);
+    sections.push({
+      heading: `Hoofdstuk ${i + 1} — ${ch.label}`,
+      paragraphs: sub.intro ? [sub.intro] : undefined,
+    });
+    sub.sections.forEach((s) => sections.push(s));
+  });
+
+  sections.push({
+    heading: "Slotbepalingen",
+    paragraphs: [
+      "Dit handboek is een zelfverklaard, samengesteld dossier op basis van uw eigen opgaven en de geregistreerde systemen. Het is geen juridisch advies en geen wettelijke conformiteitscertificering in de zin van de AI Act.",
+      "Stel het handboek intern vast, laat het waar nodig juridisch toetsen en actualiseer het bij een substantiële wijziging van uw AI-gebruik of minimaal jaarlijks.",
+    ],
+  });
+
+  return {
+    title: "AI Act Compliancehandboek",
+    subtitle: company.name,
+    intro: `Dit handboek brengt alle voor ${company.name} geldende AI Act-documenten samen in één dossier — met documentbeheer, inhoudsopgave en een samenvatting — klaar om intern vast te stellen.`,
+    sections,
+  };
+}
+
 const BUILDERS: Record<
   DocumentType,
   (company: Company, systems: AiSystem[]) => DocumentContent
@@ -795,6 +919,7 @@ const BUILDERS: Record<
   assessment_record: buildAssessmentRecord,
   gpai_docs: (company) => buildGpaiDocs(company),
   audit_report: buildAuditReport,
+  compliance_manual: buildComplianceManual,
 };
 
 export function buildDocument(

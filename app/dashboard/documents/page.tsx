@@ -1,6 +1,7 @@
 import Link from "next/link";
 import {
   BadgeCheck,
+  BookMarked,
   ClipboardCheck,
   Cpu,
   Download,
@@ -40,6 +41,7 @@ const ICONS: Record<string, LucideIcon> = {
   assessment_record: ClipboardCheck,
   gpai_docs: Cpu,
   audit_report: ScanSearch,
+  compliance_manual: BookMarked,
 };
 
 // Slugs the generator can actually build today.
