@@ -25,8 +25,8 @@ export default function Error({
         <p className="mx-auto max-w-md text-muted-foreground">
           Er trad een onverwachte fout op. Probeer het opnieuw. Blijft het
           misgaan, mail dan{" "}
-          <a href="mailto:hallo@complai.nl" className="font-medium text-brand-600 hover:underline">
-            hallo@complai.nl
+          <a href="mailto:info@complai-eu.nl" className="font-medium text-brand-600 hover:underline">
+            info@complai-eu.nl
           </a>
           .
         </p>

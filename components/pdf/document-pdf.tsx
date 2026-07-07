@@ -273,8 +273,8 @@ export function DocumentPdf({
 
         <Text style={styles.footer} fixed>
           {preview
-            ? "Voorbeeld · ComplAI · niet voor gebruik · kies een pakket voor het volledige document · complai.nl"
-            : "Gegenereerd door ComplAI · Concept · zelfverklaard · geen juridisch advies · complai.nl"}
+            ? "Voorbeeld · ComplAI · niet voor gebruik · kies een pakket voor het volledige document · complai-eu.nl"
+            : "Gegenereerd door ComplAI · Concept · zelfverklaard · geen juridisch advies · complai-eu.nl"}
         </Text>
       </Page>
     </Document>

@@ -46,7 +46,7 @@ export default function ContactPage() {
 
         <div className="space-y-6">
           <a
-            href="mailto:hallo@complai.nl"
+            href="mailto:info@complai-eu.nl"
             className="flex items-center gap-3 rounded-xl border bg-card p-5 transition-colors hover:border-brand-500/50"
           >
             <div className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-brand-50 text-brand-600">
@@ -54,7 +54,7 @@ export default function ContactPage() {
             </div>
             <div>
               <p className="text-sm text-muted-foreground">Liever direct mailen?</p>
-              <p className="font-medium">hallo@complai.nl</p>
+              <p className="font-medium">info@complai-eu.nl</p>
             </div>
           </a>
 
