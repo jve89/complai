@@ -295,3 +295,17 @@ export async function logout() {
   revalidatePath("/", "layout");
   redirect("/login");
 }
+
+/**
+ * Signs the current user out and returns to the invite link, so a logged-in
+ * visitor can accept an invitation meant for another account. The token is only
+ * ever re-attached as a query param on our own /signup route — never used as a
+ * raw redirect target — so it can't be turned into an open redirect.
+ */
+export async function logoutToInvite(formData: FormData) {
+  const token = ((formData.get("invite") as string | null) ?? "").trim();
+  const supabase = createClient();
+  await supabase.auth.signOut();
+  revalidatePath("/", "layout");
+  redirect(token ? `/signup?invite=${encodeURIComponent(token)}` : "/signup");
+}

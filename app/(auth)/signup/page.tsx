@@ -3,7 +3,10 @@ import type { Metadata } from "next";
 
 import { prisma } from "@/lib/prisma";
 import { PLANS } from "@/lib/stripe";
+import { getCurrentUser } from "@/lib/auth";
+import { logoutToInvite } from "@/app/(auth)/actions";
 import { AuthForm } from "@/components/auth/auth-form";
+import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -44,6 +47,40 @@ export default async function SignupPage({
     } else {
       inviteInvalid = true;
     }
+  }
+
+  // A logged-in visitor only reaches this page via an invite link (the middleware
+  // bounces other auth-page visits to the dashboard). Rather than show a signup
+  // form to someone who already has an account, offer to log out and accept.
+  const current = inviteToken ? await getCurrentUser().catch(() => null) : null;
+  if (current) {
+    return (
+      <Card className="text-card-foreground">
+        <CardHeader>
+          <CardTitle className="text-2xl">U bent al ingelogd</CardTitle>
+          <CardDescription>
+            {invite
+              ? `Deze uitnodiging is bedoeld voor ${invite.email}. U bent ingelogd als ${current.email}. Log uit om de uitnodiging te accepteren.`
+              : "Deze uitnodiging is niet meer geldig. U bent al ingelogd."}
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          {invite && inviteToken && (
+            <form action={logoutToInvite}>
+              <input type="hidden" name="invite" value={inviteToken} />
+              <Button type="submit" className="w-full">
+                Uitloggen en uitnodiging accepteren
+              </Button>
+            </form>
+          )}
+          <p className="text-center text-sm text-muted-foreground">
+            <Link href="/dashboard" className="font-medium text-primary hover:underline">
+              Naar mijn dashboard
+            </Link>
+          </p>
+        </CardContent>
+      </Card>
+    );
   }
 
   return (
