@@ -164,10 +164,10 @@ export function ModuleQuiz({
         {phase === "lesson" && lessonCount > 0 && (
           <div className="space-y-5">
             <Progress value={((lessonPage + 1) / lessonCount) * 100} />
-            <div>
+            <div className="max-h-[55vh] space-y-2 overflow-y-auto pr-1">
               <p className="font-semibold">{lessons[lessonPage].heading}</p>
               {lessons[lessonPage].paragraphs.map((p, i) => (
-                <p key={i} className="mt-2 text-sm text-muted-foreground">
+                <p key={i} className="text-sm leading-relaxed text-muted-foreground">
                   {p}
                 </p>
               ))}
