@@ -304,9 +304,9 @@ export default async function ScanResultsPage({
       {/* High-risk application-date note */}
       {hasFuture && (
         <p className="mb-8 rounded-lg border border-dashed px-4 py-3 text-xs text-muted-foreground">
-          De grote verplichtingen voor hoog-risico AI gelden vanaf 2 augustus 2026 (Annex III) en 2
-          augustus 2027 (Annex I als product), volgens de officiële EU-tijdlijn (Art. 113). Wetgeving
-          en deadlines kunnen wijzigen; we houden de data in het platform actueel.
+          De grote verplichtingen voor hoog-risico AI zijn met de Digital Omnibus verschoven: Annex III
+          geldt vanaf 2 december 2027 (was 2 augustus 2026) en Annex I (als product) vanaf 2 augustus
+          2028 (Art. 113). Wetgeving en deadlines kunnen wijzigen; we houden de data in het platform actueel.
         </p>
       )}
 

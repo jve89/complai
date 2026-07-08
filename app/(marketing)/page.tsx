@@ -246,8 +246,8 @@ export default function LandingPage() {
               },
               {
                 icon: Clock,
-                title: "Vanaf augustus 2026",
-                text: "De grote hoog-risico- en transparantieplichten (Annex III, Art. 50) worden van kracht.",
+                title: "Vanaf december 2027",
+                text: "De grote hoog-risicoverplichtingen (Annex III) worden van kracht — met de Digital Omnibus verschoven van augustus 2026.",
               },
               {
                 icon: Scale,

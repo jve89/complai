@@ -178,8 +178,8 @@ export function classify(answers: ScanAnswers): ClassificationResult {
 
   // ── High-risk obligation sets ────────────────────────────────────────────
   // High-risk driven by an Annex I product (no Annex III use-case) applies from
-  // 2 Aug 2027; a stand-alone Annex III use applies from 2 Aug 2026 (the catalog
-  // default). See lib/compliance/timeline.ts.
+  // 2 Aug 2028; a stand-alone Annex III use applies from 2 Dec 2027 (the catalog
+  // default) — both deferred by the Digital Omnibus. See lib/compliance/timeline.ts.
   const hrDeadline =
     isHigh && !hasAnyReal(answers.annexIII_areas)
       ? APPLICATION_DATES.highRiskAnnexI

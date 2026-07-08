@@ -42,8 +42,9 @@ const riskLevels = [
 const timeline = [
   { date: "2 feb 2025", title: "Verboden praktijken + AI-geletterdheid", text: "Art. 5 en Art. 4 zijn van kracht. Personeel dat met AI werkt moet voldoende kennis hebben." },
   { date: "2 aug 2025", title: "GPAI-modellen, governance & boetes", text: "Verplichtingen voor aanbieders van AI-modellen voor algemene doeleinden (Hoofdstuk V) en het handhavingskader." },
-  { date: "2 aug 2026", title: "Het merendeel van de wet", text: "Hoog-risico verplichtingen voor Annex III en de transparantieplichten (Art. 50) worden van kracht." },
-  { date: "2 aug 2027", title: "Hoog-risico producten (Annex I)", text: "AI als veiligheidscomponent in gereguleerde producten (machines, medische hulpmiddelen, e.d.)." },
+  { date: "2 dec 2026", title: "Nieuwe verboden + transparantie", text: "Twee nieuwe verboden praktijken (Art. 5: niet-consensueel intiem beeldmateriaal en materiaal van kindermisbruik) en de transparantieplicht (Art. 50) voor bestaande systemen worden van kracht (Digital Omnibus)." },
+  { date: "2 dec 2027", title: "Hoog-risico (Annex III)", text: "De hoog-risicoverplichtingen voor Annex III (werving, krediet, onderwijs) worden van kracht — met de Digital Omnibus verschoven van 2 aug 2026." },
+  { date: "2 aug 2028", title: "Hoog-risico producten (Annex I)", text: "AI als veiligheidscomponent in gereguleerde producten (machines, medische hulpmiddelen, e.d.) — verschoven van 2 aug 2027." },
 ];
 
 const roles = [
