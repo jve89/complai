@@ -4,7 +4,15 @@
 export interface QuizQuestion {
   question: string;
   options: string[];
-  answer: number; // index of the correct option
+  /** Correct option index for a single-answer question (omit when `answers` is set). */
+  answer?: number;
+  /** Correct option indices for a multi-select question. Presence ⇒ multi-select. */
+  answers?: number[];
+  /** Shown after the learner answers — the explanation is where the learning
+   *  happens. Reference the relevant AI Act article here. */
+  explanation?: string;
+  /** Optional case/scenario framing rendered above the question. */
+  scenario?: string;
 }
 
 export interface LessonSection {
@@ -19,7 +27,35 @@ export interface TrainingModule {
   intro: string;
   /** Short reading content shown (paged) before the quiz. */
   lessons?: LessonSection[];
+  /** Question bank. Each attempt asks `drawCount` of these (all if unset). */
   quiz: QuizQuestion[];
+  /** If set and smaller than the bank, an attempt draws this many at random. */
+  drawCount?: number;
+}
+
+/** Pass mark as a fraction of the questions asked (0.8 = the classic 4/5). */
+export const PASS_FRACTION = 0.8;
+
+/** How many questions an attempt asks for a module (the completion denominator). */
+export function askCount(module: TrainingModule): number {
+  return module.drawCount && module.drawCount < module.quiz.length
+    ? module.drawCount
+    : module.quiz.length;
+}
+
+/** The correct option indices for a question (single or multi). */
+export function correctKey(q: QuizQuestion): number[] {
+  return (q.answers ?? (q.answer === undefined ? [] : [q.answer]))
+    .slice()
+    .sort((a, b) => a - b);
+}
+
+/** True when `selected` option indices match the question's correct answer(s).
+ *  Fails safe: a question with no defined answer can never be marked correct. */
+export function isCorrect(q: QuizQuestion, selected: number[]): boolean {
+  const key = correctKey(q);
+  const sel = Array.from(new Set(selected)).sort((a, b) => a - b);
+  return key.length > 0 && sel.length === key.length && sel.every((v, i) => v === key[i]);
 }
 
 export type PathId = "employee" | "manager" | "admin";
@@ -113,60 +149,120 @@ const BASE_MODULES: TrainingModule[] = [
   },
   {
     id: "ai-act-15",
-    title: "De EU AI Act in 15 minuten",
+    title: "De EU AI Act & het risicomodel",
     minutes: 15,
     intro:
-      "De EU AI Act is de eerste brede wet over AI. U leert het risicogebaseerde model kennen: van minimaal risico tot verboden toepassingen, en welke verplichtingen daarbij horen.",
+      "De eerste brede AI-wet ter wereld. U leert het risicogebaseerde model — van minimaal risico tot verboden toepassingen — plus de deadlines en de boetes. De quiz test of u het kunt toepassen, niet alleen of u de termen kent.",
+    drawCount: 6,
     quiz: [
       {
-        question: "Welk model hanteert de EU AI Act?",
+        question: "Wat is de kernlogica van de AI Act?",
         options: [
-          "Een risicogebaseerd model",
-          "Een leeftijdsgebaseerd model",
-          "Een prijsmodel",
-          "Een vrijwillig keurmerk",
+          "Risicogebaseerd: hoe hoger het risico, hoe meer verplichtingen",
+          "Leeftijdsgebaseerd",
+          "Gebaseerd op de prijs van het systeem",
+          "Een vrijwillig keurmerk zonder verplichtingen",
         ],
         answer: 0,
+        explanation:
+          "De wet kent vier risicoklassen: onaanvaardbaar (verboden — Art. 5), hoog (strenge eisen), beperkt (transparantie — Art. 50) en minimaal. Hoe hoger het risico, hoe zwaarder de plichten.",
       },
       {
-        question: "Welke risicocategorie is verboden?",
-        options: [
-          "Minimaal risico",
-          "Beperkt risico",
-          "Hoog risico",
-          "Onaanvaardbaar risico",
-        ],
-        answer: 3,
+        scenario:
+          "Een HR-afdeling wil sollicitanten automatisch laten scoren en rangschikken door een AI-tool.",
+        question: "In welke risicocategorie valt dit hoogstwaarschijnlijk?",
+        options: ["Minimaal risico", "Hoog risico", "Verboden", "Buiten de AI Act"],
+        answer: 1,
+        explanation:
+          "Werving en selectie staat in Annex III (punt 4): AI die beslist of ondersteunt bij aanname of beoordeling van mensen is hoog risico. Dan gelden extra eisen zoals menselijk toezicht (Art. 14) en logging (Art. 12).",
       },
       {
-        question: "Wat regelt Artikel 4 van de AI Act?",
+        question: "Welke van deze toepassingen is VERBODEN onder Artikel 5?",
         options: [
-          "AI-geletterdheid van medewerkers",
-          "Belastingtarieven",
-          "Productgaranties",
-          "Auteursrecht",
-        ],
-        answer: 0,
-      },
-      {
-        question: "Wat is een voorbeeld van een hoog-risico toepassing (Annex III)?",
-        options: [
+          "Een klantenservice-chatbot",
+          "Emotieherkenning van werknemers op de werkvloer",
           "Een spamfilter",
-          "AI voor werving en selectie van personeel",
-          "Een spellingcontrole",
-          "Een weer-app",
+          "Automatische vertaling",
         ],
         answer: 1,
+        explanation:
+          "Art. 5(1)(f) verbiedt het afleiden van emoties van mensen op het werk of in het onderwijs (behalve om medische of veiligheidsredenen). De andere voorbeelden zijn laag risico.",
       },
       {
-        question: "Wat eist Artikel 50 bij interactie met AI?",
+        question: "Welke praktijken zijn verboden (Art. 5)? Selecteer alle juiste.",
         options: [
-          "Een vergunning",
-          "Transparantie: mensen informeren dat ze met AI te maken hebben",
-          "Een betaling",
-          "Niets",
+          "Social scoring van burgers op basis van hun gedrag",
+          "Ongericht gezichtsbeelden van internet schrapen voor een database",
+          "Een aanbevelingssysteem voor films",
+          "Manipulatieve technieken die iemand ernstige schade toebrengen",
+        ],
+        answers: [0, 1, 3],
+        explanation:
+          "Art. 5 verbiedt o.a. social scoring (c), ongericht scrapen van gezichtsbeelden (e) en schadelijke manipulatie (a). Een filmaanbeveler is minimaal risico.",
+      },
+      {
+        scenario: "Uw website heeft een chatbot die klantvragen beantwoordt.",
+        question: "Wat eist Artikel 50?",
+        options: [
+          "Niets, chatbots vallen buiten de wet",
+          "U moet mensen laten weten dat ze met een AI-systeem praten",
+          "U heeft een vergunning nodig",
+          "U moet de gesprekken publiceren",
         ],
         answer: 1,
+        explanation:
+          "Art. 50 (transparantie) verplicht u gebruikers te informeren dat zij met AI communiceren, tenzij dat overduidelijk is. Ook AI-gegenereerde content moet herkenbaar zijn.",
+      },
+      {
+        question:
+          "Wanneer gaan de meeste hoog-risico- en transparantieplichten gelden (Art. 113)?",
+        options: [
+          "2 februari 2025",
+          "2 augustus 2026",
+          "2 augustus 2027",
+          "Ze gelden nog niet",
+        ],
+        answer: 1,
+        explanation:
+          "De meeste plichten (waaronder Annex III hoog-risico en Art. 50) gelden vanaf 2 augustus 2026. Verboden praktijken (Art. 5) en AI-geletterdheid (Art. 4) gelden al sinds 2 februari 2025; bepaalde product-gebonden hoog-risicosystemen (Annex I) pas vanaf 2 augustus 2027.",
+      },
+      {
+        question: "Wat is de maximale boete voor een verboden AI-praktijk (Art. 99)?",
+        options: [
+          "Een waarschuwing",
+          "€ 10.000",
+          "Tot € 35 miljoen of 7% van de wereldwijde jaaromzet",
+          "Tot € 1 miljoen",
+        ],
+        answer: 2,
+        explanation:
+          "Art. 99: overtreding van de verbodsbepalingen kan leiden tot een boete tot € 35 miljoen of 7% van de wereldwijde jaaromzet — het hoogste van de twee. Voor andere overtredingen geldt tot € 15 miljoen of 3%.",
+      },
+      {
+        scenario: "Uw team gebruikt ChatGPT om conceptmails en samenvattingen te schrijven.",
+        question: "Welke categorie past hier het best?",
+        options: [
+          "Verboden",
+          "Hoog risico",
+          "Beperkt/minimaal risico — let wel op transparantie en vertrouwelijkheid",
+          "Buiten de AI Act",
+        ],
+        answer: 2,
+        explanation:
+          "Algemeen productiviteitsgebruik van generatieve AI is doorgaans laag risico. Let wel op Art. 50 (herkenbaarheid van AI-content) en plak geen vertrouwelijke of persoonsgegevens in externe tools. Pas bij een Annex III-doel wordt het hoog risico.",
+      },
+      {
+        question:
+          "Een niet-EU-leverancier levert AI waarvan de uitkomsten in de EU worden gebruikt. Geldt de AI Act?",
+        options: [
+          "Nee, alleen EU-bedrijven vallen eronder",
+          "Ja, ook buiten de EU als de output in de EU wordt gebruikt",
+          "Alleen voor overheden",
+          "Alleen als het bedrijf een EU-kantoor heeft",
+        ],
+        answer: 1,
+        explanation:
+          "Art. 2 geeft de wet een extraterritoriaal bereik: ook aanbieders en gebruiksverantwoordelijken buiten de EU vallen eronder wanneer de output binnen de EU wordt gebruikt.",
       },
     ],
   },
@@ -390,6 +486,13 @@ const MODULE_LESSONS: Record<string, LessonSection[]> = {
       paragraphs: [
         "U bent 'aanbieder' als u AI ontwikkelt of onder eigen naam op de markt brengt, en 'gebruiksverantwoordelijke' als u AI van anderen gebruikt.",
         "Belangrijke data: verboden praktijken en AI-geletterdheid gelden sinds februari 2025; de meeste hoog-risico- en transparantieplichten vanaf augustus 2026.",
+      ],
+    },
+    {
+      heading: "Bereik en boetes",
+      paragraphs: [
+        "De wet geldt ook voor partijen buiten de EU als de output binnen de EU wordt gebruikt (Art. 2). 'Buiten de EU' betekent dus niet 'buiten de wet'.",
+        "Niet-naleving kan fors kosten: tot € 35 miljoen of 7% van de wereldwijde jaaromzet voor verboden praktijken (Art. 5), en tot € 15 miljoen of 3% voor andere overtredingen (Art. 99).",
       ],
     },
   ],

@@ -11,6 +11,7 @@ import {
   getPath,
   modulesForPath,
   moduleCountForPath,
+  askCount,
 } from "@/lib/training/content";
 import type { ComplianceProfile, TrainingRequirement } from "@/lib/compliance/types";
 import { PageHeader } from "@/components/dashboard/page-header";
@@ -181,7 +182,7 @@ export default async function TrainingPage() {
                       {i + 1}. {module.title}
                     </p>
                     <p className="text-sm text-muted-foreground">
-                      {module.minutes} min · {module.quiz.length} vragen
+                      {module.minutes} min · {askCount(module)} vragen
                     </p>
                   </div>
                 </div>

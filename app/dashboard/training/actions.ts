@@ -5,8 +5,12 @@ import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { getActiveCompany } from "@/lib/auth";
 import { getLearnerEmployee } from "@/lib/training/learner";
-import { getModule, modulesForPath, PASS_THRESHOLD } from "@/lib/training/content";
+import { getModule, modulesForPath, PASS_FRACTION, isCorrect } from "@/lib/training/content";
 import { trainingUnlocked, TIER_LABEL, TRAINING_MIN_TIER } from "@/lib/plan";
+
+/** A single answered question: `q` is the index into the module's bank, `selected`
+ *  the chosen option indices (one for single-answer, one or more for multi). */
+export type QuizAttempt = { q: number; selected: number[] };
 
 export type CompleteResult =
   | {
@@ -25,17 +29,20 @@ export type CompleteResult =
  */
 export async function completeModule(
   moduleId: string,
-  answers: number[]
+  attempts: QuizAttempt[]
 ): Promise<CompleteResult> {
   const mod = getModule(moduleId);
   if (!mod) return { ok: false, error: "Onbekende module." };
 
-  const score = mod.quiz.reduce(
-    (n, q, i) => n + (answers[i] === q.answer ? 1 : 0),
+  // Score is recomputed server-side from the questions actually asked, so it
+  // can't be spoofed by the client (which never receives the correct answers).
+  const asked = attempts.filter((a) => mod.quiz[a.q]);
+  const score = asked.reduce(
+    (n, a) => n + (isCorrect(mod.quiz[a.q], a.selected) ? 1 : 0),
     0
   );
-  const total = mod.quiz.length;
-  const passed = score >= PASS_THRESHOLD;
+  const total = asked.length;
+  const passed = total > 0 && score / total >= PASS_FRACTION;
 
   const { company, user } = await getActiveCompany();
 
