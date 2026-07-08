@@ -74,10 +74,12 @@ export async function completeModule(
     });
     const done = new Set(completions.map((c) => c.moduleId));
     const allDone = modulesForPath(employee.role).every((m) => done.has(m.id));
-    if (allDone && !employee.trainingCompleted) {
+    // Sync both ways: if the path grew (new modules added), a previously
+    // "complete" learner is no longer done until they finish the new ones.
+    if (allDone !== employee.trainingCompleted) {
       await prisma.employee.update({
         where: { id: employee.id },
-        data: { trainingCompleted: true },
+        data: { trainingCompleted: allDone },
       });
     }
 
