@@ -18,6 +18,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { path: "/scan", priority: 0.9, changeFrequency: "weekly" },
     { path: "/pricing", priority: 0.9, changeFrequency: "weekly" },
     { path: "/kennisbank", priority: 0.8, changeFrequency: "weekly" },
+    { path: "/kwaliteit", priority: 0.6, changeFrequency: "monthly" },
     { path: "/over-ons", priority: 0.6, changeFrequency: "monthly" },
     { path: "/contact", priority: 0.5, changeFrequency: "monthly" },
     { path: "/login", priority: 0.4, changeFrequency: "yearly" },

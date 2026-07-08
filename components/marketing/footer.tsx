@@ -18,6 +18,7 @@ const columns = [
     title: "Hulpbronnen",
     links: [
       { href: "/kennisbank", label: "Kennisbank" },
+      { href: "/kwaliteit", label: "Kwaliteit & bronnen" },
       { href: "/demo", label: "Demo bekijken" },
       { href: "/#hoe-het-werkt", label: "Hoe het werkt" },
       { href: "/#faq", label: "Veelgestelde vragen" },
