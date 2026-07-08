@@ -3,6 +3,7 @@ import { ArrowRight, BellRing, CheckCircle2 } from "lucide-react";
 
 import { formatDate } from "@/lib/utils";
 import { CATEGORY_LABEL, type EvaluatedUpdate } from "@/lib/regulatory/updates";
+import { RecertPrompt } from "@/components/dashboard/recert-prompt";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
@@ -40,6 +41,7 @@ export function UpdatesCard({ updates }: { updates: EvaluatedUpdate[] }) {
                 <span>Wij hebben bijgewerkt: {u.productImpact}</span>
               </p>
             )}
+            {u.relevant && u.recert && <RecertPrompt text={u.recert} compact />}
           </div>
         ))}
         <Link

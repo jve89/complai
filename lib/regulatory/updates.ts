@@ -32,6 +32,9 @@ export interface RegulatoryUpdate {
   };
   /** What ComplAI updated because of this change (the "we reacted" story). */
   productImpact?: string;
+  /** When set (and the update is relevant), the feed prompts the user to refresh
+   *  their e-learning / re-certify because this change affects training. */
+  recert?: string;
 }
 
 export interface EvaluatedUpdate extends RegulatoryUpdate {
@@ -75,6 +78,8 @@ export const UPDATES: RegulatoryUpdate[] = [
     },
     affects: { everyone: true },
     productImpact: "E-learning, tijdlijn en scan-deadlines bijgewerkt naar de nieuwe data.",
+    recert:
+      "Er komen twee nieuwe verboden praktijken bij en de deadlines zijn verschoven. Fris uw e-learning op zodat u en uw team op de actuele regels zijn getoetst.",
   },
   {
     id: "gpai-governance-2025",

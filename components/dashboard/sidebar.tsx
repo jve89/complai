@@ -1,11 +1,12 @@
 "use client";
 
-import { type ReactNode, useState } from "react";
+import { type ReactNode, useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Menu, ShieldCheck, X } from "lucide-react";
 
 import { cn } from "@/lib/utils";
+import { UPDATES_SEEN_KEY } from "@/lib/updates-seen";
 import { SiteLogo } from "@/components/site-logo";
 import { DASHBOARD_NAV, DEMO_NAV } from "@/components/dashboard/nav-items";
 
@@ -20,6 +21,28 @@ function isActive(pathname: string, href: string) {
   return pathname.startsWith(href);
 }
 
+/** Count of relevant updates newer than the last time this device opened the
+ *  feed. Client-only (reads localStorage in an effect) so SSR stays stable. */
+function UpdatesBadge({ dates }: { dates: string[] }) {
+  const [count, setCount] = useState(0);
+  useEffect(() => {
+    let seenTime = 0;
+    try {
+      const s = window.localStorage.getItem(UPDATES_SEEN_KEY);
+      if (s) seenTime = Date.parse(s);
+    } catch {
+      /* ignore */
+    }
+    setCount(dates.filter((d) => Date.parse(`${d}T12:00:00Z`) > seenTime).length);
+  }, [dates]);
+  if (count <= 0) return null;
+  return (
+    <span className="ml-auto inline-flex h-5 min-w-[1.25rem] items-center justify-center rounded-full bg-brand-500 px-1.5 text-xs font-semibold text-white">
+      {count}
+    </span>
+  );
+}
+
 // Nav is chosen by a serializable string (icons are functions and can't be passed
 // from a Server Component across the client boundary).
 const navFor = (nav: "dashboard" | "demo") =>
@@ -31,12 +54,15 @@ export function Sidebar({
   logoHref = "/dashboard",
   showAdmin = false,
   isAdmin = true,
+  updateDates = [],
 }: {
   nav?: "dashboard" | "demo";
   logoHref?: string;
   showAdmin?: boolean;
   /** Company beheerder — false hides adminOnly items (e.g. Medewerkers). */
   isAdmin?: boolean;
+  /** ISO dates of updates relevant to this company — drives the "new" badge. */
+  updateDates?: string[];
 }) {
   const pathname = usePathname();
   const items = navFor(nav).filter((i) => !i.adminOnly || isAdmin);
@@ -62,6 +88,7 @@ export function Sidebar({
             >
               <item.icon className="h-5 w-5 shrink-0" />
               {item.label}
+              {item.href === "/dashboard/updates" && <UpdatesBadge dates={updateDates} />}
             </Link>
           );
         })}
@@ -94,12 +121,15 @@ export function MobileNav({
   actions,
   showAdmin = false,
   isAdmin = true,
+  updateDates = [],
 }: {
   nav?: "dashboard" | "demo";
   actions?: ReactNode;
   showAdmin?: boolean;
   /** Company beheerder — false hides adminOnly items (e.g. Medewerkers). */
   isAdmin?: boolean;
+  /** ISO dates of updates relevant to this company — drives the "new" badge. */
+  updateDates?: string[];
 }) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
@@ -143,6 +173,7 @@ export function MobileNav({
                   >
                     <item.icon className="h-5 w-5" />
                     {item.label}
+                    {item.href === "/dashboard/updates" && <UpdatesBadge dates={updateDates} />}
                   </Link>
                 );
               })}

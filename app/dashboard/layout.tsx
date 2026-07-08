@@ -1,6 +1,10 @@
 import { Globe } from "lucide-react";
 
 import { getActiveCompany, canAdminister } from "@/lib/auth";
+import { prisma } from "@/lib/prisma";
+import { companySignals } from "@/lib/compliance/signals";
+import { evaluateUpdates } from "@/lib/regulatory/updates";
+import type { ComplianceProfile } from "@/lib/compliance/types";
 import { logout } from "@/app/(auth)/actions";
 import { stopImpersonation } from "@/app/dashboard/admin/actions";
 import { Sidebar, MobileNav } from "@/components/dashboard/sidebar";
@@ -16,6 +20,17 @@ export default async function DashboardLayout({
   const { company, user, demo, impersonating } = await getActiveCompany();
   const showAdmin = !demo && Boolean(user?.superAdmin);
   const isAdmin = canAdminister(user);
+
+  // ISO dates of updates relevant to this company — feed the sidebar "new" badge.
+  const systems = await prisma.aiSystem.findMany({
+    where: { companyId: company.id },
+    select: { riskLevel: true },
+  });
+  const profile = (company.profileJson as unknown as ComplianceProfile | null) ?? null;
+  const sig = companySignals(profile, systems.map((s) => s.riskLevel));
+  const updateDates = evaluateUpdates(sig)
+    .filter((u) => u.relevant)
+    .map((u) => u.date);
 
   const websiteBtn = (
     <Button asChild variant="outline" size="sm" className="w-full justify-start md:w-auto md:justify-center">
@@ -38,7 +53,7 @@ export default async function DashboardLayout({
 
   return (
     <div className="min-h-screen bg-secondary/30">
-      <Sidebar showAdmin={showAdmin} isAdmin={isAdmin} />
+      <Sidebar showAdmin={showAdmin} isAdmin={isAdmin} updateDates={updateDates} />
 
       <div className="md:pl-64">
         <header className="sticky top-0 z-20 border-b bg-background/95 backdrop-blur">
@@ -68,6 +83,7 @@ export default async function DashboardLayout({
               <MobileNav
                 showAdmin={showAdmin}
                 isAdmin={isAdmin}
+                updateDates={updateDates}
                 actions={
                   <>
                     {websiteBtn}
