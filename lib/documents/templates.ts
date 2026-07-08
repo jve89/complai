@@ -1,6 +1,7 @@
 import type { Company, AiSystem } from "@prisma/client";
 
 import { RISK_LABEL, ROLE_LABEL } from "@/lib/register/labels";
+import type { ComplianceProfile } from "@/lib/compliance/types";
 
 export type DocumentType =
   | "ai_policy"
@@ -141,22 +142,87 @@ function systemBullets(systems: AiSystem[]): string[] {
   );
 }
 
+/** Company context woven into every document so it reads as written-for-you:
+ *  identity (with [marker] fallbacks the client completes on the printout) plus
+ *  scan-derived role and risk framing from the compliance profile. */
+interface DocContext {
+  name: string;
+  sector: string | null;
+  size: string | null;
+  country: string;
+  address: string;
+  kvk: string;
+  repName: string;
+  repRole: string;
+  hasRep: boolean;
+  isProvider: boolean;
+  isDeployer: boolean;
+  roleLine: string;
+  headline: ComplianceProfile["headline"] | null;
+}
+
+function docContext(company: Company): DocContext {
+  const profile = (company.profileJson as unknown as ComplianceProfile | null) ?? null;
+  const roles = company.entityRoles ?? [];
+  const isProvider = roles.includes("provider");
+  const isDeployer = roles.includes("deployer");
+  const roleLine =
+    isProvider && isDeployer
+      ? `${company.name} treedt zowel op als aanbieder als gebruiksverantwoordelijke van AI-systemen.`
+      : isProvider
+        ? `${company.name} treedt op als aanbieder van AI-systemen.`
+        : isDeployer
+          ? `${company.name} treedt op als gebruiksverantwoordelijke van AI-systemen.`
+          : `${company.name} zet AI-systemen in binnen de organisatie.`;
+  return {
+    name: company.name,
+    sector: company.sector?.trim() || null,
+    size: company.size?.trim() || null,
+    country: company.country?.trim() || "Nederland",
+    address: company.address?.trim() || "[adres]",
+    kvk: company.kvk?.trim() ? `KvK ${company.kvk.trim()}` : "[KvK-nummer]",
+    repName: company.legalRepName?.trim() || "[naam tekenbevoegde]",
+    repRole: company.legalRepRole?.trim() || "[functie]",
+    hasRep: Boolean(company.legalRepName?.trim()),
+    isProvider,
+    isDeployer,
+    roleLine,
+    headline: profile?.headline ?? null,
+  };
+}
+
 // ── Builders ─────────────────────────────────────────────────────────────────
 
 function buildAiPolicy(
   company: Company,
   systems: AiSystem[]
 ): DocumentContent {
-  const highCount = highRiskSystems(systems).length;
+  const ctx = docContext(company);
+  const high = highRiskSystems(systems);
+  const providers = systems.filter((s) => s.role === "provider").length;
+  const deployers = systems.length - providers;
   return {
     title: "AI-gebruiksbeleid",
     subtitle: company.name,
-    intro: `Dit beleid beschrijft hoe ${company.name} omgaat met de ontwikkeling, inkoop en inzet van kunstmatige intelligentie (AI), in lijn met de EU AI Act.`,
+    intro: `Dit beleid beschrijft hoe ${ctx.name}${
+      ctx.sector ? ` (sector: ${ctx.sector})` : ""
+    } omgaat met de ontwikkeling, inkoop en inzet van kunstmatige intelligentie (AI), in lijn met de EU AI Act (Verordening (EU) 2024/1689). ${ctx.roleLine}`,
     sections: [
       {
         heading: "1. Doel en reikwijdte",
         paragraphs: [
-          `Dit beleid geldt voor alle medewerkers, inhuurkrachten en systemen binnen ${company.name} (sector: ${company.sector ?? "n.v.t."}). Het doel is om AI op een veilige, transparante en verantwoorde manier in te zetten en te voldoen aan de verplichtingen uit de EU AI Act.`,
+          `Dit beleid geldt voor alle medewerkers, inhuurkrachten en AI-systemen binnen ${ctx.name}${
+            ctx.size ? ` (organisatiegrootte: ${ctx.size})` : ""
+          }. Het doel is AI veilig, transparant en verantwoord in te zetten en te voldoen aan de verplichtingen uit de EU AI Act.`,
+          ...(ctx.headline === "high_risk"
+            ? [
+                `Uit de risicoscan van ${ctx.name} blijkt een hoog-risicoprofiel: één of meer systemen vallen onder een hoog-risicocategorie (Annex III). Dit beleid besteedt daarom bijzondere aandacht aan menselijk toezicht, documentatie en risicobeheersing.`,
+              ]
+            : ctx.headline === "prohibited"
+              ? [
+                  `Let op: uw risicoscan signaleerde een mogelijk verboden praktijk (Artikel 5). Toets dit met voorrang — een verboden toepassing mag niet worden ingezet.`,
+                ]
+              : []),
         ],
       },
       {
@@ -171,13 +237,17 @@ function buildAiPolicy(
       {
         heading: "3. Rollen en verantwoordelijkheden",
         paragraphs: [
-          "De directie is eindverantwoordelijk voor AI-compliance. Een aangewezen verantwoordelijke beheert het AI-register, coördineert risicobeoordelingen en bewaakt de naleving van dit beleid.",
+          `${ctx.roleLine} De directie van ${ctx.name} is eindverantwoordelijk voor AI-compliance. ${
+            ctx.hasRep
+              ? `${ctx.repName} (${ctx.repRole})`
+              : "Een aangewezen verantwoordelijke"
+          } beheert het AI-register, coördineert risicobeoordelingen en bewaakt de naleving van dit beleid.`,
         ],
       },
       {
         heading: "4. Verboden toepassingen (Artikel 5)",
         paragraphs: [
-          "Toepassingen die onder de verboden praktijken van Artikel 5 vallen — zoals social scoring, manipulatieve technieken of niet-toegestane biometrische identificatie — zijn binnen de organisatie niet toegestaan.",
+          "Toepassingen die onder de verboden praktijken van Artikel 5 vallen — zoals social scoring, schadelijke manipulatie, emotieherkenning op de werkvloer of niet-toegestane biometrische identificatie — zijn binnen de organisatie niet toegestaan.",
         ],
       },
       {
@@ -196,10 +266,14 @@ function buildAiPolicy(
         heading: "7. Register van AI-systemen",
         paragraphs: [
           systems.length
-            ? `De organisatie houdt een actueel register bij van ${systems.length} ingezette AI-systemen${
-                highCount ? `, waarvan ${highCount} met een hoog risico` : ""
+            ? `${ctx.name} houdt een actueel register bij van ${systems.length} ingezette AI-systemen${
+                high.length ? `, waarvan ${high.length} met een hoog risico` : ""
+              }${
+                providers && deployers
+                  ? ` (${providers} als aanbieder, ${deployers} als gebruiksverantwoordelijke)`
+                  : ""
               }:`
-            : "Er zijn op dit moment geen AI-systemen geregistreerd. Registreer uw systemen in het AI-register.",
+            : "Er zijn op dit moment geen AI-systemen geregistreerd. Registreer uw systemen in het AI-register; dit beleid verwijst er dan automatisch naar.",
         ],
         table: systems.length ? systemsTable(systems) : undefined,
       },
@@ -207,6 +281,14 @@ function buildAiPolicy(
         heading: "8. Toezicht en evaluatie",
         paragraphs: [
           "Dit beleid wordt minimaal jaarlijks geëvalueerd en bijgewerkt naar aanleiding van wijzigingen in wetgeving, technologie of bedrijfsvoering.",
+        ],
+      },
+      {
+        heading: "9. Vaststelling",
+        paragraphs: [`Dit beleid is namens ${ctx.name} vastgesteld door onderstaande tekenbevoegde.`],
+        fields: [
+          field(`Vastgesteld door: ${ctx.repName}, ${ctx.repRole} — plaats en datum`, 1),
+          field("Handtekening", 2),
         ],
       },
     ],
@@ -217,6 +299,7 @@ function buildRiskAssessment(
   company: Company,
   systems: AiSystem[]
 ): DocumentContent {
+  const ctx = docContext(company);
   const high = systems.filter(
     (s) => s.riskLevel === "high" || s.riskLevel === "unacceptable"
   );
@@ -225,14 +308,25 @@ function buildRiskAssessment(
   return {
     title: "Risicobeoordeling AI-systemen",
     subtitle: company.name,
-    intro: `Deze risicobeoordeling brengt de AI-systemen van ${company.name} in kaart en classificeert ze volgens het risicokader van de EU AI Act.`,
+    intro: `Deze risicobeoordeling brengt de AI-systemen van ${ctx.name}${
+      ctx.sector ? ` (sector: ${ctx.sector})` : ""
+    } in kaart en classificeert ze volgens het risicokader van de EU AI Act.`,
     sections: [
       {
         heading: "1. Samenvatting",
         paragraphs: [
           systems.length
-            ? `Er zijn ${systems.length} AI-systemen beoordeeld, waarvan ${high.length} als hoog of onaanvaardbaar risico ${high.length === 1 ? "is" : "zijn"} geclassificeerd. ${providers} hiervan zet ${company.name} in als aanbieder en ${deployers} als gebruiksverantwoordelijke — de rol bepaalt mede welke verplichtingen gelden.`
+            ? `Er zijn ${systems.length} AI-systemen beoordeeld, waarvan ${high.length} als hoog of onaanvaardbaar risico ${high.length === 1 ? "is" : "zijn"} geclassificeerd. ${providers} hiervan zet ${ctx.name} in als aanbieder en ${deployers} als gebruiksverantwoordelijke — de rol bepaalt mede welke verplichtingen gelden.`
             : "Er zijn nog geen AI-systemen geregistreerd. Registreer uw systemen in het AI-register; daarna vult deze beoordeling zich automatisch.",
+          ...(ctx.headline === "prohibited"
+            ? [
+                "Let op: de risicoscan signaleerde een mogelijk verboden praktijk (Artikel 5). Beoordeel dit met voorrang; een verboden toepassing mag niet worden ingezet.",
+              ]
+            : ctx.headline === "high_risk"
+              ? [
+                  "De risicoscan bevestigt een hoog-risicoprofiel. Besteed bijzondere aandacht aan de hoog-risico systemen hieronder en aan de bijbehorende FRIA, technische documentatie en menselijk toezicht.",
+                ]
+              : []),
         ],
       },
       {
@@ -273,13 +367,14 @@ function buildRiskAssessment(
 }
 
 function buildFria(company: Company, systems: AiSystem[]): DocumentContent {
+  const ctx = docContext(company);
   const high = systems.filter(
     (s) => s.riskLevel === "high" || s.riskLevel === "unacceptable"
   );
   return {
     title: "Fundamental Rights Impact Assessment (FRIA)",
     subtitle: company.name,
-    intro: `Deze grondrechtentoets beoordeelt de impact van de hoog-risico AI-systemen van ${company.name} op de grondrechten van betrokkenen, conform de EU AI Act.`,
+    intro: `Deze grondrechtentoets (FRIA, Artikel 27) beoordeelt de impact van de hoog-risico AI-systemen van ${ctx.name} op de grondrechten van betrokkenen, conform de EU AI Act.`,
     sections: [
       {
         heading: "1. Betrokken systemen",
@@ -295,11 +390,23 @@ function buildFria(company: Company, systems: AiSystem[]): DocumentContent {
       {
         heading: "2. Betrokkenen en gebruikscontext",
         paragraphs: [
-          "Beschrijf wie door het systeem worden geraakt en in welke context het wordt ingezet.",
+          high.length
+            ? "Beschrijf per hoog-risico systeem wie erdoor worden geraakt (bijv. sollicitanten, klanten, medewerkers, burgers) en in welke context het wordt ingezet:"
+            : "Beschrijf wie door het systeem worden geraakt en in welke context het wordt ingezet.",
         ],
-        fields: [
-          field("Betrokken groepen (bijv. sollicitanten, klanten, medewerkers, burgers) en de context van inzet", 3),
-        ],
+        fields: high.length
+          ? high.map((s) =>
+              field(
+                `${s.name}${s.vendor ? ` (${s.vendor})` : ""} — betrokken groepen en inzetcontext`,
+                3
+              )
+            )
+          : [
+              field(
+                "Betrokken groepen (bijv. sollicitanten, klanten, medewerkers, burgers) en de context van inzet",
+                3
+              ),
+            ],
       },
       {
         heading: "3. Mogelijk geraakte grondrechten",
@@ -321,13 +428,27 @@ function buildFria(company: Company, systems: AiSystem[]): DocumentContent {
           "Privacy-inbreuk → dataminimalisatie en een verwerkersovereenkomst met de leverancier.",
           "Gebrek aan transparantie → uitlegbaarheid en informatie richting betrokkenen.",
         ],
-        fields: [field("Uw geïdentificeerde risico's en de concrete maatregelen die u treft", 5)],
+        fields: high.length
+          ? high.map((s) =>
+              field(`${s.name} — geïdentificeerde risico's en de concrete maatregelen`, 4)
+            )
+          : [field("Uw geïdentificeerde risico's en de concrete maatregelen die u treft", 5)],
       },
       {
-        heading: "5. Menselijk toezicht",
-        fields: [
-          field("Wie houdt toezicht, hoe worden besluiten gecontroleerd en hoe kunnen betrokkenen bezwaar maken?", 4),
-        ],
+        heading: "5. Menselijk toezicht (Artikel 14)",
+        fields: high.length
+          ? high.map((s) =>
+              field(
+                `${s.name} — wie houdt toezicht, hoe worden besluiten gecontroleerd en hoe kunnen betrokkenen bezwaar maken?`,
+                4
+              )
+            )
+          : [
+              field(
+                "Wie houdt toezicht, hoe worden besluiten gecontroleerd en hoe kunnen betrokkenen bezwaar maken?",
+                4
+              ),
+            ],
       },
       {
         heading: "6. Conclusie",
@@ -348,13 +469,16 @@ function buildTransparency(
   company: Company,
   systems: AiSystem[]
 ): DocumentContent {
+  const ctx = docContext(company);
   const userFacing = systems.filter(
     (s) => s.riskLevel === "limited" || s.riskLevel === "high"
   );
   return {
     title: "Transparantieverklaring AI (Artikel 50)",
     subtitle: company.name,
-    intro: `${company.name} hecht waarde aan transparantie over de inzet van AI. Deze verklaring beschrijft wanneer en hoe wij u informeren over het gebruik van AI-systemen.`,
+    intro: `${ctx.name}${
+      ctx.sector ? ` (${ctx.sector})` : ""
+    } hecht waarde aan transparantie over de inzet van AI. Deze verklaring beschrijft wanneer en hoe wij u informeren over het gebruik van AI-systemen.`,
     sections: [
       {
         heading: "1. Wanneer u met AI te maken heeft",
@@ -365,10 +489,18 @@ function buildTransparency(
       {
         heading: "2. Systemen met een transparantieverplichting",
         paragraphs: userFacing.length
-          ? ["De volgende systemen kunnen direct contact hebben met gebruikers:"]
+          ? [
+              "De volgende geregistreerde systemen kunnen direct contact hebben met gebruikers of content voortbrengen; bij elk daarvan maakt de organisatie de inzet van AI kenbaar:",
+            ]
           : [
               "Op dit moment zijn er geen geregistreerde systemen met directe gebruikersinteractie.",
             ],
+        bullets: userFacing.length
+          ? userFacing.map(
+              (s) =>
+                `${s.name}${s.vendor ? ` (${s.vendor})` : ""} — gebruikers worden geïnformeerd dat zij met een AI-systeem te maken hebben of dat content door AI is gegenereerd (Art. 50).`
+            )
+          : undefined,
         table: userFacing.length ? systemsTable(userFacing) : undefined,
       },
       {
@@ -382,8 +514,9 @@ function buildTransparency(
       {
         heading: "4. Contact",
         paragraphs: [
-          `Heeft u vragen over ons gebruik van AI? Neem dan contact op met ${company.name}.`,
+          `Heeft u vragen over ons gebruik van AI? Neem dan contact op met ${ctx.name} via onderstaande contactgegevens.`,
         ],
+        fields: [field("Contactgegevens voor vragen over AI (e-mail / telefoon)", 1)],
       },
     ],
   };
