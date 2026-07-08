@@ -24,6 +24,7 @@ import { docUnlocked, minTierFor, tierRank, TIER_LABEL, TIER_ORDER } from "@/lib
 import type { ComplianceProfile } from "@/lib/compliance/types";
 import { PageHeader } from "@/components/dashboard/page-header";
 import { GenerateButton } from "@/components/dashboard/documents/generate-button";
+import { DeleteVersionButton } from "@/components/dashboard/documents/delete-version-button";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -165,14 +166,17 @@ function DocCard({
                     <span className="font-medium">v{doc.version}</span>{" "}
                     <span className="text-muted-foreground">· {formatDate(doc.createdAt)}</span>
                   </span>
-                  <a
-                    href={`/api/pdf/document/${doc.id}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-primary hover:underline"
-                  >
-                    Download
-                  </a>
+                  <span className="flex items-center gap-3">
+                    <a
+                      href={`/api/pdf/document/${doc.id}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-primary hover:underline"
+                    >
+                      Download
+                    </a>
+                    {isAdmin && <DeleteVersionButton id={doc.id} version={doc.version} />}
+                  </span>
                 </li>
               ))}
             </ul>

@@ -63,9 +63,35 @@ export async function generateDocument(
       },
     });
 
+    // Keep only the 3 most recent versions of this type — prune older ones so the
+    // version history never grows unbounded.
+    const stale = await prisma.document.findMany({
+      where: { companyId: company.id, type },
+      orderBy: { version: "desc" },
+      select: { id: true },
+      skip: 3,
+    });
+    if (stale.length) {
+      await prisma.document.deleteMany({ where: { id: { in: stale.map((d) => d.id) } } });
+    }
+
     revalidatePath("/dashboard/documents");
     return { ok: true, id: doc.id };
   } catch {
     return { ok: false, error: "Genereren mislukt. Probeer het opnieuw." };
   }
+}
+
+/** Delete one saved version. Admin-only and scoped to the active company. */
+export async function deleteDocumentVersion(
+  id: string
+): Promise<{ ok: boolean; error?: string }> {
+  const { company, user } = await getActiveCompany();
+  if (!canAdminister(user)) {
+    return { ok: false, error: "Alleen de beheerder kan versies verwijderen." };
+  }
+  // deleteMany with a companyId guard so one tenant can't delete another's row.
+  await prisma.document.deleteMany({ where: { id, companyId: company.id } });
+  revalidatePath("/dashboard/documents");
+  return { ok: true };
 }
