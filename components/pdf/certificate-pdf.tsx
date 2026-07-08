@@ -110,8 +110,8 @@ export function CertificatePdf({
 
           <Text style={styles.body}>
             {complete
-              ? `heeft het volledige leerpad "${pathLabel}" met goed gevolg afgerond en voldoet aan de basisvereisten voor AI-geletterdheid onder Artikel 4 van de EU AI Act.`
-              : `heeft de volgende modules van het leerpad "${pathLabel}" met goed gevolg afgerond:`}
+              ? `heeft het volledige leerpad "${pathLabel}" (${modules.length} modules) met goed gevolg afgerond — elke module met een score van minimaal 80% — en voldoet daarmee aan de basisvereisten voor AI-geletterdheid onder Artikel 4 van de EU AI Act (Verordening (EU) 2024/1689).`
+              : `heeft de volgende modules van het leerpad "${pathLabel}" met goed gevolg afgerond (minimaal 80% per module):`}
           </Text>
 
           <Text style={styles.modulesTitle}>Afgeronde modules</Text>
