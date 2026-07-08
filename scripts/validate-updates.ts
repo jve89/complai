@@ -18,6 +18,8 @@ for (const u of UPDATES) {
   ids.add(u.id);
   if (!/^\d{4}-\d{2}-\d{2}$/.test(u.date) || isNaN(new Date(u.date + "T00:00:00Z").getTime()))
     fail(`${c} invalid date "${u.date}"`);
+  if (u.addedAt !== undefined && !/^\d{4}-\d{2}-\d{2}$/.test(u.addedAt))
+    fail(`${c} invalid addedAt "${u.addedAt}"`);
   if (!CATEGORY_LABEL[u.category]) fail(`${c} unknown category "${u.category}"`);
   if (!u.title || !u.summary) fail(`${c} missing title/summary`);
   if (!u.source?.label) fail(`${c} missing source label`);

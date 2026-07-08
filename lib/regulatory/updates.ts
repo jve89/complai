@@ -32,6 +32,14 @@ export interface RegulatoryUpdate {
   };
   /** What ComplAI updated because of this change (the "we reacted" story). */
   productImpact?: string;
+  /** When set (and the update is relevant), the feed prompts the user to refresh
+   *  their e-learning / re-certify because this change affects training. */
+  recert?: string;
+  /** ISO date we PUBLISHED this entry to the feed (distinct from `date`, the
+   *  regulatory decision date). Drives the email-on-change cron: historical
+   *  entries have a past `addedAt` and never re-notify. Set it to the deploy day
+   *  when adding a new entry. */
+  addedAt?: string;
 }
 
 export interface EvaluatedUpdate extends RegulatoryUpdate {
@@ -59,6 +67,7 @@ const REASON = {
 export const UPDATES: RegulatoryUpdate[] = [
   {
     id: "digital-omnibus-2026",
+    addedAt: "2026-07-05",
     date: "2026-06-29",
     title: "Digital Omnibus: hoog-risicodeadlines verschoven, twee nieuwe verboden",
     summary:
@@ -75,9 +84,12 @@ export const UPDATES: RegulatoryUpdate[] = [
     },
     affects: { everyone: true },
     productImpact: "E-learning, tijdlijn en scan-deadlines bijgewerkt naar de nieuwe data.",
+    recert:
+      "Er komen twee nieuwe verboden praktijken bij en de deadlines zijn verschoven. Fris uw e-learning op zodat u en uw team op de actuele regels zijn getoetst.",
   },
   {
     id: "gpai-governance-2025",
+    addedAt: "2026-07-05",
     date: "2025-08-02",
     title: "GPAI-modellen, bestuur en boetes van kracht",
     summary:
@@ -91,6 +103,7 @@ export const UPDATES: RegulatoryUpdate[] = [
   },
   {
     id: "prohibited-practices-2025",
+    addedAt: "2026-07-05",
     date: "2025-02-02",
     title: "Verboden praktijken (Art. 5) van kracht",
     summary:
@@ -104,6 +117,7 @@ export const UPDATES: RegulatoryUpdate[] = [
   },
   {
     id: "ai-literacy-2025",
+    addedAt: "2026-07-05",
     date: "2025-02-02",
     title: "AI-geletterdheid (Art. 4) verplicht",
     summary:
@@ -139,4 +153,12 @@ export function evaluateUpdates(sig: CompanySignals): EvaluatedUpdate[] {
 /** Whole days between an ISO date and `now` (for recency / "Nieuw"). */
 export function daysSince(iso: string, now: Date): number {
   return Math.floor((now.getTime() - new Date(iso + "T00:00:00Z").getTime()) / 86_400_000);
+}
+
+/** Updates we published to the feed exactly one day before `now`. The daily cron
+ *  emails each affected company once: `daysSince(addedAt) === 1` holds for the
+ *  whole UTC day after publishing, so a once-a-day cron fires exactly once.
+ *  Historical entries (addedAt far in the past, or unset) never match. */
+export function updatesToNotify(now: Date): RegulatoryUpdate[] {
+  return UPDATES.filter((u) => u.addedAt && daysSince(u.addedAt, now) === 1);
 }

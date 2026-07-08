@@ -10,6 +10,7 @@ import {
   trialEndingEmail,
   cancelRequestedEmail,
   subscriptionEndedEmail,
+  regulatoryUpdateEmail,
   type EmailContent,
 } from "@/lib/email/templates";
 
@@ -107,4 +108,18 @@ export async function sendSubscriptionEnded(opts: {
   baseUrl: string;
 }) {
   await deliver(await companyRecipient(opts.companyId), subscriptionEndedEmail(opts));
+}
+
+/** "We keep you current": digest of newly-published, company-relevant regulatory
+ *  updates. Goes to the beheerder (fallback: any member). No-ops on empty. */
+export async function sendRegulatoryDigest(opts: {
+  companyId: string;
+  updates: { title: string; summary: string }[];
+  baseUrl: string;
+}) {
+  if (opts.updates.length === 0) return;
+  await deliver(
+    await companyRecipient(opts.companyId),
+    regulatoryUpdateEmail({ updates: opts.updates, baseUrl: opts.baseUrl })
+  );
 }

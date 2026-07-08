@@ -12,6 +12,9 @@ export const env = {
   stripeWebhookSecret: process.env.STRIPE_WEBHOOK_SECRET,
   resendApiKey: process.env.RESEND_API_KEY,
   emailFrom: process.env.EMAIL_FROM ?? "ComplAI <onboarding@resend.dev>",
+  // Shared secret for the regulatory-updates cron. Vercel Cron sends it as
+  // `Authorization: Bearer $CRON_SECRET`. Unset = the endpoint stays dormant.
+  cronSecret: process.env.CRON_SECRET,
   // Search-engine indexing is OFF until launch. Flip by setting ALLOW_INDEXING=true
   // in Vercel (then redeploy) once the copy + legal pages are launch-ready.
   allowIndexing: process.env.ALLOW_INDEXING === "true",

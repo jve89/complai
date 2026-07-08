@@ -256,6 +256,42 @@ export function inviteEmail(opts: {
   };
 }
 
+/** "We houden u actueel": a digest of newly-published regulatory updates that
+ *  are relevant to this company. Sent by the daily cron (lib/email/send.ts). */
+export function regulatoryUpdateEmail(opts: {
+  updates: { title: string; summary: string }[];
+  baseUrl: string;
+}): EmailContent {
+  const n = opts.updates.length;
+  const intro =
+    n === 1
+      ? "We houden de EU AI Act voor u bij. Deze wijziging is relevant voor uw organisatie:"
+      : "We houden de EU AI Act voor u bij. Deze wijzigingen zijn relevant voor uw organisatie:";
+  return {
+    subject:
+      n === 1
+        ? "Wijziging in de EU AI Act — relevant voor u"
+        : `${n} wijzigingen in de EU AI Act — relevant voor u`,
+    html: layout({
+      preview: "Er is iets veranderd dat voor uw organisatie relevant is.",
+      title: n === 1 ? "Er is iets veranderd in de AI Act" : "Er zijn wijzigingen in de AI Act",
+      paragraphs: [
+        intro,
+        ...opts.updates.map(
+          (u) =>
+            `<strong>${escapeHtml(u.title)}</strong><br><span style="color:#64748b;">${escapeHtml(u.summary)}</span>`
+        ),
+        "Bekijk in uw dashboard wat er precies is veranderd — en wat wij in het platform hebben bijgewerkt.",
+      ],
+      cta: { label: "Bekijk de wijzigingen", url: `${opts.baseUrl}/dashboard/updates` },
+      footnote:
+        "U ontvangt dit omdat de wijziging raakt aan het risicoprofiel van uw organisatie. Dit is beslissingsondersteuning, geen juridisch advies.",
+      footerText:
+        "ComplAI — grip op de EU AI Act. U ontvangt dit bericht omdat er een voor u relevante wijziging in de regelgeving is.",
+    }),
+  };
+}
+
 /** Interne notificatie van het contactformulier (naar het team-adres). */
 export function contactNotificationEmail(opts: {
   name: string;

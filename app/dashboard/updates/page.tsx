@@ -7,6 +7,8 @@ import { companySignals } from "@/lib/compliance/signals";
 import { evaluateUpdates, daysSince, CATEGORY_LABEL } from "@/lib/regulatory/updates";
 import type { ComplianceProfile } from "@/lib/compliance/types";
 import { PageHeader } from "@/components/dashboard/page-header";
+import { MarkUpdatesSeen } from "@/components/dashboard/mark-updates-seen";
+import { RecertPrompt } from "@/components/dashboard/recert-prompt";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 
@@ -25,6 +27,7 @@ export default async function UpdatesPage() {
 
   return (
     <>
+      <MarkUpdatesSeen />
       <PageHeader
         title="Updates"
         description="Wijzigingen in de EU AI Act — en wat wij in het platform hebben bijgewerkt. De gemarkeerde items zijn extra relevant voor uw organisatie."
@@ -72,6 +75,12 @@ export default async function UpdatesPage() {
                     <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0" />
                     <span>Wij hebben bijgewerkt: {u.productImpact}</span>
                   </p>
+                )}
+
+                {u.relevant && u.recert && (
+                  <div className="pl-6">
+                    <RecertPrompt text={u.recert} />
+                  </div>
                 )}
 
                 <a
