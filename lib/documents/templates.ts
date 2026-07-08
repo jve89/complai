@@ -529,11 +529,16 @@ function highRiskSystems(systems: AiSystem[]): AiSystem[] {
 }
 
 function buildTechDoc(company: Company, systems: AiSystem[]): DocumentContent {
+  const ctx = docContext(company);
   const high = highRiskSystems(systems);
   return {
     title: "Technische documentatie (Annex IV)",
     subtitle: company.name,
-    intro: `Dit technisch dossier beschrijft de hoog-risico AI-systemen van ${company.name} conform Artikel 11 en Annex IV van de EU AI Act. Vul de onderdelen per systeem aan met uw eigen gegevens.`,
+    intro: `Dit technisch dossier beschrijft de hoog-risico AI-systemen van ${ctx.name} conform Artikel 11 en Annex IV van de EU AI Act. ${
+      ctx.isProvider
+        ? "Als aanbieder stelt u dit dossier op en houdt u het actueel."
+        : "Vul de onderdelen per systeem aan met uw eigen technische gegevens."
+    } De technische onderdelen hieronder vult u zelf in — die kennen alleen uw ontwikkelaars of leverancier.`,
     sections: [
       {
         heading: "1. Algemene beschrijving van het systeem",
@@ -545,9 +550,19 @@ function buildTechDoc(company: Company, systems: AiSystem[]): DocumentContent {
       },
       {
         heading: "2. Ontwerp en ontwikkeling",
-        fields: [
-          field("Architectuur, gebruikte modellen/algoritmen en de belangrijkste ontwerpkeuzes", 5),
-        ],
+        fields: high.length
+          ? high.map((s) =>
+              field(
+                `${s.name}${s.vendor ? ` (${s.vendor})` : ""} — architectuur, gebruikte modellen/algoritmen en de belangrijkste ontwerpkeuzes`,
+                4
+              )
+            )
+          : [
+              field(
+                "Architectuur, gebruikte modellen/algoritmen en de belangrijkste ontwerpkeuzes",
+                5
+              ),
+            ],
       },
       {
         heading: "3. Data en datagovernance (Artikel 10)",
@@ -589,12 +604,9 @@ function buildTechDoc(company: Company, systems: AiSystem[]): DocumentContent {
 }
 
 function buildDocConformity(company: Company, systems: AiSystem[]): DocumentContent {
+  // Identity via docContext; filled fields render, blanks keep a [marker].
+  const ctx = docContext(company);
   const high = highRiskSystems(systems);
-  // Filled identity fields render; blanks keep a [marker] to complete before use.
-  const addr = company.address?.trim() || "[adres]";
-  const kvk = company.kvk?.trim() ? `KvK ${company.kvk.trim()}` : "[KvK-nummer]";
-  const repName = company.legalRepName?.trim() || "[naam]";
-  const repRole = company.legalRepRole?.trim() || "[functie]";
   return {
     title: "EU-conformiteitsverklaring",
     subtitle: company.name,
@@ -603,7 +615,7 @@ function buildDocConformity(company: Company, systems: AiSystem[]): DocumentCont
       {
         heading: "1. Aanbieder",
         paragraphs: [
-          `${company.name}, ${addr}, ${kvk}, [contactgegevens].`,
+          `${ctx.name}, ${ctx.address}, ${ctx.kvk}, ${ctx.country}, [contactgegevens].`,
         ],
       },
       {
@@ -636,7 +648,7 @@ function buildDocConformity(company: Company, systems: AiSystem[]): DocumentCont
       },
       {
         heading: "6. Ondertekening",
-        paragraphs: [`Namens ${company.name}: ${repName}, ${repRole}.`],
+        paragraphs: [`Namens ${ctx.name}: ${ctx.repName}, ${ctx.repRole}.`],
         fields: [
           field("Plaats en datum", 1),
           field("Handtekening", 2),
@@ -647,10 +659,11 @@ function buildDocConformity(company: Company, systems: AiSystem[]): DocumentCont
 }
 
 function buildAssessmentRecord(company: Company, systems: AiSystem[]): DocumentContent {
+  const ctx = docContext(company);
   return {
     title: "Beoordelingsdossier — niet-hoog-risico (Art. 6(3))",
     subtitle: company.name,
-    intro: `Dit dossier legt vast waarom een AI-systeem dat onder een Annex III-gebied valt, volgens de beoordeling van ${company.name} geen significant risico vormt voor gezondheid, veiligheid of grondrechten (Artikel 6(3)). Leg deze beoordeling vast vóór ingebruikname (Artikel 6(4)).`,
+    intro: `Dit dossier legt vast waarom een AI-systeem dat onder een Annex III-gebied valt, volgens de beoordeling van ${ctx.name} geen significant risico vormt voor gezondheid, veiligheid of grondrechten (Artikel 6(3)). Leg deze beoordeling vast vóór ingebruikname (Artikel 6(4)).`,
     sections: [
       {
         heading: "1. Systeem en toepassingsgebied",
@@ -696,10 +709,11 @@ function buildAssessmentRecord(company: Company, systems: AiSystem[]): DocumentC
 }
 
 function buildGpaiDocs(company: Company): DocumentContent {
+  const ctx = docContext(company);
   return {
     title: "Documentatie AI-model voor algemene doeleinden (GPAI)",
     subtitle: company.name,
-    intro: `Deze documentatie hoort bij een AI-model voor algemene doeleinden (GPAI) dat ${company.name} op de markt brengt, conform Artikel 53 en Annex XI/XII van de EU AI Act.`,
+    intro: `Deze documentatie hoort bij een AI-model voor algemene doeleinden (GPAI) dat ${ctx.name} op de markt brengt, conform Artikel 53 en Annex XI/XII van de EU AI Act. De technische gegevens hieronder (architectuur, trainingsproces, rekenkracht) vult u zelf in — die zijn specifiek voor uw model.`,
     sections: [
       {
         heading: "1. Modelbeschrijving",
