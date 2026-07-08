@@ -91,11 +91,25 @@ export async function syncSubscriptionToCompany(
   const renewsAt = periodEnd(sub);
   const staff = await isStaffCompany(company.id);
 
-  // Staff pakketten are protected from being silently reset to gratis by an
-  // unrelated/lapsed webhook — but a real granted purchase (e.g. staff testing
-  // checkout themselves) still applies, so it isn't lost to the exemption.
-  const planUpdate =
-    granting && tier ? { plan: tier } : staff ? {} : { plan: "gratis" };
+  // Plan resolution:
+  // - granting + known tier   → set that tier
+  // - granting + UNKNOWN tier → keep the current plan (never downgrade a paying
+  //   customer to gratis over a price id we failed to map) and log loudly so the
+  //   mis-configured price id gets fixed
+  // - not granting            → back to gratis, unless staff (exempt/protected)
+  let planUpdate: { plan?: string };
+  if (granting) {
+    if (tier) {
+      planUpdate = { plan: tier };
+    } else {
+      console.error(
+        `[billing] granting subscription ${sub.id} has an unmapped price id "${priceId}" — keeping company ${company.id}'s existing plan instead of resetting to gratis. Check STRIPE_PRICE_* env / portal price config.`
+      );
+      planUpdate = {};
+    }
+  } else {
+    planUpdate = staff ? {} : { plan: "gratis" };
+  }
 
   await prisma.company.update({
     where: { id: company.id },

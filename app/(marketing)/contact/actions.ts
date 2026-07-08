@@ -49,7 +49,13 @@ export async function submitContact(
       formSubject: subject,
       message,
     });
-    await sendEmail({ to: env.emailFrom, subject: mail.subject, html: mail.html });
+    // Deliver to a mailbox that can actually receive (CONTACT_TO); the EMAIL_FROM
+    // sender address may be send-only. The DB row above is the durable record.
+    await sendEmail({
+      to: env.contactTo || env.emailFrom,
+      subject: mail.subject,
+      html: mail.html,
+    });
   } catch (e) {
     console.error("Contactbericht verwerken mislukt:", e);
     return { error: "Er ging iets mis bij het versturen. Probeer het later opnieuw." };

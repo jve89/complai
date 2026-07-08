@@ -68,9 +68,15 @@ export async function login(
       if (user) {
         const profile = await prisma.user.findUnique({
           where: { id: user.id },
-          select: { companyId: true },
+          select: { companyId: true, role: true, superAdmin: true },
         });
-        if (profile?.companyId) await applyScanToCompany(scanId, profile.companyId, user.id);
+        // A scan rewrites company-wide state (roles, risk tiers, obligations), so
+        // only a beheerder/super-admin may apply it — a manager/medewerker who
+        // logs in via a ?scan= link must not clobber the shared profile.
+        const mayAdminister = profile?.role === "admin" || profile?.superAdmin === true;
+        if (profile?.companyId && mayAdminister) {
+          await applyScanToCompany(scanId, profile.companyId, user.id);
+        }
       }
     } catch (e) {
       console.error("Scan koppelen bij inloggen mislukt:", e);
@@ -81,9 +87,14 @@ export async function login(
   const plan = (formData.get("plan") as string | null) || null;
   const intervalParam =
     (formData.get("interval") as string | null) === "year" ? "year" : "month";
+  // Only honour a local path as the post-login destination — never an absolute
+  // or protocol-relative URL (open-redirect / phishing vector).
+  const rawRedirect = (formData.get("redirect") as string) || "/dashboard";
+  const safeRedirect =
+    rawRedirect.startsWith("/") && !rawRedirect.startsWith("//") ? rawRedirect : "/dashboard";
   const redirectTo = plan
     ? `/api/stripe/checkout?plan=${encodeURIComponent(plan)}&interval=${intervalParam}`
-    : (formData.get("redirect") as string) || "/dashboard";
+    : safeRedirect;
   revalidatePath("/", "layout");
   redirect(redirectTo);
 }
@@ -190,8 +201,13 @@ export async function signup(
       create: { id: data.user.id, email, name, role, companyId },
     });
 
-    // Bridge: if they came from an anonymous scan, populate the dashboard from it.
-    if (scanId) await applyScanToCompany(scanId, companyId, data.user.id);
+    // Bridge: if they came from an anonymous scan, populate the dashboard from
+    // it — but only a beheerder may reshape company-wide state. A non-invite
+    // signer is the new company's beheerder ("admin"); an invited manager/
+    // medewerker joining an existing company must not clobber its profile.
+    if (scanId && role === "admin") {
+      await applyScanToCompany(scanId, companyId, data.user.id);
+    }
 
     // Welcome email (never blocks signup — sendWelcome catches its own errors).
     // Only send it now if the account is actually usable already; when

@@ -12,6 +12,10 @@ export const env = {
   stripeWebhookSecret: process.env.STRIPE_WEBHOOK_SECRET,
   resendApiKey: process.env.RESEND_API_KEY,
   emailFrom: process.env.EMAIL_FROM ?? "ComplAI <onboarding@resend.dev>",
+  // Where contact-form notifications are delivered. Must be a mailbox that can
+  // RECEIVE (the EMAIL_FROM sender address often can't), else inbound leads are
+  // lost. Falls back to emailFrom only if unset.
+  contactTo: process.env.CONTACT_TO,
   // Shared secret for the regulatory-updates cron. Vercel Cron sends it as
   // `Authorization: Bearer $CRON_SECRET`. Unset = the endpoint stays dormant.
   cronSecret: process.env.CRON_SECRET,

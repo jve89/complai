@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import type Stripe from "stripe";
+import { Prisma } from "@prisma/client";
 
 import { stripe, tierForPriceId } from "@/lib/stripe";
 import { env } from "@/lib/env";
@@ -73,8 +74,16 @@ export async function POST(req: Request) {
     await prisma.stripeEvent.create({
       data: { id: event.id, type: event.type },
     });
-  } catch {
-    return NextResponse.json({ received: true, duplicate: true });
+  } catch (err) {
+    // Only a genuine duplicate (unique-violation on the event id) is a safe
+    // no-op. Any OTHER error (transient DB failure, missing table) must NOT be
+    // swallowed as "duplicate" — return 500 so Stripe retries and the event
+    // isn't lost forever.
+    if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === "P2002") {
+      return NextResponse.json({ received: true, duplicate: true });
+    }
+    console.error("[stripe] idempotency-insert mislukt (geen duplicaat):", err);
+    return NextResponse.json({ error: "idempotency insert failed" }, { status: 500 });
   }
 
   try {
