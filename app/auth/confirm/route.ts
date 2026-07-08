@@ -71,5 +71,7 @@ export async function GET(request: Request) {
     }
   }
 
-  return NextResponse.redirect(`${base}${ok ? next : "/wachtwoord-vergeten?error=1"}`);
+  // A failed/stale confirmation link is a signup-confirmation problem, not a
+  // password-recovery one — send them to login with a hint, not to reset.
+  return NextResponse.redirect(`${base}${ok ? next : "/login?error=confirm"}`);
 }

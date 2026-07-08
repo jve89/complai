@@ -21,8 +21,8 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { path: "/kwaliteit", priority: 0.6, changeFrequency: "monthly" },
     { path: "/over-ons", priority: 0.6, changeFrequency: "monthly" },
     { path: "/contact", priority: 0.5, changeFrequency: "monthly" },
-    { path: "/login", priority: 0.4, changeFrequency: "yearly" },
-    { path: "/signup", priority: 0.5, changeFrequency: "yearly" },
+    // /login and /signup are intentionally omitted — thin auth screens don't
+    // belong in the index.
     { path: "/privacy", priority: 0.3, changeFrequency: "yearly" },
     { path: "/voorwaarden", priority: 0.3, changeFrequency: "yearly" },
     { path: "/cookies", priority: 0.3, changeFrequency: "yearly" },

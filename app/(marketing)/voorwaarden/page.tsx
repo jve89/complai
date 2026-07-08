@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 
 import { LegalShell } from "@/components/legal/legal-shell";
 
-export const metadata: Metadata = { title: "Algemene voorwaarden" };
+export const metadata: Metadata = { title: "Algemene voorwaarden", alternates: { canonical: "/voorwaarden" } };
 
 export default function TermsPage() {
   return (

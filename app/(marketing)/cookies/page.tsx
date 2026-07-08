@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 
 import { LegalShell } from "@/components/legal/legal-shell";
 
-export const metadata: Metadata = { title: "Cookiebeleid" };
+export const metadata: Metadata = { title: "Cookiebeleid", alternates: { canonical: "/cookies" } };
 
 export default function CookiePage() {
   return (

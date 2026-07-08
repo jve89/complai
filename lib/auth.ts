@@ -125,6 +125,17 @@ export const getActiveCompany = cache(async (): Promise<ActiveCompany> => {
   // whose profile write failed before the DB was reachable). Provision a
   // company + admin profile so the user is never stranded on the login redirect.
   if (user) {
+    // Re-read fresh: the cached `user` can be stale, and a concurrent request may
+    // have just provisioned a company for this same user — reuse it instead of
+    // creating an orphan duplicate.
+    const fresh = await prisma.user.findUnique({
+      where: { id: user.id },
+      select: { companyId: true },
+    });
+    if (fresh?.companyId) {
+      const existing = await prisma.company.findUnique({ where: { id: fresh.companyId } });
+      if (existing) return { company: existing, user, demo: false, impersonating: false };
+    }
     const company = await prisma.company.create({
       data: {
         name: user.profile?.name

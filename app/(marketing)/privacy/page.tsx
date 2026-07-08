@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 
 import { LegalShell } from "@/components/legal/legal-shell";
 
-export const metadata: Metadata = { title: "Privacyverklaring" };
+export const metadata: Metadata = { title: "Privacyverklaring", alternates: { canonical: "/privacy" } };
 
 export default function PrivacyPage() {
   return (

@@ -137,6 +137,14 @@ export async function signup(
     if (rec.expiresAt && rec.expiresAt < new Date()) {
       return { error: "Deze uitnodiging is verlopen. Vraag de beheerder om een nieuwe." };
     }
+    // The invite grants a company + role, so bind it to the invited address: the
+    // signup email must match (the readOnly field is only a client-side hint).
+    if (rec.email.toLowerCase() !== email.toLowerCase()) {
+      return {
+        error:
+          "Deze uitnodiging hoort bij een ander e-mailadres. Gebruik het adres waarop u de uitnodiging ontving.",
+      };
+    }
     invite = { id: rec.id, companyId: rec.companyId, role: rec.role };
   }
 

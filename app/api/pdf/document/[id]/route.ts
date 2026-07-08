@@ -33,30 +33,37 @@ export async function GET(
     }
   }
 
-  const content = doc.content as unknown as DocumentContent;
-  const date = new Intl.DateTimeFormat("nl-NL", { dateStyle: "long" }).format(
-    doc.createdAt
-  );
-  const meta = getDocumentMeta(doc.type as DocumentType);
+  try {
+    const content = doc.content as unknown as DocumentContent;
+    const date = new Intl.DateTimeFormat("nl-NL", { dateStyle: "long" }).format(
+      doc.createdAt
+    );
+    const meta = getDocumentMeta(doc.type as DocumentType);
 
-  const buffer = await renderToBuffer(
-    DocumentPdf({
-      content,
-      companyName: doc.company.name,
-      version: doc.version,
-      date,
-      preview,
-    })
-  );
+    const buffer = await renderToBuffer(
+      DocumentPdf({
+        content,
+        companyName: doc.company.name,
+        version: doc.version,
+        date,
+        preview,
+      })
+    );
 
-  const suffix = preview ? "voorbeeld" : `v${doc.version}`;
-  const filename = `${meta.name.toLowerCase().replace(/[^a-z0-9]+/g, "-")}-${suffix}.pdf`;
+    const suffix = preview ? "voorbeeld" : `v${doc.version}`;
+    const filename = `${meta.name.toLowerCase().replace(/[^a-z0-9]+/g, "-")}-${suffix}.pdf`;
 
-  return new Response(new Uint8Array(buffer), {
-    headers: {
-      "Content-Type": "application/pdf",
-      "Content-Disposition": `inline; filename="${filename}"`,
-      "Cache-Control": "no-store",
-    },
-  });
+    return new Response(new Uint8Array(buffer), {
+      headers: {
+        "Content-Type": "application/pdf",
+        "Content-Disposition": `inline; filename="${filename}"`,
+        "Cache-Control": "no-store",
+      },
+    });
+  } catch (e) {
+    // Legacy/malformed content JSON or an unknown doc.type shouldn't 500 with a
+    // raw stack — return a friendly error instead.
+    console.error(`[pdf/document] render mislukt (doc ${doc.id}, type ${doc.type}):`, e);
+    return new Response("Kon dit document niet genereren.", { status: 500 });
+  }
 }

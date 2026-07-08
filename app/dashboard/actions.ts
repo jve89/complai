@@ -3,12 +3,13 @@
 import { revalidatePath } from "next/cache";
 
 import { prisma } from "@/lib/prisma";
-import { getActiveCompany } from "@/lib/auth";
+import { getActiveCompany, canAdminister } from "@/lib/auth";
 
 /** Hides the "Aan de slag" checklist permanently for this company. */
 export async function dismissOnboarding(): Promise<void> {
-  const { company, demo } = await getActiveCompany();
+  const { company, user, demo } = await getActiveCompany();
   if (demo) return; // never persist onto the shared demo company
+  if (!canAdminister(user)) return; // company-wide state — beheerder only
 
   await prisma.company.update({
     where: { id: company.id },

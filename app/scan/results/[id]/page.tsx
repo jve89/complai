@@ -128,12 +128,19 @@ export default async function ScanResultsPage({
   const result = await prisma.scanResult.findUnique({ where: { id: params.id } });
   if (!result || !result.profile) notFound();
 
+  // Once a scan is claimed by a company it is that company's data — only its
+  // members (or a super-admin) may view it; anonymous/unclaimed scans stay
+  // shareable by link. getCurrentUser can't throw the public page.
+  const user = await getCurrentUser().catch(() => null);
+  if (result.companyId && result.companyId !== user?.company?.id && !user?.superAdmin) {
+    notFound();
+  }
+
   // Position-aware CTA: where is this viewer in the 3-step onboarding?
-  const user = await getCurrentUser();
   const onboarding = onboardingState(user?.company ?? null);
 
   const profile = result.profile as unknown as ComplianceProfile;
-  const headline = HEADLINE[profile.headline];
+  const headline = HEADLINE[profile.headline] ?? HEADLINE.minimal;
   const requiredObligations = profile.obligations.filter((o) => o.required);
   const advisoryObligations = profile.obligations.filter((o) => !o.required);
 
@@ -301,8 +308,10 @@ export default async function ScanResultsPage({
         </div>
       )}
 
-      {/* High-risk application-date note */}
-      {hasFuture && (
+      {/* High-risk application-date note — only when the profile is actually
+          high-risk, so a limited-risk company doesn't see an Annex note that
+          doesn't apply to it. */}
+      {hasFuture && (profile.riskTiers.includes("high") || profile.riskTiers.includes("high_notify")) && (
         <p className="mb-8 rounded-lg border border-dashed px-4 py-3 text-xs text-muted-foreground">
           De grote verplichtingen voor hoog-risico AI zijn met de Digital Omnibus verschoven: Annex III
           geldt vanaf 2 december 2027 (was 2 augustus 2026) en Annex I (als product) vanaf 2 augustus

@@ -297,8 +297,8 @@ export default async function DashboardPage({
           <CardContent className="flex flex-col items-center gap-3 text-center">
             <ScoreRing score={gereedheidScore} label="gereedheid" />
             {profile && (
-              <Badge variant={HEADLINE[profile.headline].variant}>
-                {HEADLINE[profile.headline].label}
+              <Badge variant={(HEADLINE[profile.headline] ?? HEADLINE.minimal).variant}>
+                {(HEADLINE[profile.headline] ?? HEADLINE.minimal).label}
               </Badge>
             )}
             <p className="max-w-xs text-xs text-muted-foreground">

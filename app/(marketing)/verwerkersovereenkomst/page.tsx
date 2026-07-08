@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 
 import { LegalShell } from "@/components/legal/legal-shell";
 
-export const metadata: Metadata = { title: "Verwerkersovereenkomst" };
+export const metadata: Metadata = { title: "Verwerkersovereenkomst", alternates: { canonical: "/verwerkersovereenkomst" } };
 
 export default function DpaPage() {
   return (
