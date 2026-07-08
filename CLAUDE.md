@@ -29,6 +29,16 @@ Tailwind + shadcn/ui · Supabase auth · Prisma 6 → Postgres · @react-pdf/ren
 - `npm run dev` · `npm run db:seed` (idempotent: 1 company, 3 AI systems, sample
   scan, compliance items, 3 employees) · `npm run db:migrate` · `npm run db:studio`.
 - Seed clears child tables and recreates them, so re-seed to reset demo state.
+- **Migrations are the source of truth.** `prisma/migrations` reproduces the full
+  schema from an empty DB (verified); prod was baselined into `_prisma_migrations`
+  on 2026-07-08. Make schema changes with `prisma migrate dev` — avoid bare
+  `db push` on shared/prod DBs (that caused earlier drift). Prod is **not**
+  auto-migrated on deploy yet: apply new migrations with `prisma migrate deploy`
+  against a **direct** connection (session mode, port 5432 — not the pooler); add a
+  `directUrl` to the datasource before wiring `migrate deploy` into CI.
+- **RLS is enabled on every table** (incl. internal ones) so the public Supabase
+  anon key can't reach them via PostgREST; the app uses Prisma/service-role, which
+  bypasses RLS. New tables must enable RLS (the baseline migration does this).
 
 ## Conventions
 
