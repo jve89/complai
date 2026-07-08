@@ -14,6 +14,7 @@ import {
   askCount,
 } from "@/lib/training/content";
 import type { ComplianceProfile, TrainingRequirement } from "@/lib/compliance/types";
+import { companySignals } from "@/lib/compliance/signals";
 import { PageHeader } from "@/components/dashboard/page-header";
 import { ModuleQuiz } from "@/components/dashboard/training/module-quiz";
 import { Badge } from "@/components/ui/badge";
@@ -73,19 +74,10 @@ export default async function TrainingPage() {
   // Module-level relevance (Art. 4 "context"): which modules the company's own
   // scan + AI-register make especially pertinent. Grounded in concrete signals,
   // so the "voor u"-markers are honest rather than decorative.
-  const tiers = new Set<string>(profile?.riskTiers ?? []);
-  const roles = new Set<string>(profile?.entityRoles ?? []);
-  const risks = new Set<string>(aiSystems.map((s) => s.riskLevel));
-  const hasProhibited =
-    profile?.headline === "prohibited" || tiers.has("prohibited") || risks.has("unacceptable");
-  const hasHighRisk =
-    profile?.headline === "high_risk" ||
-    tiers.has("high") ||
-    tiers.has("high_notify") ||
-    risks.has("high");
-  const hasLimited =
-    profile?.headline === "limited_risk" || tiers.has("limited") || risks.has("limited");
-  const isProvider = roles.has("provider");
+  const { hasProhibited, hasHighRisk, hasLimited, isProvider } = companySignals(
+    profile,
+    aiSystems.map((s) => s.riskLevel)
+  );
 
   const moduleRelevance = new Map<string, string>();
   if (hasProhibited)

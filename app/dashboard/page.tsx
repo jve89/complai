@@ -21,8 +21,11 @@ import { computeGovernance } from "@/lib/governance/score";
 import { resolveStatus } from "@/lib/compliance/resolve";
 import type { ComplianceProfile, CompanyEvidence } from "@/lib/compliance/types";
 import { onboardingState } from "@/lib/onboarding";
+import { companySignals } from "@/lib/compliance/signals";
+import { evaluateUpdates, daysSince } from "@/lib/regulatory/updates";
 import { DASHBOARD_NAV } from "@/components/dashboard/nav-items";
 import { OnboardingChecklist } from "@/components/dashboard/onboarding-checklist";
+import { UpdatesCard } from "@/components/dashboard/updates-card";
 import { ScoreRing } from "@/components/score-ring";
 import { PageHeader } from "@/components/dashboard/page-header";
 import { Badge } from "@/components/ui/badge";
@@ -226,6 +229,13 @@ export default async function DashboardPage({
   const voortgangLabel =
     voortgangScore >= 75 ? "Goed op weg" : voortgangScore >= 45 ? "Halverwege" : "Net begonnen";
 
+  // "Keep you current": recent AI Act changes that are relevant to this company.
+  const relevantUpdates = evaluateUpdates(
+    companySignals(profile, aiSystems.map((s) => s.riskLevel))
+  )
+    .filter((u) => u.relevant && daysSince(u.date, new Date()) <= 90)
+    .slice(0, 3);
+
   const stats = [
     { label: "AI-systemen", value: aiSystems.length, icon: Database },
     { label: "Getrainde medewerkers", value: `${trained}/${employees.length}`, icon: GraduationCap },
@@ -248,6 +258,8 @@ export default async function DashboardPage({
 
       {checkoutBanner}
       {checklist}
+
+      <UpdatesCard updates={relevantUpdates} />
 
       {/* Current pakket + management */}
       <div className="mb-6 flex flex-wrap items-center justify-between gap-3 rounded-lg border bg-card p-4">
