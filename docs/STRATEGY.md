@@ -50,9 +50,10 @@ pushing growth.
   bespoke; basic trust signals are live.
 
 **Status (8 Jul 2026):**
-- ✅ "Keep you current" visible: updates feed + dashboard card (slices A+B, live).
-  Deferred: slice C (email on change) + slice D (re-certification prompts, needs a
-  DB "seen" column).
+- ✅ "Keep you current" fully wired: updates feed + dashboard card (A+B), email-
+  on-change cron (C, stateless — dormant until CRON_SECRET + a verified Resend
+  domain), and re-certification prompt + "new updates" nav badge (D, localStorage
+  per-device — no migration). Activation of C is config, not code.
 - ✅ Trust page live at `/kwaliteit`. Open (founders): add a named legal/AI
   reviewer + 1–2 real testimonials (placeholder marked in code, do NOT fabricate).
 - ✅ Documents deepened across all 8 types: shared `docContext` weaves company
