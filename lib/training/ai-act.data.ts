@@ -13,7 +13,7 @@ export const AI_ACT_MODULE = {
         "Kunstmatige intelligentie neemt steeds vaker deel aan beslissingen die mensen direct raken: wie er wordt uitgenodigd voor een sollicitatiegesprek, wie een lening of verzekering krijgt, welke behandeling een patiënt krijgt voorgesteld, of iemand als mogelijk fraudegeval wordt aangemerkt. Wanneer zulke beslissingen oneerlijk, ondoorzichtig of onjuist zijn, kan de schade groot zijn én moeilijk terug te draaien. Daarom heeft de EU de AI Act (Verordening (EU) 2024/1689) aangenomen: de eerste brede, sectoroverstijgende AI-wet ter wereld.",
         "Het doel is nadrukkelijk tweeledig. Enerzijds vertrouwen: AI die in de EU wordt gebruikt moet veilig, transparant, traceerbaar en niet-discriminerend zijn en de grondrechten respecteren. Anderzijds ruimte voor innovatie: door één set regels voor de hele interne markt te maken — in plaats van 27 verschillende nationale regels — weten bedrijven waar ze aan toe zijn en kunnen ze in heel Europa opschalen.",
         "Belangrijk om te begrijpen: de wet reguleert niet 'AI' als technologie op zichzelf, maar het gebruik ervan en het risico dat dat gebruik met zich meebrengt. Precies dezelfde technologie kan in de ene context volstrekt onschuldig zijn en in de andere streng gereguleerd. Een taalmodel dat een vakantiemail opstelt is iets heel anders dan hetzelfde model dat bepaalt of iemand wordt aangenomen.",
-        "De wet is sinds 2 februari 2025 van kracht en wordt stap voor stap ingevoerd tot 2027. Twee onderdelen gelden al: de verboden praktijken en de plicht om te zorgen voor voldoende AI-geletterdheid bij uw medewerkers. Die laatste plicht is de reden dat u nu deze training doet."
+        "De wet is sinds 2 februari 2025 van kracht en wordt stap voor stap ingevoerd tot 2028. Twee onderdelen gelden al: de verboden praktijken en de plicht om te zorgen voor voldoende AI-geletterdheid bij uw medewerkers. Die laatste plicht is de reden dat u nu deze training doet."
       ]
     },
     {
@@ -60,8 +60,8 @@ export const AI_ACT_MODULE = {
         "De wet wordt gefaseerd ingevoerd, zodat organisaties tijd hebben om zich voor te bereiden. Het is een misverstand dat 'het allemaal nog niet geldt' — een deel is al van kracht. De hoofdlijn van de tijdlijn:",
         "2 februari 2025: de verboden praktijken (Art. 5) en de plicht tot AI-geletterdheid (Art. 4) gelden. Dit is nu dus al van kracht.",
         "2 augustus 2025: de regels voor general-purpose AI-modellen (GPAI) en het bestuurlijke kader — toezichthouders en het boeteregime — treden in werking.",
-        "2 augustus 2026: het leeuwendeel van de wet gaat gelden, waaronder de hoog-risico-eisen voor de Annex III-toepassingen en de transparantieplichten van Art. 50. Voor de meeste organisaties is dit de belangrijkste datum.",
-        "2 augustus 2027: de laatste fase, voor bepaalde hoog-risicosystemen die onderdeel zijn van producten onder bestaande productwetgeving (Annex I). De boodschap: 2026 is dichterbij dan het lijkt, en voorbereiding — een register opbouwen, documentatie maken, mensen trainen — kost tijd. Vroeg beginnen loont."
+        "2 december 2026: de transparantieplichten van Art. 50 voor systemen die al op de markt zijn (nieuwe systemen voldoen direct bij introductie), plus twee nieuwe verboden praktijken — het genereren van niet-consensueel intiem beeldmateriaal en van materiaal van seksueel kindermisbruik. Deze data komen uit de Digital Omnibus, de wijzigingswet die de EU in juni 2026 heeft aangenomen.",
+        "2 december 2027: de hoog-risico-eisen voor de Annex III-toepassingen (werving, krediet, onderwijs en meer). Met de Digital Omnibus is deze datum verschoven van de oorspronkelijke 2 augustus 2026 — voor de meeste organisaties is dit nu de belangrijkste deadline. En 2 augustus 2028: de laatste fase, voor hoog-risicosystemen die in gereguleerde producten zitten (Annex I, verschoven van 2 augustus 2027). De boodschap blijft: voorbereiding — een register opbouwen, documentatie maken, mensen trainen — kost tijd, dus vroeg beginnen loont."
       ]
     },
     {
@@ -153,17 +153,17 @@ export const AI_ACT_MODULE = {
       "scenario": "Uw website heeft een chatbot die klantvragen beantwoordt."
     },
     {
-      "question": "Wanneer gaan de meeste hoog-risico- en transparantieplichten gelden (Art. 113)?",
+      "question": "Wanneer gaan de hoog-risicoverplichtingen voor Annex III-systemen gelden (Art. 113, na de Digital Omnibus)?",
       "options": [
         "2 februari 2025",
         "2 augustus 2026",
-        "2 augustus 2027",
+        "2 december 2027",
         "Ze gelden nog niet"
       ],
       "correct": [
-        "2 augustus 2026"
+        "2 december 2027"
       ],
-      "explanation": "De meeste plichten (waaronder Annex III hoog-risico en Art. 50) gelden vanaf 2 augustus 2026. Verboden praktijken (Art. 5) en AI-geletterdheid (Art. 4) gelden al sinds 2 februari 2025; bepaalde product-gebonden hoog-risicosystemen (Annex I) pas vanaf 2 augustus 2027."
+      "explanation": "Met de Digital Omnibus (in juni 2026 aangenomen) is de Annex III hoog-risicodatum verschoven van de oorspronkelijke 2 augustus 2026 naar 2 december 2027. Verboden praktijken (Art. 5) en AI-geletterdheid (Art. 4) gelden al sinds 2 februari 2025; product-gebonden hoog-risico (Annex I) volgt op 2 augustus 2028."
     },
     {
       "question": "Wat is de maximale boete voor een verboden AI-praktijk (Art. 99)?",
