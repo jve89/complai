@@ -1,4 +1,5 @@
 import {
+  BellRing,
   BookOpen,
   Database,
   FileText,
@@ -50,6 +51,12 @@ export const DASHBOARD_NAV: NavItem[] = [
     icon: BookOpen,
   },
   {
+    href: "/dashboard/updates",
+    label: "Updates",
+    description: "Wijzigingen in de AI Act — en wat wij bijwerkten",
+    icon: BellRing,
+  },
+  {
     href: "/dashboard/team",
     label: "Medewerkers",
     description: "Nodig collega's uit en beheer rollen",
@@ -64,9 +71,10 @@ export const DASHBOARD_NAV: NavItem[] = [
   },
 ];
 
-/** Same nav, remapped to /demo/* (minus Instellingen) for the public demo. */
+/** Same nav, remapped to /demo/* for the public demo. Instellingen and Updates
+ *  have no /demo/* counterpart, so they're excluded. */
 export const DEMO_NAV: NavItem[] = DASHBOARD_NAV.filter(
-  (n) => n.href !== "/dashboard/settings"
+  (n) => n.href !== "/dashboard/settings" && n.href !== "/dashboard/updates"
 ).map((n) => ({
   ...n,
   href:
