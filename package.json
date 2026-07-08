@@ -8,6 +8,7 @@
     "start": "next start",
     "lint": "next lint",
     "test": "tsx lib/compliance/__tests__/profile.test.ts",
+    "validate:training": "tsx scripts/validate-training.ts",
     "postinstall": "prisma generate",
     "db:migrate": "prisma migrate dev",
     "db:push": "prisma db push",
