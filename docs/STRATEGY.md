@@ -49,6 +49,20 @@ pushing growth.
 - **Gate:** a customer can *see* "the law changed → we updated you"; docs feel
   bespoke; basic trust signals are live.
 
+**Status (8 Jul 2026):**
+- ✅ "Keep you current" visible: updates feed + dashboard card (slices A+B, live).
+  Deferred: slice C (email on change) + slice D (re-certification prompts, needs a
+  DB "seen" column).
+- ✅ Trust page live at `/kwaliteit`. Open (founders): add a named legal/AI
+  reviewer + 1–2 real testimonials (placeholder marked in code, do NOT fabricate).
+- ✅ Documents deepened across all 8 types: shared `docContext` weaves company
+  identity + scan-derived role/risk into every builder; FRIA/tech_doc render as
+  per-named-system worksheets. Audit-tier technical fields stay blank on purpose
+  (never fabricate a client's architecture/training data/FLOP).
+- ◻ Open accuracy item: re-verify Omnibus dates vs the published OJ (~late Jul).
+- **Gate mostly met.** Remaining before declaring Stage 0 done: the two founder
+  trust items (reviewer + testimonials) and the OJ date re-verification.
+
 ### Stage 1 — First ~50 paying, retained (validate)
 Prove willingness-to-pay and retention with one wedge and one channel.
 - Lead the funnel with **AI literacy** as the "you legally need this now" hook:
