@@ -9,7 +9,8 @@ import { createClient } from "@/lib/supabase/server";
 import { sendEmail } from "@/lib/resend";
 import { inviteEmail } from "@/lib/email/templates";
 import { userLimit } from "@/lib/plan";
-import { env } from "@/lib/env";
+import { rateLimitByIp } from "@/lib/rate-limit";
+import { currentBaseUrl } from "@/lib/request-url";
 
 export type ActionResult = { ok: true; message?: string } | { ok: false; error: string };
 
@@ -152,6 +153,10 @@ export async function inviteMember(input: {
   }
   const ctx = await requireAdmin();
   if (!ctx) return { ok: false, error: "Alleen een beheerder kan teamleden uitnodigen." };
+  // Cap invite volume (a compromised/over-eager admin session can't fire off a
+  // burst of invite emails). Fails open on a limiter error.
+  const rl = await rateLimitByIp("invite", 20, 3600);
+  if (!rl.ok) return { ok: false, error: rl.error };
   const { company } = ctx;
   const email = parsed.data.email.toLowerCase();
 
@@ -194,19 +199,32 @@ export async function inviteMember(input: {
     return { ok: false, error: "Uitnodiging aanmaken mislukt." };
   }
 
-  const link = `${env.appUrl}/signup?invite=${token}`;
+  const link = `${currentBaseUrl()}/signup?invite=${token}`;
   const { subject, html } = inviteEmail({
     companyName: company.name,
     roleLabel: ROLE_LABEL[parsed.data.role] ?? parsed.data.role,
     url: link,
   });
-  const result = await sendEmail({ to: email, subject, html });
+
+  // Never let a Resend error throw the action: the invite row already exists, so
+  // report a partial success rather than a silent failure the admin can't see.
+  let emailed = false;
+  let stubbed = false;
+  try {
+    const result = await sendEmail({ to: email, subject, html });
+    emailed = true;
+    stubbed = result.stubbed;
+  } catch (e) {
+    console.error("[invite] e-mail verzenden mislukt:", e instanceof Error ? e.message : e);
+  }
 
   return {
     ok: true,
-    message: result.stubbed
-      ? `Uitnodiging klaargezet voor ${email} (e-mail is gelogd; voeg RESEND_API_KEY toe om echt te versturen).`
-      : `Uitnodiging verzonden naar ${email}.`,
+    message: !emailed
+      ? `Uitnodiging aangemaakt, maar de e-mail kon niet worden verzonden. Probeer het later opnieuw.`
+      : stubbed
+        ? `Uitnodiging klaargezet voor ${email} (e-mail is gelogd; voeg RESEND_API_KEY toe om echt te versturen).`
+        : `Uitnodiging verzonden naar ${email}.`,
   };
 }
 

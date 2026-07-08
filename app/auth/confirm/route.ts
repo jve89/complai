@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import type { EmailOtpType } from "@supabase/supabase-js";
 
 import { createClient } from "@/lib/supabase/server";
+import { prisma } from "@/lib/prisma";
 import { baseUrlFrom } from "@/lib/request-url";
 import { sendWelcome } from "@/lib/email/send";
 
@@ -48,6 +49,18 @@ export async function GET(request: Request) {
       const pendingInterval = user?.user_metadata?.pendingInterval === "year" ? "year" : "month";
       next = `/api/stripe/checkout?plan=${encodeURIComponent(pendingPlan)}&interval=${pendingInterval}`;
     }
+    // Consume the invite now that the account is confirmed and usable (signup
+    // defers this to here when email confirmation is required).
+    const pendingInviteToken = user?.user_metadata?.pendingInviteToken as string | undefined;
+    if (pendingInviteToken) {
+      await prisma.invite
+        .updateMany({
+          where: { token: pendingInviteToken, accepted: false },
+          data: { accepted: true },
+        })
+        .catch((e) => console.error("[auth/confirm] uitnodiging accepteren mislukt:", e));
+    }
+
     if (user?.email) {
       await sendWelcome({
         to: user.email,

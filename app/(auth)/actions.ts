@@ -174,6 +174,9 @@ export async function signup(
         name,
         withScan: Boolean(scanId),
         ...(plan ? { pendingPlan: plan, pendingInterval: intervalParam } : {}),
+        // Carried to /auth/confirm so the invite is consumed only once the
+        // account is confirmed (not burned by an abandoned confirmation).
+        ...(inviteToken ? { pendingInviteToken: inviteToken } : {}),
       },
       emailRedirectTo: `${currentBaseUrl()}/auth/confirm`,
     },
@@ -189,7 +192,12 @@ export async function signup(
     if (invite) {
       companyId = invite.companyId;
       role = z.enum(["admin", "manager", "employee"]).catch("employee").parse(invite.role);
-      await prisma.invite.update({ where: { id: invite.id }, data: { accepted: true } });
+      // Consume the invite now only if the account is immediately usable; when
+      // email confirmation is required, /auth/confirm marks it accepted once the
+      // session exists — so an abandoned confirmation doesn't burn the invite.
+      if (data.session) {
+        await prisma.invite.update({ where: { id: invite.id }, data: { accepted: true } });
+      }
     } else {
       const company = await prisma.company.create({ data: { name: companyName } });
       companyId = company.id;

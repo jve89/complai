@@ -102,8 +102,6 @@ export function buildProfile(
 
   // ── Risk posture (headline) ───────────────────────────────────────────────
   const isProhibited = c.riskTiers.includes("prohibited");
-  const isExcludedOrOut =
-    c.riskTiers.includes("out_of_scope") || c.riskTiers.includes("excluded");
 
   const headline: ComplianceProfile["headline"] = isProhibited
     ? "prohibited"
@@ -132,7 +130,12 @@ export function buildProfile(
   const baseline = headline === "minimal" ? 70 : 35;
   let score = Math.round(baseline + (100 - baseline) * raw);
   if (isProhibited) score = Math.min(score, 20);
-  if (isExcludedOrOut && !isProhibited) score = 100;
+  // Out-of-scope/excluded reads a clean 100 — but keyed off the HEADLINE, not the
+  // raw tiers. If the answers ALSO produced high/limited (a contradictory scan:
+  // "out of scope" + an Annex III system), the headline resolves to high_risk/
+  // limited_risk instead, so the override doesn't fire and the score reflects the
+  // open obligations — no more 100/100 next to a "Hoog risico" badge.
+  if (headline === "out_of_scope" || headline === "excluded") score = 100;
 
   const level = score >= 75 ? "laag" : score >= 45 ? "gemiddeld" : "hoog";
 

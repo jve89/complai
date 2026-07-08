@@ -338,7 +338,7 @@ export default async function DashboardPage({
           {governance.alerts.length === 0 ? (
             <p className="flex items-center gap-2 text-sm text-muted-foreground">
               <CheckCircle2 className="h-4 w-4 text-brand-600" />
-              Geen openstaande signalen. Alles is up-to-date.
+              Geen openstaande signalen op dit moment.
             </p>
           ) : (
             <ul className="space-y-3">

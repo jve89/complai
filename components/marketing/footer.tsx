@@ -51,8 +51,8 @@ export function Footer() {
         <div className="space-y-4">
           <SiteLogo className="text-white" />
           <p className="max-w-xs text-sm text-white/60">
-            Eén werkomgeving om aan de EU AI Act te voldoen — van de eerste
-            risicoscan tot doorlopende governance.
+            Eén werkomgeving om te werken aan naleving van de EU AI Act — van de
+            eerste risicoscan tot doorlopende governance.
           </p>
         </div>
 
@@ -78,7 +78,7 @@ export function Footer() {
       <div className="border-t border-white/10">
         <div className="container flex flex-col items-center justify-between gap-2 py-6 text-xs text-white/50 sm:flex-row">
           <p>© 2026 ComplAI. Alle rechten voorbehouden.</p>
-          <p>Gemaakt in Nederland · Niet bedoeld als juridisch advies.</p>
+          <p>Voor het Nederlandse mkb · Niet bedoeld als juridisch advies.</p>
         </div>
       </div>
     </footer>

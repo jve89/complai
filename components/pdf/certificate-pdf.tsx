@@ -79,6 +79,14 @@ const styles = StyleSheet.create({
   },
   footerLabel: { fontSize: 9, color: MUTED },
   footerValue: { fontSize: 10, fontFamily: "Helvetica-Bold" },
+  disclaimer: {
+    fontSize: 8,
+    color: MUTED,
+    textAlign: "center",
+    marginTop: 18,
+    maxWidth: 520,
+    lineHeight: 1.4,
+  },
 });
 
 export function CertificatePdf({
@@ -131,6 +139,13 @@ export function CertificatePdf({
               <Text style={styles.footerValue}>ComplAI</Text>
             </View>
           </View>
+
+          <Text style={styles.disclaimer}>
+            Bewijs van gevolgde training ter ondersteuning van de
+            AI-geletterdheidsverplichting (Art. 4). Of AI-geletterdheid in een
+            specifieke rol voldoende is, hangt af van de context — dit certificaat
+            is geen juridisch advies en geen garantie op naleving.
+          </Text>
         </View>
       </Page>
     </Document>

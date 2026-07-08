@@ -21,7 +21,7 @@ export function StructuredData() {
         logo: `${base}/icon.svg`,
         email: "info@complai-eu.nl",
         description:
-          "ComplAI helpt Nederlandse mkb-organisaties voldoen aan de EU AI Act: risicoscan, AI-register, verplichte documenten, e-learning en governance vanuit één omgeving.",
+          "ComplAI helpt Nederlandse mkb-organisaties werken aan naleving van de EU AI Act: risicoscan, AI-register, verplichte documenten, e-learning en governance vanuit één omgeving.",
         areaServed: "NL",
         knowsLanguage: "nl-NL",
       },

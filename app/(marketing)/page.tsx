@@ -45,7 +45,7 @@ const startSteps = [
   {
     icon: Package,
     title: "Kies uw pakket",
-    text: "Van de eerste basis tot een audit-klaar documentenpakket. Maandelijks opzegbaar, geen setupkosten.",
+    text: "Van de eerste basis tot een compleet documentenpakket voor uw dossier. Maandelijks opzegbaar, geen setupkosten.",
     cta: { label: "Bekijk pakketten", href: "/pricing" },
   },
   {
@@ -135,7 +135,7 @@ const comparisonRows = [
   { label: "Documenten (beleid, FRIA)", self: false, consultant: true, complai: true },
   { label: "E-learning & certificaten", self: false, consultant: false, complai: true },
   { label: "Continue monitoring", self: false, consultant: false, complai: true },
-  { label: "Altijd up-to-date", self: false, consultant: false, complai: true },
+  { label: "Beweegt mee met de wet", self: false, consultant: false, complai: true },
 ];
 
 function CellValue({ value }: { value: string | boolean }) {

@@ -92,7 +92,7 @@ export default function QualityPage() {
       <section className="border-t bg-secondary/30 py-16">
         <div className="container max-w-3xl space-y-4 text-[15px] leading-relaxed text-foreground/80">
           <h2 className="text-2xl font-bold tracking-tight text-foreground">
-            Onafhankelijke toetsing
+            Zo bewaken we de kwaliteit
           </h2>
           <p>
             ComplAI is gebouwd door mensen met ervaring in AI en in

@@ -20,7 +20,7 @@ export const metadata: Metadata = {
     template: "%s · ComplAI",
   },
   description:
-    "ComplAI helpt Nederlandse mkb-organisaties stap voor stap voldoen aan de EU AI Act: risicoscan, AI-register, documenten, e-learning en governance vanuit één omgeving.",
+    "ComplAI helpt Nederlandse mkb-organisaties stap voor stap werken aan naleving van de EU AI Act: risicoscan, AI-register, documenten, e-learning en governance vanuit één omgeving.",
   keywords: ["EU AI Act", "AI compliance", "AI-register", "risicoscan", "FRIA", "AI governance"],
   // Held out of search until launch (flip ALLOW_INDEXING=true in Vercel).
   robots: env.allowIndexing ? undefined : { index: false, follow: false },

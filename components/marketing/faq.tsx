@@ -22,7 +22,7 @@ const faqs = [
   },
   {
     q: "Moet ik hiervoor een adviesbureau inschakelen?",
-    a: "In de meeste mkb-situaties niet. ComplAI zet de wet om in concrete stappen, levert de benodigde documenten kant-en-klaar en biedt e-learning met certificaten — voor een fractie van wat een adviestraject kost.",
+    a: "In de meeste mkb-situaties niet. ComplAI zet de wet om in concrete stappen, levert de benodigde documenten als sjablonen die u met uw eigen gegevens invult en biedt e-learning met certificaten — voor een fractie van wat een adviestraject kost.",
   },
   {
     q: "Wat gebeurt er met mijn gegevens?",
