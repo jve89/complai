@@ -49,20 +49,33 @@ pushing growth.
 - **Gate:** a customer can *see* "the law changed → we updated you"; docs feel
   bespoke; basic trust signals are live.
 
-**Status (8 Jul 2026):**
-- ✅ "Keep you current" fully wired: updates feed + dashboard card (A+B), email-
-  on-change cron (C, stateless — dormant until CRON_SECRET + a verified Resend
-  domain), and re-certification prompt + "new updates" nav badge (D, localStorage
-  per-device — no migration). Activation of C is config, not code.
-- ✅ Trust page live at `/kwaliteit`. Open (founders): add a named legal/AI
-  reviewer + 1–2 real testimonials (placeholder marked in code, do NOT fabricate).
-- ✅ Documents deepened across all 8 types: shared `docContext` weaves company
-  identity + scan-derived role/risk into every builder; FRIA/tech_doc render as
-  per-named-system worksheets. Audit-tier technical fields stay blank on purpose
-  (never fabricate a client's architecture/training data/FLOP).
-- ◻ Open accuracy item: re-verify Omnibus dates vs the published OJ (~late Jul).
-- **Gate mostly met.** Remaining before declaring Stage 0 done: the two founder
-  trust items (reviewer + testimonials) and the OJ date re-verification.
+**Status (8 Jul 2026) — gate MET on the product side:**
+- ✅ "Keep you current" fully wired **and activated**: updates feed + dashboard
+  card (A+B), re-cert prompt + "new updates" nav badge (D), and the email-on-change
+  cron (C) is **live** — `CRON_SECRET` set, Resend domain `complai-eu.nl` verified,
+  and real digest delivery to an inbox verified end-to-end. The plan's #1 gap
+  (retention mechanic) is closed.
+- ✅ Trust page live at `/kwaliteit`. Open (founders): a named legal/AI reviewer
+  + 1–2 real testimonials (placeholder marked in code, do NOT fabricate).
+- ✅ Documents deepened across all 8 types (bespoke via `docContext`).
+- ✅ **Pre-launch audit + 3 fix waves shipped** (production-hardening, a Stage-0→1
+  bridge): closed a real security leak (RLS off on prod tables), billing/webhook/
+  scan-consistency bugs, invite robustness, SEO, and stripped over-promising copy
+  (reinforcing Guardrail 1). Prod DB baselined onto migrations.
+- ◻ Open: re-verify Omnibus dates vs the published OJ (~late Jul); the two founder
+  trust items above.
+
+**So: Stage 0's product gate is met.** The remaining Stage-0 items need real-world
+inputs (a reviewer, testimonials, the OJ text), not code.
+
+**Reality check on the map:** we're build-ahead, distribution-behind. Of the four
+baseline gaps, retention/trust/documents are addressed; **distribution (gap #3, the
+"real 1,000-customer lever") is still untouched.** Per Guardrail 5 it must advance —
+it's the actual path to 1,000, and mostly go-to-market (friend-owned), not build.
+
+**Current build focus (into Stage 1):** instrument the metrics that matter (below)
+so we can *read* Stage 1's gate — activation (scan → literacy certificate) and
+retention — from our own data, and lead the funnel with the AI-literacy wedge.
 
 ### Stage 1 — First ~50 paying, retained (validate)
 Prove willingness-to-pay and retention with one wedge and one channel.
