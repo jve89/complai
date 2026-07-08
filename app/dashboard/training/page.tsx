@@ -41,13 +41,17 @@ export default async function TrainingPage() {
   const unlocked = trainingUnlocked(company.plan);
   const learner = await getLearnerEmployee(company, user);
 
-  const [employees, learnerCompletions] = await Promise.all([
+  const [employees, learnerCompletions, aiSystems] = await Promise.all([
     prisma.employee.findMany({
       where: { companyId: company.id },
       include: { trainingCompletions: true },
       orderBy: { createdAt: "asc" },
     }),
     prisma.trainingCompletion.findMany({ where: { employeeId: learner.id } }),
+    prisma.aiSystem.findMany({
+      where: { companyId: company.id },
+      select: { riskLevel: true },
+    }),
   ]);
 
   const doneIds = new Set(learnerCompletions.map((c) => c.moduleId));
@@ -65,6 +69,54 @@ export default async function TrainingPage() {
   const recommendedPaths = new Map<string, TrainingRequirement>(
     (profile?.training?.recommended ?? []).map((t) => [t.pathSlug, t])
   );
+
+  // Module-level relevance (Art. 4 "context"): which modules the company's own
+  // scan + AI-register make especially pertinent. Grounded in concrete signals,
+  // so the "voor u"-markers are honest rather than decorative.
+  const tiers = new Set<string>(profile?.riskTiers ?? []);
+  const roles = new Set<string>(profile?.entityRoles ?? []);
+  const risks = new Set<string>(aiSystems.map((s) => s.riskLevel));
+  const hasProhibited =
+    profile?.headline === "prohibited" || tiers.has("prohibited") || risks.has("unacceptable");
+  const hasHighRisk =
+    profile?.headline === "high_risk" ||
+    tiers.has("high") ||
+    tiers.has("high_notify") ||
+    risks.has("high");
+  const hasLimited =
+    profile?.headline === "limited_risk" || tiers.has("limited") || risks.has("limited");
+  const isProvider = roles.has("provider");
+
+  const moduleRelevance = new Map<string, string>();
+  if (hasProhibited)
+    moduleRelevance.set(
+      "prohibited-practices",
+      "Uw scan wees op een mogelijk verboden praktijk — ken de grenzen van Art. 5."
+    );
+  if (hasHighRisk) {
+    moduleRelevance.set("high-risk", "U heeft hoog-risico AI in beeld — deze module gaat daar direct over.");
+    moduleRelevance.set("human-oversight", "Hoog-risico AI vereist effectief menselijk toezicht (Art. 14).");
+    moduleRelevance.set(
+      "deployer-duties",
+      "Als gebruiksverantwoordelijke van hoog-risico AI heeft u concrete plichten (Art. 26/27)."
+    );
+    moduleRelevance.set(
+      "risk-management",
+      "Hoog-risico AI vraagt om risicomanagement, logging en robuustheid (Art. 9/12/15)."
+    );
+  }
+  if (hasLimited)
+    moduleRelevance.set(
+      "responsible-use",
+      "U gebruikt AI met transparantieplichten (Art. 50) — verantwoord gebruik is dan cruciaal."
+    );
+  if (isProvider)
+    moduleRelevance.set(
+      "technical-docs",
+      "U treedt (mede) op als aanbieder — technische documentatie is dan verplicht (Art. 11)."
+    );
+
+  const anyRelevant = unlocked && learnerModules.some((m) => moduleRelevance.has(m.id));
 
   return (
     <>
@@ -162,7 +214,16 @@ export default async function TrainingPage() {
       )}
 
       {/* Modules */}
-      <h2 className="mb-4 text-lg font-semibold">Modules</h2>
+      <h2 className="mb-1 text-lg font-semibold">Modules</h2>
+      {anyRelevant && (
+        <p className="mb-4 text-sm text-muted-foreground">
+          Op basis van uw risicoscan en AI-register zijn sommige modules{" "}
+          <span className="font-medium text-brand-700">
+            extra relevant voor uw organisatie
+          </span>{" "}
+          — die staan gemarkeerd.
+        </p>
+      )}
       <div className="mb-10 space-y-3">
         {learnerModules.map((module, i) => {
           const done = unlocked && doneIds.has(module.id);
@@ -184,11 +245,19 @@ export default async function TrainingPage() {
                     <p className="text-sm text-muted-foreground">
                       {module.minutes} min · {askCount(module)} vragen
                     </p>
+                    {unlocked && moduleRelevance.has(module.id) && (
+                      <p className="mt-1 text-xs font-medium text-brand-700">
+                        {moduleRelevance.get(module.id)}
+                      </p>
+                    )}
                   </div>
                 </div>
                 <div className="flex items-center gap-3 pl-10 sm:pl-0">
                   {unlocked ? (
                     <>
+                      {moduleRelevance.has(module.id) && !done && (
+                        <Badge variant="warning">Voor u relevant</Badge>
+                      )}
                       {done && <Badge variant="success">Afgerond</Badge>}
                       <ModuleQuiz
                         module={module}
