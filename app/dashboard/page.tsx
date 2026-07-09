@@ -245,34 +245,34 @@ export default async function DashboardPage({
 
   return (
     <>
-      <PageHeader
-        title={`Welkom bij ${company.name}`}
-        description="Uw AI Act-status op basis van uw scan."
-      >
-        {isAdmin && (
+      {/* Welcome + current pakket in one banner — actions always sit side by side. */}
+      <div className="mb-6 flex flex-col gap-4 rounded-lg border bg-card p-6 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight">Welkom bij {company.name}</h1>
+          <p className="mt-1 text-muted-foreground">Uw AI Act-status op basis van uw scan.</p>
+          <p className="mt-3 text-sm">
+            <span className="text-muted-foreground">Uw pakket: </span>
+            <span className="font-semibold">{planLabel}</span>
+          </p>
+        </div>
+        <div className="flex items-center gap-2">
+          {isAdmin && (
+            <Button asChild variant="outline">
+              <Link href="/scan">Scan bijwerken</Link>
+            </Button>
+          )}
           <Button asChild variant="outline">
-            <Link href="/scan">Scan bijwerken</Link>
+            <Link href={company.stripeCustomerId ? "/dashboard/settings" : "/pricing"}>
+              {company.stripeCustomerId ? "Abonnement beheren" : "Kies een pakket"}
+            </Link>
           </Button>
-        )}
-      </PageHeader>
+        </div>
+      </div>
 
       {checkoutBanner}
       {checklist}
 
       <UpdatesCard updates={relevantUpdates} />
-
-      {/* Current pakket + management */}
-      <div className="mb-6 flex flex-wrap items-center justify-between gap-3 rounded-lg border bg-card p-4">
-        <div>
-          <p className="text-sm text-muted-foreground">Uw pakket</p>
-          <p className="text-lg font-semibold">{planLabel}</p>
-        </div>
-        <Button asChild variant="outline" size="sm">
-          <Link href={company.stripeCustomerId ? "/dashboard/settings" : "/pricing"}>
-            {company.stripeCustomerId ? "Abonnement beheren" : "Kies een pakket"}
-          </Link>
-        </Button>
-      </div>
 
       {/* Two dials: Voortgang (live, moves with activity) + Gereedheid (scan snapshot). */}
       <div className="grid gap-6 lg:grid-cols-2">
