@@ -342,7 +342,7 @@ export default async function DashboardPage({
             ...(governance.alerts.length > 0 ? ["signalen"] : []),
             ...(deadlines.length > 0 ? ["deadlines"] : []),
           ]}
-          className="divide-y"
+          className="divide-y-2 divide-slate-200"
         >
           <AccordionItem value="signalen" className="border-0">
             <AccordionTrigger className="px-5 py-4 hover:no-underline">
