@@ -115,7 +115,7 @@ export function PricingTable({ scanId }: { scanId?: string }) {
                 <span className="text-3xl font-bold">€{formatEuro(perMonth)}</span>
                 <span className="text-sm text-muted-foreground">/mnd</span>
               </div>
-              <p className="mt-1 min-h-[1.25rem] text-xs text-muted-foreground">
+              <p className="mt-1 line-clamp-2 min-h-[2rem] text-xs text-muted-foreground">
                 {plan.monthly === 0
                   ? "Geen account, geen abonnement"
                   : isYear
@@ -123,7 +123,10 @@ export function PricingTable({ scanId }: { scanId?: string }) {
                     : "Maandelijks opzegbaar"}
               </p>
 
-              <p className="mt-3 min-h-[2.5rem] text-sm text-muted-foreground">
+              {/* Fixed to 3 lines (not just a minimum) so every card reserves
+                  identical space here regardless of tagline length — otherwise
+                  the longest tagline pushes its button lower than the rest. */}
+              <p className="mt-3 line-clamp-3 min-h-[3.75rem] text-sm text-muted-foreground">
                 {plan.tagline}
               </p>
 
