@@ -5,25 +5,34 @@ import { formatDate } from "@/lib/utils";
 import { CATEGORY_LABEL, type EvaluatedUpdate } from "@/lib/regulatory/updates";
 import { RecertPrompt } from "@/components/dashboard/recert-prompt";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 
-/** Compact "keep you current" card for the dashboard. Renders the recent updates
- *  that are relevant to this company; the page hides it entirely when empty. */
+/** Collapsible "keep you current" card for the dashboard. Renders the recent
+ *  updates that are relevant to this company; the page hides it entirely when
+ *  empty. Open by default (this drives retention — don't hide it by default),
+ *  but collapsible so a returning user can tuck it away after reading. */
 export function UpdatesCard({ updates }: { updates: EvaluatedUpdate[] }) {
   if (updates.length === 0) return null;
   return (
-    <Card className="mb-6 border-brand-100 bg-brand-50/40">
-      <CardHeader className="pb-3">
-        <div className="flex items-center gap-2">
-          <BellRing className="h-5 w-5 text-brand-600" />
-          <CardTitle className="text-base">Recente wijzigingen</CardTitle>
-        </div>
-        <p className="text-sm text-muted-foreground">
-          Ontwikkelingen in de EU AI Act die voor u relevant zijn — en wat wij hebben bijgewerkt.
-        </p>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        {updates.map((u) => (
+    <div className="mb-6 rounded-xl border border-brand-100 bg-brand-50/40">
+      <Accordion type="single" collapsible defaultValue="updates">
+        <AccordionItem value="updates" className="border-0">
+          <AccordionTrigger className="px-5 py-4 hover:no-underline">
+            <span className="flex items-start gap-2 text-left">
+              <BellRing className="mt-0.5 h-5 w-5 shrink-0 text-brand-600" />
+              <span>
+                <span className="block text-base font-semibold text-foreground">
+                  Recente wijzigingen
+                </span>
+                <span className="mt-0.5 block text-sm font-normal text-muted-foreground">
+                  {updates.length} {updates.length === 1 ? "wijziging" : "wijzigingen"} relevant
+                  voor u — en wat wij hebben bijgewerkt.
+                </span>
+              </span>
+            </span>
+          </AccordionTrigger>
+          <AccordionContent className="space-y-4 px-5">
+            {updates.map((u) => (
           <div key={u.id} className="border-l-2 border-brand-300 pl-3">
             <div className="flex flex-wrap items-center gap-2">
               <Badge variant="secondary" className="font-normal">
@@ -44,13 +53,15 @@ export function UpdatesCard({ updates }: { updates: EvaluatedUpdate[] }) {
             {u.relevant && u.recert && <RecertPrompt text={u.recert} compact />}
           </div>
         ))}
-        <Link
-          href="/dashboard/updates"
-          className="inline-flex items-center gap-1 text-sm font-medium text-primary hover:underline"
-        >
-          Alle wijzigingen <ArrowRight className="h-4 w-4" />
-        </Link>
-      </CardContent>
-    </Card>
+            <Link
+              href="/dashboard/updates"
+              className="inline-flex items-center gap-1 text-sm font-medium text-primary hover:underline"
+            >
+              Alle wijzigingen <ArrowRight className="h-4 w-4" />
+            </Link>
+          </AccordionContent>
+        </AccordionItem>
+      </Accordion>
+    </div>
   );
 }

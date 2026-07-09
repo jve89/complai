@@ -32,6 +32,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 
 export const dynamic = "force-dynamic";
 
@@ -325,129 +326,180 @@ export default async function DashboardPage({
         ))}
       </div>
 
-      {/* Signalen — what needs attention now (from the former Governance tab). */}
-      <div className="mb-4 mt-10 flex items-center gap-2">
-        <ShieldAlert className="h-5 w-5 text-muted-foreground" />
-        <h2 className="text-lg font-semibold">Signalen</h2>
-        {governance.alerts.length > 0 && (
-          <Badge variant="danger">{governance.alerts.length}</Badge>
-        )}
-      </div>
-      <Card>
-        <CardContent className="py-5">
-          {governance.alerts.length === 0 ? (
-            <p className="flex items-center gap-2 text-sm text-muted-foreground">
-              <CheckCircle2 className="h-4 w-4 text-brand-600" />
-              Geen openstaande signalen op dit moment.
-            </p>
-          ) : (
-            <ul className="space-y-3">
-              {governance.alerts.map((alert, i) => (
-                <li key={i} className="flex items-start gap-3">
-                  <AlertTriangle
-                    className={
-                      alert.severity === "danger"
-                        ? "mt-0.5 h-4 w-4 shrink-0 text-red-500"
-                        : "mt-0.5 h-4 w-4 shrink-0 text-amber-500"
-                    }
-                  />
-                  <span className="text-sm">{alert.message}</span>
-                </li>
-              ))}
-            </ul>
-          )}
-        </CardContent>
-      </Card>
-
-      {/* Obligations */}
-      <h2 className="mb-4 mt-10 text-lg font-semibold">Uw verplichtingen</h2>
-      <div className="grid gap-3">
-        {required.length === 0 ? (
-          <Card>
-            <CardContent className="py-6 text-muted-foreground">
-              Geen verplichte acties op basis van uw scan.
-            </CardContent>
-          </Card>
-        ) : (
-          required.map((o) => (
-            <Card key={o.code}>
-              <CardContent className="flex items-center justify-between gap-4 py-4">
-                <div className="flex items-center gap-3">
-                  {o.status === "done" || o.status === "compliant" ? (
-                    <CheckCircle2 className="h-5 w-5 shrink-0 text-brand-600" />
-                  ) : (
-                    <Circle className="h-5 w-5 shrink-0 text-muted-foreground/40" />
-                  )}
-                  <div>
-                    <p className="font-medium">{o.title}</p>
-                    <p className="text-xs text-muted-foreground">{o.article}</p>
-                  </div>
-                </div>
-                {statusBadge(o.status)}
-              </CardContent>
-            </Card>
-          ))
-        )}
-      </div>
-
-      {/* Kwartaalcheck — recurring health view (from the former Governance tab). */}
-      <div className="mb-4 mt-10 flex items-center gap-2">
-        <CalendarCheck className="h-5 w-5 text-muted-foreground" />
-        <h2 className="text-lg font-semibold">Kwartaalcheck — {governance.quarter}</h2>
-      </div>
-      <Card>
-        <CardContent className="space-y-4 py-5">
-          {governance.checks.map((check) => (
-            <div
-              key={check.id}
-              className="flex items-start justify-between gap-4 border-b pb-4 last:border-0 last:pb-0"
-            >
-              <div className="flex items-start gap-3">
-                {check.done ? (
-                  <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-brand-600" />
+      {/* Compliance-status: signalen, verplichtingen, kwartaalcheck en deadlines
+          grouped in one container (they're all governance detail) as
+          independently-collapsible sections — one click each, nothing nested,
+          so a danger signal is never more than a glance away. Verplichtingen
+          and deadlines (when any) start open; signalen opens by default only
+          when there's something to flag; kwartaalcheck starts collapsed
+          (periodic, lower priority). */}
+      <h2 className="mb-3 mt-10 text-lg font-semibold">Uw compliance in detail</h2>
+      <div className="rounded-xl border bg-card">
+        <Accordion
+          type="multiple"
+          defaultValue={[
+            "verplichtingen",
+            ...(governance.alerts.length > 0 ? ["signalen"] : []),
+            ...(deadlines.length > 0 ? ["deadlines"] : []),
+          ]}
+          className="divide-y"
+        >
+          <AccordionItem value="signalen" className="border-0">
+            <AccordionTrigger className="px-5 py-4 hover:no-underline">
+              <span className="flex items-center gap-2">
+                <ShieldAlert className="h-5 w-5 shrink-0 text-muted-foreground" />
+                <span className="text-base font-semibold">Signalen</span>
+                {governance.alerts.length > 0 ? (
+                  <Badge variant="danger">{governance.alerts.length}</Badge>
                 ) : (
-                  <Circle className="mt-0.5 h-5 w-5 shrink-0 text-muted-foreground/40" />
+                  <Badge variant="secondary" className="font-normal">
+                    Op orde
+                  </Badge>
                 )}
-                <div>
-                  <p className="font-medium">{check.label}</p>
-                  <p className="text-sm text-muted-foreground">{check.detail}</p>
-                </div>
-              </div>
-              <div className="w-20 shrink-0 pt-1">
-                <Progress value={check.progress * 100} />
-              </div>
-            </div>
-          ))}
-        </CardContent>
-      </Card>
+              </span>
+            </AccordionTrigger>
+            <AccordionContent className="px-5">
+              {governance.alerts.length === 0 ? (
+                <p className="flex items-center gap-2 pb-1 text-sm text-muted-foreground">
+                  <CheckCircle2 className="h-4 w-4 text-brand-600" />
+                  Geen openstaande signalen op dit moment.
+                </p>
+              ) : (
+                <ul className="space-y-3 pb-1">
+                  {governance.alerts.map((alert, i) => (
+                    <li key={i} className="flex items-start gap-3">
+                      <AlertTriangle
+                        className={
+                          alert.severity === "danger"
+                            ? "mt-0.5 h-4 w-4 shrink-0 text-red-500"
+                            : "mt-0.5 h-4 w-4 shrink-0 text-amber-500"
+                        }
+                      />
+                      <span className="text-sm">{alert.message}</span>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </AccordionContent>
+          </AccordionItem>
 
-      {/* Deadlines */}
-      {deadlines.length > 0 && (
-        <>
-          <h2 className="mb-4 mt-10 text-lg font-semibold">Aankomende deadlines</h2>
-          <Card>
-            <CardContent className="space-y-3 py-5">
-              {deadlines.map((item) => (
-                <div
-                  key={item.id}
-                  className="flex items-center justify-between gap-3 border-b pb-3 last:border-0 last:pb-0"
-                >
-                  <div className="flex items-start gap-2">
-                    <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-amber-500" />
-                    <div>
-                      <p className="text-sm font-medium">{item.title}</p>
-                      <p className="text-xs text-muted-foreground">{item.article}</p>
+          <AccordionItem value="verplichtingen" className="border-0">
+            <AccordionTrigger className="px-5 py-4 hover:no-underline">
+              <span className="flex items-center gap-2">
+                <ListChecks className="h-5 w-5 shrink-0 text-muted-foreground" />
+                <span className="text-base font-semibold">Uw verplichtingen</span>
+                {required.length > 0 &&
+                  (open.length > 0 ? (
+                    <Badge variant="warning">{open.length} open</Badge>
+                  ) : (
+                    <Badge variant="secondary" className="font-normal">
+                      Op orde
+                    </Badge>
+                  ))}
+              </span>
+            </AccordionTrigger>
+            <AccordionContent className="px-5">
+              <div className="grid gap-3 pb-1">
+                {required.length === 0 ? (
+                  <p className="py-2 text-sm text-muted-foreground">
+                    Geen verplichte acties op basis van uw scan.
+                  </p>
+                ) : (
+                  required.map((o) => (
+                    <div
+                      key={o.code}
+                      className="flex items-center justify-between gap-4 rounded-lg border p-4"
+                    >
+                      <div className="flex items-center gap-3">
+                        {o.status === "done" || o.status === "compliant" ? (
+                          <CheckCircle2 className="h-5 w-5 shrink-0 text-brand-600" />
+                        ) : (
+                          <Circle className="h-5 w-5 shrink-0 text-muted-foreground/40" />
+                        )}
+                        <div>
+                          <p className="font-medium">{o.title}</p>
+                          <p className="text-xs text-muted-foreground">{o.article}</p>
+                        </div>
+                      </div>
+                      {statusBadge(o.status)}
+                    </div>
+                  ))
+                )}
+              </div>
+            </AccordionContent>
+          </AccordionItem>
+
+          <AccordionItem value="kwartaalcheck" className="border-0">
+            <AccordionTrigger className="px-5 py-4 hover:no-underline">
+              <span className="flex items-center gap-2">
+                <CalendarCheck className="h-5 w-5 shrink-0 text-muted-foreground" />
+                <span className="text-base font-semibold">Kwartaalcheck — {governance.quarter}</span>
+                <Badge variant="secondary" className="font-normal">
+                  {governance.checks.filter((c) => c.done).length}/{governance.checks.length}
+                </Badge>
+              </span>
+            </AccordionTrigger>
+            <AccordionContent className="px-5">
+              <div className="space-y-4 pb-1">
+                {governance.checks.map((check) => (
+                  <div
+                    key={check.id}
+                    className="flex items-start justify-between gap-4 border-b pb-4 last:border-0 last:pb-0"
+                  >
+                    <div className="flex items-start gap-3">
+                      {check.done ? (
+                        <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-brand-600" />
+                      ) : (
+                        <Circle className="mt-0.5 h-5 w-5 shrink-0 text-muted-foreground/40" />
+                      )}
+                      <div>
+                        <p className="font-medium">{check.label}</p>
+                        <p className="text-sm text-muted-foreground">{check.detail}</p>
+                      </div>
+                    </div>
+                    <div className="w-20 shrink-0 pt-1">
+                      <Progress value={check.progress * 100} />
                     </div>
                   </div>
-                  <p className="text-sm font-medium">
-                    {item.deadline ? formatDate(item.deadline) : "—"}
-                  </p>
+                ))}
+              </div>
+            </AccordionContent>
+          </AccordionItem>
+
+          {deadlines.length > 0 && (
+            <AccordionItem value="deadlines" className="border-0">
+              <AccordionTrigger className="px-5 py-4 hover:no-underline">
+                <span className="flex items-center gap-2">
+                  <CalendarClock className="h-5 w-5 shrink-0 text-muted-foreground" />
+                  <span className="text-base font-semibold">Aankomende deadlines</span>
+                  <Badge variant="warning">{deadlines.length}</Badge>
+                </span>
+              </AccordionTrigger>
+              <AccordionContent className="px-5">
+                <div className="space-y-3 pb-1">
+                  {deadlines.map((item) => (
+                    <div
+                      key={item.id}
+                      className="flex items-center justify-between gap-3 border-b pb-3 last:border-0 last:pb-0"
+                    >
+                      <div className="flex items-start gap-2">
+                        <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-amber-500" />
+                        <div>
+                          <p className="text-sm font-medium">{item.title}</p>
+                          <p className="text-xs text-muted-foreground">{item.article}</p>
+                        </div>
+                      </div>
+                      <p className="text-sm font-medium">
+                        {item.deadline ? formatDate(item.deadline) : "—"}
+                      </p>
+                    </div>
+                  ))}
                 </div>
-              ))}
-            </CardContent>
-          </Card>
-        </>
-      )}
+              </AccordionContent>
+            </AccordionItem>
+          )}
+        </Accordion>
+      </div>
 
       {/* Quick links */}
       <h2 className="mb-4 mt-10 text-lg font-semibold">Snel naar</h2>
