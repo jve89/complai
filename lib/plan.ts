@@ -96,3 +96,12 @@ export const TRAINING_MIN_TIER: TierId = "groei";
 export function trainingUnlocked(plan: string | null | undefined): boolean {
   return tierRank(plan) >= tierRank(TRAINING_MIN_TIER);
 }
+
+/** The in-app Kennisbank and the live wetsupdates-feed ("keep you current") are
+ * paid features from Basis (starter). On Scan (gratis) they show a locked
+ * preview + upgrade prompt — the public marketing /kennisbank stays open. */
+export const CONTENT_MIN_TIER: TierId = "starter";
+
+export function contentUnlocked(plan: string | null | undefined): boolean {
+  return tierRank(plan) >= tierRank(CONTENT_MIN_TIER);
+}

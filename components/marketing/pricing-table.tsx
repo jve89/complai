@@ -112,12 +112,18 @@ export function PricingTable({ scanId }: { scanId?: string }) {
 
               <h3 className="font-semibold">{plan.name}</h3>
               <div className="mt-3 flex items-baseline gap-1">
-                <span className="text-3xl font-bold">€{formatEuro(perMonth)}</span>
-                <span className="text-sm text-muted-foreground">/mnd</span>
+                {plan.monthly === 0 ? (
+                  <span className="text-3xl font-bold">Gratis</span>
+                ) : (
+                  <>
+                    <span className="text-3xl font-bold">€{formatEuro(perMonth)}</span>
+                    <span className="text-sm text-muted-foreground">/mnd</span>
+                  </>
+                )}
               </div>
               <p className="mt-1 line-clamp-2 min-h-[2rem] text-xs text-muted-foreground">
                 {plan.monthly === 0
-                  ? "Geen account, geen abonnement"
+                  ? "Geen betaalgegevens nodig — geen abonnement"
                   : isYear
                     ? `€${formatEuro(plan.yearly)}/jaar, jaarlijks gefactureerd`
                     : "Maandelijks opzegbaar"}

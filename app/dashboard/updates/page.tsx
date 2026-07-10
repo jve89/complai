@@ -3,12 +3,14 @@ import { BellRing, CheckCircle2, ExternalLink } from "lucide-react";
 import { getActiveCompany } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { formatDate } from "@/lib/utils";
+import { contentUnlocked, TIER_LABEL, CONTENT_MIN_TIER } from "@/lib/plan";
 import { companySignals } from "@/lib/compliance/signals";
 import { evaluateUpdates, daysSince, CATEGORY_LABEL } from "@/lib/regulatory/updates";
 import type { ComplianceProfile } from "@/lib/compliance/types";
 import { PageHeader } from "@/components/dashboard/page-header";
 import { MarkUpdatesSeen } from "@/components/dashboard/mark-updates-seen";
 import { RecertPrompt } from "@/components/dashboard/recert-prompt";
+import { UpgradeWall } from "@/components/dashboard/upgrade-wall";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 
@@ -24,6 +26,33 @@ export default async function UpdatesPage() {
   const sig = companySignals(profile, systems.map((s) => s.riskLevel));
   const now = new Date();
   const updates = evaluateUpdates(sig);
+  const unlocked = contentUnlocked(company.plan);
+
+  // Free (Scan): locked preview — tease how many changes are relevant so the
+  // "the law changed → upgrade to see it" pull still works, without the content.
+  if (!unlocked) {
+    const relevantCount = updates.filter((u) => u.relevant).length;
+    return (
+      <>
+        <PageHeader
+          title="Updates"
+          description="Wijzigingen in de EU AI Act — en wat wij in het platform hebben bijgewerkt."
+        />
+        <UpgradeWall
+          icon={BellRing}
+          title="Blijf automatisch op de hoogte"
+          description="Wij volgen de EU AI Act op de voet en werken het platform bij zodra de wet verandert. Ontgrendel de wijzigingen-feed met elk betaald pakket."
+          tierLabel={TIER_LABEL[CONTENT_MIN_TIER]}
+        >
+          {relevantCount > 0 && (
+            <Badge variant="warning" className="text-sm">
+              {relevantCount} {relevantCount === 1 ? "wijziging" : "wijzigingen"} nu relevant voor u
+            </Badge>
+          )}
+        </UpgradeWall>
+      </>
+    );
+  }
 
   return (
     <>

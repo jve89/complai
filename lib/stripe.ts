@@ -37,12 +37,12 @@ export const PLANS: Plan[] = [
     name: "Scan",
     monthly: 0,
     yearly: 0,
-    tagline: "Gratis scan + persoonlijk stappenplan. Geen account, geen abonnement nodig.",
+    tagline: "Gratis risicoscan met uw resultaten in een alleen-lezen dashboard. Upgrade om alles te ontgrendelen.",
     features: [
       "Gratis risicoscan (zonder account)",
       "Gereedheidsscore, risicocategorie & rol",
       "Rapport met deadlines (PDF)",
-      "Stappenplan op maat",
+      "Dashboard-preview (alleen-lezen)",
     ],
   },
   {
@@ -57,6 +57,7 @@ export const PLANS: Plan[] = [
       "Alles uit Scan",
       "AI-register (max. 3 systemen)",
       "AI-beleid & transparantieverklaring",
+      "Kennisbank & updates bij wetswijziging",
       "Tot 5 gebruikers",
     ],
   },

@@ -16,7 +16,7 @@ import {
 import { getActiveCompany, canAdminister } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { formatDate } from "@/lib/utils";
-import { TIER_LABEL, TIER_ORDER, tierRank } from "@/lib/plan";
+import { TIER_LABEL, TIER_ORDER, tierRank, contentUnlocked } from "@/lib/plan";
 import { computeGovernance } from "@/lib/governance/score";
 import { resolveStatus } from "@/lib/compliance/resolve";
 import type { ComplianceProfile, CompanyEvidence } from "@/lib/compliance/types";
@@ -273,7 +273,7 @@ export default async function DashboardPage({
       {checkoutBanner}
       {checklist}
 
-      <UpdatesCard updates={relevantUpdates} />
+      <UpdatesCard updates={relevantUpdates} unlocked={contentUnlocked(company.plan)} />
 
       {/* Two dials: Voortgang (live, moves with activity) + Gereedheid (scan snapshot). */}
       <div className="grid gap-6 lg:grid-cols-2">
