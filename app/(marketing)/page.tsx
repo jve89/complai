@@ -12,6 +12,7 @@ import {
   Euro,
   FileText,
   GraduationCap,
+  Languages,
   Minus,
   Package,
   Scale,
@@ -207,16 +208,19 @@ export default function LandingPage() {
 
       {/* Trust strip */}
       <section className="border-b bg-secondary/40">
-        <div className="container flex flex-wrap items-center justify-center gap-x-6 gap-y-2 py-4 text-center text-xs text-muted-foreground sm:text-sm">
-          <span className="flex items-center gap-1.5">
-            <Scale className="h-4 w-4 text-brand-500" /> Gebouwd op Verordening (EU) 2024/1689
+        <div className="container grid grid-cols-2 gap-x-4 gap-y-3 py-4 text-center text-xs text-muted-foreground sm:grid-cols-4 sm:text-sm">
+          <span className="flex items-center justify-center gap-1.5">
+            <Scale className="h-4 w-4 shrink-0 text-brand-500" /> Gebouwd op Verordening (EU) 2024/1689
           </span>
-          <span className="hidden text-muted-foreground/40 sm:inline">·</span>
-          <span>Toepassingsdata volgens de officiële EU-tijdlijn (Art. 113)</span>
-          <span className="hidden text-muted-foreground/40 sm:inline">·</span>
-          <span>In het Nederlands</span>
-          <span className="hidden text-muted-foreground/40 sm:inline">·</span>
-          <span>Uw antwoorden blijven in de EU</span>
+          <span className="flex items-center justify-center gap-1.5">
+            <Clock className="h-4 w-4 shrink-0 text-brand-500" /> Toepassingsdata volgens de officiële EU-tijdlijn (Art. 113)
+          </span>
+          <span className="flex items-center justify-center gap-1.5">
+            <Languages className="h-4 w-4 shrink-0 text-brand-500" /> In het Nederlands
+          </span>
+          <span className="flex items-center justify-center gap-1.5">
+            <ShieldCheck className="h-4 w-4 shrink-0 text-brand-500" /> Uw antwoorden blijven in de EU
+          </span>
         </div>
       </section>
 
