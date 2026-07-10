@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { BarChart3, BellRing, LogIn, ShieldCheck } from "lucide-react";
+import { BarChart3, BellRing, ChevronRight, LogIn, ShieldCheck } from "lucide-react";
 import type { Prisma } from "@prisma/client";
 
 import { prisma } from "@/lib/prisma";
@@ -19,13 +19,7 @@ import { RoleSelect } from "@/components/dashboard/admin/role-select";
 import { SuperAdminToggle } from "@/components/dashboard/admin/super-admin-toggle";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import {
   Table,
   TableBody,
@@ -34,6 +28,12 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 
 export const dynamic = "force-dynamic";
 
@@ -150,19 +150,36 @@ export default async function AdminPage({
         description="Alle klantorganisaties en het ComplAI-team. Alleen zichtbaar voor super-admins."
       />
 
-      <div className="mb-6 flex flex-wrap gap-x-6 gap-y-2">
-        <Link
-          href="/dashboard/admin/metrics"
-          className="inline-flex items-center gap-1.5 text-sm font-medium text-primary hover:underline"
-        >
-          <BarChart3 className="h-4 w-4" /> Statistieken (funnel, activatie, retentie)
-        </Link>
-        <Link
-          href="/dashboard/admin/updates"
-          className="inline-flex items-center gap-1.5 text-sm font-medium text-primary hover:underline"
-        >
-          <BellRing className="h-4 w-4" /> Updates beheren (changelog publiceren)
-        </Link>
+      <div className="mb-6 grid gap-4 sm:grid-cols-2">
+        {[
+          {
+            href: "/dashboard/admin/metrics",
+            icon: BarChart3,
+            title: "Statistieken",
+            desc: "Funnel, activatie, retentie",
+          },
+          {
+            href: "/dashboard/admin/updates",
+            icon: BellRing,
+            title: "Updates beheren",
+            desc: "Changelog publiceren",
+          },
+        ].map((a) => (
+          <Link key={a.href} href={a.href} className="group">
+            <Card className="transition-colors hover:border-primary hover:bg-secondary/40">
+              <CardContent className="flex items-center gap-4 py-4">
+                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                  <a.icon className="h-5 w-5" />
+                </span>
+                <div className="min-w-0 flex-1">
+                  <p className="font-medium text-foreground">{a.title}</p>
+                  <p className="text-sm text-muted-foreground">{a.desc}</p>
+                </div>
+                <ChevronRight className="h-5 w-5 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-0.5" />
+              </CardContent>
+            </Card>
+          </Link>
+        ))}
       </div>
 
       <div className="mb-6 flex flex-wrap gap-4">
@@ -180,71 +197,41 @@ export default async function AdminPage({
         ))}
       </div>
 
-      {/* Staff overview — grant/revoke happens in the Alle personen tab */}
-      <Card className="mb-8">
-        <CardHeader>
-          <CardTitle className="text-base">ComplAI-team (super-admins)</CardTitle>
-          <CardDescription>
-            Super-admins beheren alle klanten — los van de rol binnen een
-            klantorganisatie. Iemand promoveren? Doe dat via de{" "}
-            <Link href="/dashboard/admin?view=personen" className="text-primary hover:underline">
-              Alle personen
-            </Link>{" "}
-            tab.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <ul className="divide-y">
-            {staff.map((u) => {
-              const fixed = isSuperAdminEmail(u.email);
-              return (
-                <li key={u.id} className="flex items-center justify-between gap-3 py-2">
-                  <div className="text-sm">
-                    <p className="font-medium">{u.name ?? u.email}</p>
-                    <p className="text-xs text-muted-foreground">
-                      {u.email}
-                      {u.company ? ` · ${u.company.name}` : ""}
-                    </p>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    {fixed && <Badge variant="secondary">vast</Badge>}
-                    {u.id === me.id && <Badge variant="secondary">u</Badge>}
-                    {!fixed && u.id !== me.id && (
-                      <form action={revokeSuperAdmin}>
-                        <input type="hidden" name="userId" value={u.id} />
-                        <Button type="submit" size="sm" variant="ghost">
-                          Intrekken
-                        </Button>
-                      </form>
-                    )}
-                  </div>
-                </li>
-              );
-            })}
-          </ul>
-        </CardContent>
-      </Card>
-
-      {/* View switch + search */}
-      <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-        <div className="flex items-center gap-3">
-          <h2 className="text-lg font-semibold">
-            {view === "personen" ? "Alle personen" : "Klantorganisaties"}
-          </h2>
-          <div className="inline-flex gap-1 rounded-lg border p-1">
-            <Link href="/dashboard/admin" className={tabClass(view === "organisaties")}>
-              Organisaties
-            </Link>
-            <Link href="/dashboard/admin?view=personen" className={tabClass(view === "personen")}>
-              Alle personen
-            </Link>
-          </div>
-        </div>
-        <AdminSearch
-          key={view}
-          placeholder={view === "personen" ? "Zoek op naam, e-mail…" : "Zoek op organisatie…"}
-        />
-      </div>
+      {/* Klanten & team — collapsible workspace, à la the Overzicht dashboard.
+          The stat cards above stay always-visible; these sections tuck away. */}
+      <div className="overflow-hidden rounded-xl border bg-card">
+        <Accordion
+          type="multiple"
+          defaultValue={["klanten"]}
+          className="divide-y-2 divide-slate-200"
+        >
+          {/* Main workspace — open by default (you open beheer to manage these). */}
+          <AccordionItem value="klanten" className="border-0">
+            <AccordionTrigger className="px-5 py-4 hover:no-underline">
+              <span className="flex items-center gap-2 text-foreground">
+                Klanten &amp; personen
+                <Badge variant="secondary">{companies.length}</Badge>
+              </span>
+            </AccordionTrigger>
+            <AccordionContent className="px-5 text-foreground">
+              {/* View switch + search */}
+              <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+                <div className="inline-flex gap-1 rounded-lg border p-1">
+                  <Link href="/dashboard/admin" className={tabClass(view === "organisaties")}>
+                    Organisaties
+                  </Link>
+                  <Link
+                    href="/dashboard/admin?view=personen"
+                    className={tabClass(view === "personen")}
+                  >
+                    Alle personen
+                  </Link>
+                </div>
+                <AdminSearch
+                  key={view}
+                  placeholder={view === "personen" ? "Zoek op naam, e-mail…" : "Zoek op organisatie…"}
+                />
+              </div>
 
       {view === "organisaties" ? (
         <Card>
@@ -385,7 +372,59 @@ export default async function AdminPage({
             </Table>
           </CardContent>
         </Card>
-      )}
+              )}
+            </AccordionContent>
+          </AccordionItem>
+
+          {/* ComplAI-team — reference; collapsed by default. */}
+          <AccordionItem value="team" className="border-0">
+            <AccordionTrigger className="px-5 py-4 hover:no-underline">
+              <span className="flex items-center gap-2 text-foreground">
+                ComplAI-team
+                <Badge variant="secondary">{staff.length}</Badge>
+              </span>
+            </AccordionTrigger>
+            <AccordionContent className="px-5 text-foreground">
+              <p className="mb-3 text-sm text-muted-foreground">
+                Super-admins beheren alle klanten — los van de rol binnen een
+                klantorganisatie. Iemand promoveren? Doe dat via de{" "}
+                <Link href="/dashboard/admin?view=personen" className="text-primary hover:underline">
+                  Alle personen
+                </Link>{" "}
+                tab.
+              </p>
+              <ul className="divide-y">
+                {staff.map((u) => {
+                  const fixed = isSuperAdminEmail(u.email);
+                  return (
+                    <li key={u.id} className="flex items-center justify-between gap-3 py-2">
+                      <div className="text-sm">
+                        <p className="font-medium">{u.name ?? u.email}</p>
+                        <p className="text-xs text-muted-foreground">
+                          {u.email}
+                          {u.company ? ` · ${u.company.name}` : ""}
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        {fixed && <Badge variant="secondary">vast</Badge>}
+                        {u.id === me.id && <Badge variant="secondary">u</Badge>}
+                        {!fixed && u.id !== me.id && (
+                          <form action={revokeSuperAdmin}>
+                            <input type="hidden" name="userId" value={u.id} />
+                            <Button type="submit" size="sm" variant="ghost">
+                              Intrekken
+                            </Button>
+                          </form>
+                        )}
+                      </div>
+                    </li>
+                  );
+                })}
+              </ul>
+            </AccordionContent>
+          </AccordionItem>
+        </Accordion>
+      </div>
 
       <p className="mt-4 text-xs text-muted-foreground">
         &ldquo;Open dashboard&rdquo; opent de omgeving van die klant als ComplAI-beheerder:

@@ -1,12 +1,13 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowLeft, Plus } from "lucide-react";
+import { ArrowLeft, Pencil, Plus } from "lucide-react";
 
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/auth";
 import { formatDate } from "@/lib/utils";
 import { CATEGORY_LABEL, type UpdateCategory } from "@/lib/regulatory/updates";
 import { PageHeader } from "@/components/dashboard/page-header";
+import { UpdateDeleteButton } from "@/components/dashboard/admin/update-delete-button";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -84,12 +85,14 @@ export default async function AdminUpdatesPage() {
                   </TableCell>
                   <TableCell className="max-w-md text-sm font-medium">{u.title}</TableCell>
                   <TableCell className="text-right">
-                    <Link
-                      href={`/dashboard/admin/updates/${u.id}`}
-                      className="text-sm font-medium text-primary hover:underline"
-                    >
-                      Bewerken
-                    </Link>
+                    <div className="flex items-center justify-end gap-1">
+                      <Button asChild size="sm" variant="ghost">
+                        <Link href={`/dashboard/admin/updates/${u.id}`}>
+                          <Pencil className="h-4 w-4" /> Bewerken
+                        </Link>
+                      </Button>
+                      <UpdateDeleteButton id={u.id} title={u.title} />
+                    </div>
                   </TableCell>
                 </TableRow>
               ))
