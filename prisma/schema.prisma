@@ -260,3 +260,34 @@ model RateLimit {
   @@index([resetAt])
   @@map("rate_limits")
 }
+
+/// The "keep you current" changelog, editable from the super-admin console.
+/// Dates are stored as "YYYY-MM-DD" strings to match the app's date handling
+/// exactly (daysSince/formatDate) — no conversion in the mapper. `affects*` are
+/// the relevance flags matched against a company's CompanySignals; `addedAt` is
+/// the publish date that drives the email cron. Only `status = "published"` rows
+/// are shown to customers / on the public page.
+model RegulatoryUpdate {
+  id                String   @id @default(cuid())
+  date              String // "YYYY-MM-DD" — regulatory decision/publication date
+  title             String
+  summary           String
+  detail            String[] @default([])
+  category          String // deadline|prohibition|transparency|gpai|literacy|enforcement
+  sourceLabel       String   @map("source_label")
+  sourceUrl         String   @map("source_url")
+  affectsEveryone   Boolean  @default(false) @map("affects_everyone")
+  affectsHighRisk   Boolean  @default(false) @map("affects_high_risk")
+  affectsProhibited Boolean  @default(false) @map("affects_prohibited")
+  affectsLimited    Boolean  @default(false) @map("affects_limited")
+  affectsProvider   Boolean  @default(false) @map("affects_provider")
+  productImpact     String?  @map("product_impact")
+  recert            String?
+  addedAt           String?  @map("added_at") // "YYYY-MM-DD" publish date (drives the cron)
+  status            String   @default("draft") // draft | published
+  createdAt         DateTime @default(now()) @map("created_at")
+  updatedAt         DateTime @updatedAt @map("updated_at")
+
+  @@index([status])
+  @@map("regulatory_updates")
+}

@@ -22,7 +22,8 @@ import { resolveStatus } from "@/lib/compliance/resolve";
 import type { ComplianceProfile, CompanyEvidence } from "@/lib/compliance/types";
 import { onboardingState } from "@/lib/onboarding";
 import { companySignals } from "@/lib/compliance/signals";
-import { evaluateUpdates, daysSince } from "@/lib/regulatory/updates";
+import { daysSince } from "@/lib/regulatory/updates";
+import { getEvaluatedUpdates } from "@/lib/regulatory/updates-data";
 import { DASHBOARD_NAV } from "@/components/dashboard/nav-items";
 import { OnboardingChecklist } from "@/components/dashboard/onboarding-checklist";
 import { UpdatesCard } from "@/components/dashboard/updates-card";
@@ -231,8 +232,8 @@ export default async function DashboardPage({
     voortgangScore >= 75 ? "Goed op weg" : voortgangScore >= 45 ? "Halverwege" : "Net begonnen";
 
   // "Keep you current": recent AI Act changes that are relevant to this company.
-  const relevantUpdates = evaluateUpdates(
-    companySignals(profile, aiSystems.map((s) => s.riskLevel))
+  const relevantUpdates = (
+    await getEvaluatedUpdates(companySignals(profile, aiSystems.map((s) => s.riskLevel)))
   )
     .filter((u) => u.relevant && daysSince(u.date, new Date()) <= 90)
     .slice(0, 3);

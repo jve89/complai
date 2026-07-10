@@ -6,7 +6,8 @@ import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/auth";
 import { DEMO_COMPANY_NAME } from "@/lib/demo";
 import { TIER_LABEL } from "@/lib/plan";
-import { UPDATES, daysSince } from "@/lib/regulatory/updates";
+import { daysSince } from "@/lib/regulatory/updates";
+import { getPublishedUpdates } from "@/lib/regulatory/updates-data";
 import { formatDate } from "@/lib/utils";
 import { PageHeader } from "@/components/dashboard/page-header";
 import { Badge } from "@/components/ui/badge";
@@ -104,9 +105,9 @@ export default async function AdminMetricsPage() {
   ).length;
 
   // Regulatory-currency SLA: for each published update, did we react (productImpact)?
-  const updatesByDate = [...UPDATES].sort((a, b) => (a.date < b.date ? 1 : -1));
-  const latest = updatesByDate[0];
-  const reacted = UPDATES.filter((u) => u.productImpact).length;
+  const publishedUpdates = await getPublishedUpdates(); // newest first
+  const latest = publishedUpdates[0];
+  const reacted = publishedUpdates.filter((u) => u.productImpact).length;
 
   return (
     <>
@@ -214,7 +215,7 @@ export default async function AdminMetricsPage() {
             <CardHeader>
               <CardTitle className="text-base">Regelgeving-actualiteit</CardTitle>
               <p className="text-sm text-muted-foreground">
-                Onze SLA: reageerden we op de laatste wetswijziging? ({reacted}/{UPDATES.length} updates met een productreactie.)
+                Onze SLA: reageerden we op de laatste wetswijziging? ({reacted}/{publishedUpdates.length} updates met een productreactie.)
               </p>
             </CardHeader>
             <CardContent className="space-y-2 text-sm">

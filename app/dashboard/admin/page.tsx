@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { BarChart3, LogIn, ShieldCheck } from "lucide-react";
+import { BarChart3, BellRing, LogIn, ShieldCheck } from "lucide-react";
 import type { Prisma } from "@prisma/client";
 
 import { prisma } from "@/lib/prisma";
@@ -150,12 +150,18 @@ export default async function AdminPage({
         description="Alle klantorganisaties en het ComplAI-team. Alleen zichtbaar voor super-admins."
       />
 
-      <div className="mb-6">
+      <div className="mb-6 flex flex-wrap gap-x-6 gap-y-2">
         <Link
           href="/dashboard/admin/metrics"
           className="inline-flex items-center gap-1.5 text-sm font-medium text-primary hover:underline"
         >
           <BarChart3 className="h-4 w-4" /> Statistieken (funnel, activatie, retentie)
+        </Link>
+        <Link
+          href="/dashboard/admin/updates"
+          className="inline-flex items-center gap-1.5 text-sm font-medium text-primary hover:underline"
+        >
+          <BellRing className="h-4 w-4" /> Updates beheren (changelog publiceren)
         </Link>
       </div>
 

@@ -64,7 +64,10 @@ const REASON = {
   provider: "U treedt (mede) op als aanbieder.",
 };
 
-export const UPDATES: RegulatoryUpdate[] = [
+/** Seed data — the original hardcoded changelog. Now used only to populate the
+ *  DB (prisma/seed) and by the validator; the live feed reads published rows
+ *  from the DB via lib/regulatory/updates-data.ts. */
+export const SEED_UPDATES: RegulatoryUpdate[] = [
   {
     id: "digital-omnibus-2026",
     addedAt: "2026-07-05",
@@ -143,9 +146,13 @@ function evaluate(u: RegulatoryUpdate, sig: CompanySignals): EvaluatedUpdate {
   return { ...u, relevant: Boolean(reason), reason };
 }
 
-/** All updates, newest first, each evaluated for relevance to this company. */
-export function evaluateUpdates(sig: CompanySignals): EvaluatedUpdate[] {
-  return [...UPDATES]
+/** Sort `updates` newest first and evaluate each for relevance to this company.
+ *  Pure — the caller fetches the updates (from the DB) and passes them in. */
+export function evaluateUpdates(
+  updates: RegulatoryUpdate[],
+  sig: CompanySignals
+): EvaluatedUpdate[] {
+  return [...updates]
     .sort((a, b) => (a.date < b.date ? 1 : -1))
     .map((u) => evaluate(u, sig));
 }
@@ -159,6 +166,9 @@ export function daysSince(iso: string, now: Date): number {
  *  emails each affected company once: `daysSince(addedAt) === 1` holds for the
  *  whole UTC day after publishing, so a once-a-day cron fires exactly once.
  *  Historical entries (addedAt far in the past, or unset) never match. */
-export function updatesToNotify(now: Date): RegulatoryUpdate[] {
-  return UPDATES.filter((u) => u.addedAt && daysSince(u.addedAt, now) === 1);
+export function updatesToNotify(
+  updates: RegulatoryUpdate[],
+  now: Date
+): RegulatoryUpdate[] {
+  return updates.filter((u) => u.addedAt && daysSince(u.addedAt, now) === 1);
 }

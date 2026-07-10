@@ -4,7 +4,8 @@ import { getActiveCompany } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { formatDate } from "@/lib/utils";
 import { companySignals } from "@/lib/compliance/signals";
-import { evaluateUpdates, daysSince, CATEGORY_LABEL } from "@/lib/regulatory/updates";
+import { daysSince, CATEGORY_LABEL } from "@/lib/regulatory/updates";
+import { getEvaluatedUpdates } from "@/lib/regulatory/updates-data";
 import type { ComplianceProfile } from "@/lib/compliance/types";
 import { PageHeader } from "@/components/dashboard/page-header";
 import { MarkUpdatesSeen } from "@/components/dashboard/mark-updates-seen";
@@ -23,7 +24,7 @@ export default async function UpdatesPage() {
   const profile = (company.profileJson as unknown as ComplianceProfile | null) ?? null;
   const sig = companySignals(profile, systems.map((s) => s.riskLevel));
   const now = new Date();
-  const updates = evaluateUpdates(sig);
+  const updates = await getEvaluatedUpdates(sig);
 
   return (
     <>

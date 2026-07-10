@@ -3,7 +3,7 @@ import { Globe } from "lucide-react";
 import { getActiveCompany, canAdminister } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { companySignals } from "@/lib/compliance/signals";
-import { evaluateUpdates } from "@/lib/regulatory/updates";
+import { getEvaluatedUpdates } from "@/lib/regulatory/updates-data";
 import type { ComplianceProfile } from "@/lib/compliance/types";
 import { logout } from "@/app/(auth)/actions";
 import { stopImpersonation } from "@/app/dashboard/admin/actions";
@@ -28,7 +28,7 @@ export default async function DashboardLayout({
   });
   const profile = (company.profileJson as unknown as ComplianceProfile | null) ?? null;
   const sig = companySignals(profile, systems.map((s) => s.riskLevel));
-  const updateDates = evaluateUpdates(sig)
+  const updateDates = (await getEvaluatedUpdates(sig))
     .filter((u) => u.relevant)
     .map((u) => u.date);
 

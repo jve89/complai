@@ -3,7 +3,7 @@
  * PRIMARY source URL and be well-formed. A "we keep you current" feature is only
  * trustworthy if each claim is sourced. Run: npx tsx scripts/validate-updates.ts
  */
-import { UPDATES, CATEGORY_LABEL } from "../lib/regulatory/updates";
+import { SEED_UPDATES as UPDATES, CATEGORY_LABEL } from "../lib/regulatory/updates";
 
 let errors = 0;
 const fail = (msg: string) => {

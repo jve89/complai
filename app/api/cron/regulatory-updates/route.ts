@@ -4,6 +4,7 @@ import { env } from "@/lib/env";
 import { prisma } from "@/lib/prisma";
 import { companySignals } from "@/lib/compliance/signals";
 import { evaluateUpdates, updatesToNotify } from "@/lib/regulatory/updates";
+import { getPublishedUpdates } from "@/lib/regulatory/updates-data";
 import type { ComplianceProfile } from "@/lib/compliance/types";
 import { sendRegulatoryDigest } from "@/lib/email/send";
 
@@ -28,7 +29,8 @@ export async function GET(req: Request) {
   }
 
   const now = new Date();
-  const fresh = updatesToNotify(now);
+  const published = await getPublishedUpdates();
+  const fresh = updatesToNotify(published, now);
   if (fresh.length === 0) {
     return NextResponse.json({ ok: true, published: 0, companiesNotified: 0 });
   }
@@ -50,7 +52,7 @@ export async function GET(req: Request) {
         profile,
         c.aiSystems.map((s) => s.riskLevel)
       );
-      const relevant = evaluateUpdates(sig).filter(
+      const relevant = evaluateUpdates(published, sig).filter(
         (u) => u.relevant && freshIds.has(u.id)
       );
       if (relevant.length === 0) continue;

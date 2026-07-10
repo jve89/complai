@@ -2,7 +2,8 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { ArrowRight, BellRing, CheckCircle2, ExternalLink } from "lucide-react";
 
-import { UPDATES, CATEGORY_LABEL, daysSince } from "@/lib/regulatory/updates";
+import { CATEGORY_LABEL, daysSince } from "@/lib/regulatory/updates";
+import { getPublishedUpdates } from "@/lib/regulatory/updates-data";
 import { formatDate } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -18,9 +19,9 @@ export const metadata: Metadata = {
 // Re-check "Nieuw" badges hourly; the entries themselves ship with the code.
 export const revalidate = 3600;
 
-export default function UpdatesPage() {
+export default async function UpdatesPage() {
   const now = new Date();
-  const updates = [...UPDATES].sort((a, b) => (a.date < b.date ? 1 : -1));
+  const updates = await getPublishedUpdates();
 
   return (
     <div className="container max-w-4xl py-16 sm:py-20">
