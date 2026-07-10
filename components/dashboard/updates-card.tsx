@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowRight, BellRing, CheckCircle2, Lock } from "lucide-react";
+import { ArrowRight, BellRing, CheckCircle2 } from "lucide-react";
 
 import { formatDate } from "@/lib/utils";
 import { CATEGORY_LABEL, type EvaluatedUpdate } from "@/lib/regulatory/updates";
@@ -10,46 +10,9 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 /** Collapsible "keep you current" card for the dashboard. Renders the recent
  *  updates that are relevant to this company; the page hides it entirely when
  *  empty. Open by default (this drives retention — don't hide it by default),
- *  but collapsible so a returning user can tuck it away after reading.
- *
- *  On the free (Scan) tier `unlocked` is false: it shows a locked teaser with
- *  the relevant count + an upgrade link instead of the update content. */
-export function UpdatesCard({
-  updates,
-  unlocked = true,
-}: {
-  updates: EvaluatedUpdate[];
-  unlocked?: boolean;
-}) {
+ *  but collapsible so a returning user can tuck it away after reading. */
+export function UpdatesCard({ updates }: { updates: EvaluatedUpdate[] }) {
   if (updates.length === 0) return null;
-
-  if (!unlocked) {
-    return (
-      <div className="mb-6 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-brand-100 bg-brand-50/40 px-5 py-4">
-        <div className="flex items-start gap-2">
-          <BellRing className="mt-0.5 h-5 w-5 shrink-0 text-brand-600" />
-          <div>
-            <div className="flex items-center gap-2 font-semibold">
-              Recente wijzigingen
-              <Badge variant="warning" className="font-normal">
-                {updates.length} relevant voor u
-              </Badge>
-            </div>
-            <p className="mt-0.5 text-sm text-muted-foreground">
-              De EU AI Act is veranderd op punten die u raken. Upgrade om te lezen wat en waarom.
-            </p>
-          </div>
-        </div>
-        <Link
-          href="/pricing"
-          className="inline-flex items-center gap-1.5 text-sm font-medium text-primary hover:underline"
-        >
-          <Lock className="h-4 w-4" /> Ontgrendel updates
-        </Link>
-      </div>
-    );
-  }
-
   return (
     <div className="mb-6 rounded-xl border border-brand-100 bg-brand-50/40">
       <Accordion type="single" collapsible defaultValue="updates">
