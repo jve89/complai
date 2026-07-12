@@ -236,7 +236,7 @@ export function makeObligation(
     status: "open",
     required: entry.required,
     evidenceKind: entry.evidenceKind,
-    deadline: entry.deadlineKey ? APPLICATION_DATES[entry.deadlineKey] : undefined,
+    deadline: entry.deadlineKey ? APPLICATION_DATES[entry.deadlineKey].date : undefined,
     ...overrides,
   };
 }

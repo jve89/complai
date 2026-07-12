@@ -198,7 +198,7 @@ export function classify(answers: ScanAnswers): ClassificationResult {
   // default) — both deferred by the Digital Omnibus. See lib/compliance/timeline.ts.
   const hrDeadline =
     isHigh && !hasAnyReal(annexIIIareas)
-      ? APPLICATION_DATES.highRiskAnnexI
+      ? APPLICATION_DATES.highRiskAnnexI.date
       : undefined;
   if (isHigh) {
     tiers.add("high");
