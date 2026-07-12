@@ -18,9 +18,21 @@ const RULES: { level: RiskLevel; patterns: RegExp; reason: string }[] = [
   {
     level: "unacceptable",
     patterns:
-      /social.?scor|sociale scoring|emotieherkenning|emotion recogn|manipulat|subliminaal|real-?time.*biometr|gedragsbe(ï|i)nvloed/i,
+      /social.?scor|sociale scoring|manipulat|subliminaal|real-?time.*biometr|gedragsbe(ï|i)nvloed/i,
     reason:
-      "Mogelijk een verboden praktijk onder Artikel 5 (bijv. social scoring of emotieherkenning). Verifieer of de toepassing is toegestaan.",
+      "Mogelijk een verboden praktijk onder Artikel 5 (bijv. social scoring of schadelijke manipulatie). Verifieer of de toepassing is toegestaan.",
+  },
+  // ── Art. 5(1)(f) — emotion inference at WORK or in EDUCATION is prohibited ──
+  // "...the use of AI systems to infer emotions of a natural person in the areas
+  //  of workplace and education institutions, except where ... for medical or
+  //  safety reasons" (Art. 5(1)(f)). Needs BOTH an emotion term AND a workplace/
+  //  education context; checked before the general emotion-recognition rule below.
+  {
+    level: "unacceptable",
+    patterns:
+      /(?=[\s\S]*(emotieherken|emotie-?herken|emotiedetectie|emotion.?recogn|emoties?.{0,20}(herken|meten|afleid|detect|analys)))(?=[\s\S]*(werkvloer|werknemer|werkplek|personeel|medewerker|kantoor|onderwijs|school|scholier|student|leerling|klaslokaal|\bklas\b|examen|educat|workplace|employee))/i,
+    reason:
+      "Emotieherkenning op de werkvloer of in het onderwijs is een verboden praktijk (Art. 5(1)(f)), behalve om medische of veiligheidsredenen (nauwe uitzondering, met onderbouwing). Verifieer de context.",
   },
   // ── High risk (Annex III) ─────────────────────────────────────────────────
   {
@@ -36,6 +48,16 @@ const RULES: { level: RiskLevel; patterns: RegExp; reason: string }[] = [
       /krediet|creditscor|kredietwaardig|leningsbeoordeling|verzekerings(premie|risico)/i,
     reason:
       "Krediet- en risicobeoordeling van personen valt onder Annex III (hoog risico).",
+  },
+  // ── Annex III 1(c) — emotion recognition OUTSIDE work/education is high-risk ──
+  // "AI systems intended to be used for emotion recognition" (Annex III, point
+  //  1(c)). The work/education case is prohibited (Art. 5(1)(f)) and caught above.
+  {
+    level: "high",
+    patterns:
+      /emotieherken|emotie-?herken|emotiedetectie|emotion.?recogn|emoties?.{0,20}(herken|meten|afleid|detect|analys)/i,
+    reason:
+      "Emotieherkenning valt onder Annex III, punt 1(c) (hoog risico). Let op: op de werkvloer of in het onderwijs is het een verboden praktijk (Art. 5(1)(f)).",
   },
   // ── Annex III 1(a) carve-out — 1:1 biometric VERIFICATION is NOT high-risk ──
   // "This shall not include AI systems intended to be used for biometric
