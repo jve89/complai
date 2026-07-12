@@ -129,6 +129,22 @@ export function classify(answers: ScanAnswers): ClassificationResult {
     emit("ART_5_PROHIBITED");
   }
 
+  // ── Annex III 1(a) carve-out — 1:1 biometric verification is NOT high-risk ──
+  // "This shall not include AI systems intended to be used for biometric
+  //  verification the sole purpose of which is to confirm that a specific natural
+  //  person is the person he or she claims to be" (Annex III, point 1(a)). So a
+  //  verification-only answer drops area "1" from the high-risk trigger.
+  const biometricVerificationOnly =
+    has(answers.annexIII_areas, "1") && answers.biometricUse === "verification";
+  if (biometricVerificationOnly) {
+    caveats.push(
+      "Biometrische 1-op-1 verificatie (bevestigen dat iemand is wie hij zegt te zijn) valt niet onder hoog-risico (Annex III, punt 1(a)); herkenning op afstand (1-op-veel) wél."
+    );
+  }
+  const annexIIIareas = (answers.annexIII_areas ?? []).filter(
+    (a) => !(a === "1" && biometricVerificationOnly)
+  );
+
   // ── Section HR — high-risk status (Art. 6/7, Annex I & III) ───────────────
   // Prohibited overrides high-risk for the same system: skip high-risk emission.
   let isHigh = false;
@@ -144,8 +160,8 @@ export function classify(answers: ScanAnswers): ClassificationResult {
     // Annex I Section A — high-risk WITH third-party conformity assessment.
     if (hasAnyReal(answers.annexI_A) && answers.thirdPartyConformity) isHigh = true;
 
-    // Annex III use-case areas.
-    if (hasAnyReal(answers.annexIII_areas)) {
+    // Annex III use-case areas (verification-only biometrics already carved out).
+    if (hasAnyReal(annexIIIareas)) {
       const creditOrInsurance =
         has(answers.annexIII_subareas, "5b") || has(answers.annexIII_subareas, "5c");
       if (answers.profiling) {
@@ -181,7 +197,7 @@ export function classify(answers: ScanAnswers): ClassificationResult {
   // 2 Aug 2028; a stand-alone Annex III use applies from 2 Dec 2027 (the catalog
   // default) — both deferred by the Digital Omnibus. See lib/compliance/timeline.ts.
   const hrDeadline =
-    isHigh && !hasAnyReal(answers.annexIII_areas)
+    isHigh && !hasAnyReal(annexIIIareas)
       ? APPLICATION_DATES.highRiskAnnexI
       : undefined;
   if (isHigh) {
@@ -203,8 +219,8 @@ export function classify(answers: ScanAnswers): ClassificationResult {
   // ── FRIA (Art. 27) ───────────────────────────────────────────────────────
   if (isHigh && isDeployer()) {
     const onlyCriticalInfra =
-      has(answers.annexIII_areas, "2") &&
-      answers.annexIII_areas.filter((a) => a && a !== "none").length === 1;
+      has(annexIIIareas, "2") &&
+      annexIIIareas.filter((a) => a && a !== "none").length === 1;
     const creditOrInsurance =
       has(answers.annexIII_subareas, "5b") || has(answers.annexIII_subareas, "5c");
     if (!onlyCriticalInfra && (answers.publicBodyOrService || creditOrInsurance)) {

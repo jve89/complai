@@ -37,11 +37,24 @@ const RULES: { level: RiskLevel; patterns: RegExp; reason: string }[] = [
     reason:
       "Krediet- en risicobeoordeling van personen valt onder Annex III (hoog risico).",
   },
+  // ── Annex III 1(a) carve-out — 1:1 biometric VERIFICATION is NOT high-risk ──
+  // "This shall not include AI systems intended to be used for biometric
+  //  verification the sole purpose of which is to confirm that a specific natural
+  //  person is the person he or she claims to be" (Annex III, point 1(a)).
+  // Needs BOTH a biometric term AND a verification/authentication/login context;
+  // checked before the biometric high-risk rule below.
+  {
+    level: "limited",
+    patterns:
+      /(?=[\s\S]*(biometr|gezicht|vingerafdruk|stem|iris))(?=[\s\S]*(verificat|authenticat|inloggen|\blogin\b|toegangscontrole|1-op-1|één-op-één|een-op-een))/i,
+    reason:
+      "Biometrische 1-op-1 verificatie (bevestigen dat iemand is wie hij zegt te zijn, bijv. vingerafdruk-login) is uitgezonderd van Annex III (punt 1(a)) — geen hoog risico. Controleer wel de transparantie- en privacyplichten.",
+  },
   {
     level: "high",
     patterns: /biometr|gezichtsherkenning|vingerafdruk|stemherkenning/i,
     reason:
-      "Biometrische identificatie/categorisering valt onder Annex III (hoog risico).",
+      "Biometrische identificatie op afstand (1-op-veel), categorisering of emotieherkenning valt onder Annex III (hoog risico). 1-op-1 verificatie (login) is uitgezonderd (punt 1(a)) — controleer welke van toepassing is.",
   },
   {
     level: "high",

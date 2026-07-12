@@ -78,6 +78,21 @@ function check(name: string, cond: boolean, detail = "") {
   check("Art. 6(4) assessment is a required obligation", p.obligations.some((o) => o.code === "ART_6_4_ASSESSMENT"));
 }
 
+// ── Row 3c — biometrics, 1:1 VERIFICATION only → carve-out, NOT high-risk (Annex III 1(a)) ──
+{
+  const p = profileOf(base({ roles: ["deployer"], scopeCriteria: ["established_eu"], annexIII_areas: ["1"], biometricUse: "verification" }));
+  console.log("Row 3c — biometric 1:1 verification (fingerprint login):");
+  check("NOT high-risk (verification carve-out)", p.headline === "minimal", p.headline);
+  check("Annex III 1(a) caveat present", p.caveats.some((c) => c.includes("1-op-1 verificatie")));
+}
+
+// ── Row 3d — biometrics, 1:many IDENTIFICATION → high-risk ───────────────────
+{
+  const p = profileOf(base({ roles: ["deployer"], scopeCriteria: ["established_eu"], annexIII_areas: ["1"], biometricUse: "identification" }));
+  console.log("Row 3d — biometric 1:many identification:");
+  check("high_risk headline", p.headline === "high_risk", p.headline);
+}
+
 // ── Row 4 — bank credit scoring deployer → high + FRIA ───────────────────────
 {
   const p = profileOf(base({ roles: ["deployer"], size: "51-250", scopeCriteria: ["established_eu"], annexIII_areas: ["5"], annexIII_subareas: ["5b"] }));

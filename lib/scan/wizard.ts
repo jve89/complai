@@ -7,6 +7,7 @@ import {
   ANNEX_I_A,
   ANNEX_III_AREAS,
   ANNEX_III_SUBAREAS,
+  BIOMETRIC_USE,
   ENTITY_ROLES,
   EXCLUSIONS,
   GPAI_SYSTEMIC,
@@ -139,6 +140,15 @@ const CLASSIFICATION_STEPS: WizardStep[] = [
     help: "Dit zijn de hoog-risico gebieden uit Annex III van de AI Act.",
     type: "multi",
     options: ANNEX_III_AREAS,
+  },
+  {
+    field: "biometricUse",
+    section: "Risiconiveau",
+    title: "Waarvoor gebruikt u biometrie?",
+    help: "1-op-1 verificatie (bevestigen dat iemand is wie hij zegt te zijn) valt buiten hoog-risico (Annex III, punt 1(a)); herkenning uit een groep, categorisering of emotieherkenning valt er wél onder.",
+    type: "single",
+    options: BIOMETRIC_USE,
+    visible: (a) => a.annexIII_areas.includes("1"),
   },
   {
     field: "annexIII_subareas",

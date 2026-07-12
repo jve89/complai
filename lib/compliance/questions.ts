@@ -186,6 +186,23 @@ export const ANNEX_III_SUBAREAS: Option[] = [
   { value: "6d", label: "Risico dat iemand (opnieuw) een strafbaar feit pleegt (6d)" },
 ];
 
+// Annex III point 1(a): 1:1 biometric *verification* ("confirm that a specific
+// natural person is the person he or she claims to be") is EXPRESSLY excluded
+// from the high-risk biometrics area. 1:many identification, categorisation and
+// emotion recognition are NOT excluded.
+export const BIOMETRIC_USE: Option[] = [
+  {
+    value: "verification",
+    label: "Alleen bevestigen dat iemand is wie hij zegt te zijn (1-op-1)",
+    help: "Bijv. vingerafdruk- of gezichts-login om toegang te bevestigen. Valt buiten hoog-risico (Annex III, punt 1(a)).",
+  },
+  {
+    value: "identification",
+    label: "Personen herkennen uit een groep, categoriseren of emoties herkennen (1-op-veel)",
+    help: "Bijv. iemand identificeren uit camerabeelden, biometrische categorisering of emotieherkenning. Dit valt wél onder Annex III (hoog risico).",
+  },
+];
+
 // ── Section S — scope / territorial test (Art. 2) ───────────────────────────
 export const SCOPE_CRITERIA: Option[] = [
   { value: "place_system", label: "Wij brengen AI-systemen op de EU-markt" },
@@ -276,6 +293,7 @@ export interface ScanAnswers {
   thirdPartyConformity?: boolean;
   annexIII_areas: string[];
   annexIII_subareas: string[];
+  biometricUse?: "verification" | "identification"; // Annex III 1(a): verification-only → NOT high-risk area 1
   art6_3_carveout?: boolean; // claims the narrow-task derogation
   profiling?: boolean; // profiles natural persons → forces high-risk (Art. 6(3) final subpara)
   // Section S — scope
@@ -351,7 +369,10 @@ export function mapTools(answers: ScanAnswers): Partial<ScanAnswers> {
     areas.push("5");
     subareas.push("5b");
   }
-  if (uses.includes("biometrie")) areas.push("1");
+  // Annex III 1(a): only 1:many biometric identification is high-risk area 1;
+  // 1:1 verification is carved out. The dedicated `biometricUse` question refines
+  // this — pre-fill area 1 unless verification-only is already indicated.
+  if (uses.includes("biometrie") && answers.biometricUse !== "verification") areas.push("1");
   if (areas.length) out.annexIII_areas = areas;
   if (subareas.length) out.annexIII_subareas = subareas;
 
