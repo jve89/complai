@@ -64,3 +64,31 @@ Tailwind + shadcn/ui · Supabase auth · Prisma 6 → Postgres · @react-pdf/ren
 Built: landing, risk scan + PDF, auth, dashboard, AI register, document
 generator, e-learning (+ certificates), governance.
 Remaining: **Pricing/Stripe**, **Settings**.
+
+## Regulatory correctness — non-negotiable
+
+**Source of truth:** `docs/regulatory/ai-act-verbatim-reference.md` (verbatim text of Regulation (EU) 2024/1689).
+**Correctness spec:** `docs/regulatory/ai-act-correctness-spec.md` (known bugs + required test cases).
+
+Rules:
+
+1. **Every risk-classification output MUST cite a specific article or annex point.**
+   If a claim cannot be traced to `ai-act-verbatim-reference.md`, do not make it.
+   Write "needs verification" instead. Never infer a legal conclusion from memory.
+
+2. **False positives are the worst failure mode.**
+   Over-calling risk destroys a compliance vendor's credibility faster than any missing
+   feature. When the law is ambiguous, surface the ambiguity — do not resolve it upward.
+
+3. **Accuracy beats conversion.**
+   Never inflate a risk classification, an obligation, or a deadline to drive an upsell.
+   Telling a customer what they do *not* need is a feature, not a lost sale.
+
+4. **Scope: complai-eu.nl serves DUTCH SMEs.**
+   No aviation content. No EASA content. No drone content. If a scan result routes into
+   Annex I Section B (drones, vehicles, marine, rail), say so and stop — do not build
+   sector logic here.
+
+5. **Before changing classification logic: read the current implementation and report it.**
+   Do not edit classification rules without first showing the existing code and the
+   proposed diff. Small PRs. One rule at a time.
