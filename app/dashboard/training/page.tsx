@@ -16,6 +16,7 @@ import {
 import type { ComplianceProfile, TrainingRequirement } from "@/lib/compliance/types";
 import { companySignals } from "@/lib/compliance/signals";
 import { PageHeader } from "@/components/dashboard/page-header";
+import { PendingPublicationNote } from "@/components/pending-publication-note";
 import { ModuleQuiz } from "@/components/dashboard/training/module-quiz";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -116,6 +117,9 @@ export default async function TrainingPage() {
         title="E-learning"
         description="Borg AI-geletterdheid (Art. 4) met rolgerichte leerpaden en certificaten."
       />
+
+      {/* Modules discuss the Digital-Omnibus dates; flag their pending status. */}
+      <PendingPublicationNote className="mb-6" />
 
       {!unlocked && (
         <div className="mb-8 flex flex-col gap-3 rounded-lg border border-navy-100 bg-navy-50 p-4 text-navy-900 sm:flex-row sm:items-center sm:justify-between">

@@ -1,6 +1,7 @@
 import { Ban, CircleCheck, Eye, Scale, ScanSearch, ShieldAlert } from "lucide-react";
 
 import { TOOL_GROUPS } from "@/lib/compliance/questions";
+import { PendingPublicationNote } from "@/components/pending-publication-note";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 
@@ -112,6 +113,7 @@ export function KennisbankContent() {
           Deze data volgen de officiële EU-tijdlijn (Art. 113). Wetgeving en
           deadlines kunnen wijzigen; we houden de data in het platform actueel.
         </p>
+        <PendingPublicationNote className="mt-3" />
       </section>
 
       <section className="mb-16">

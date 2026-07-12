@@ -17,6 +17,7 @@ import { getCurrentUser } from "@/lib/auth";
 import { onboardingState } from "@/lib/onboarding";
 import type { ComplianceProfile, EntityRole, ObligationItem } from "@/lib/compliance/types";
 import { ScoreRing } from "@/components/score-ring";
+import { PendingPublicationNote } from "@/components/pending-publication-note";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -309,16 +310,10 @@ export default async function ScanResultsPage({
         </div>
       )}
 
-      {/* High-risk application-date note — only when the profile is actually
-          high-risk, so a limited-risk company doesn't see an Annex note that
-          doesn't apply to it. */}
-      {hasFuture && profile.riskTiers.includes("high") && (
-        <p className="mb-8 rounded-lg border border-dashed px-4 py-3 text-xs text-muted-foreground">
-          De grote verplichtingen voor hoog-risico AI zijn met de Digital Omnibus verschoven: Annex III
-          geldt vanaf 2 december 2027 (was 2 augustus 2026) en Annex I (als product) vanaf 2 augustus
-          2028 (Art. 113). Wetgeving en deadlines kunnen wijzigen; we houden de data in het platform actueel.
-        </p>
-      )}
+      {/* Provenance qualifier for the (pending) Digital-Omnibus deadlines stamped
+          on the obligations above — shown whenever a future deadline is listed.
+          Self-hides once every application date is in force. */}
+      {hasFuture && <PendingPublicationNote className="mb-8" />}
 
       {/* Advisory */}
       {advisoryObligations.length > 0 && (

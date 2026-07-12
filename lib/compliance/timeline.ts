@@ -44,3 +44,15 @@ export const APPLICATION_DATES = {
 } as const satisfies Record<string, ApplicationDate>;
 
 export type ApplicationDateKey = keyof typeof APPLICATION_DATES;
+
+/** True while any application date still depends on the unpublished Digital
+ *  Omnibus. Flip the four `pending_publication` entries to `in_force` on OJ
+ *  publication and every UI qualifier (see PendingPublicationNote) turns off. */
+export function hasPendingPublication(): boolean {
+  return Object.values(APPLICATION_DATES).some((d) => d.status === "pending_publication");
+}
+
+/** Canonical qualifier shown wherever a `pending_publication` date appears
+ *  (mirrors the /updates feed wording). */
+export const PENDING_PUBLICATION_NOTE =
+  "Digital Omnibus — aangenomen 16/29 juni 2026, publicatie in het Publicatieblad in afwachting. Tot publicatie geldt formeel de oorspronkelijke datum (art. 113).";

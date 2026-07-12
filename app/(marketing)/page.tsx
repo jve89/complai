@@ -28,6 +28,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Faq } from "@/components/marketing/faq";
 import { StructuredData } from "@/components/marketing/structured-data";
+import { PendingPublicationNote } from "@/components/pending-publication-note";
 import { PLANS } from "@/lib/stripe";
 import { formatEuro } from "@/lib/utils";
 
@@ -269,6 +270,7 @@ export default function LandingPage() {
               </div>
             ))}
           </div>
+          <PendingPublicationNote className="mx-auto mt-8 max-w-2xl" />
           <div className="mt-10 flex flex-col items-center gap-3">
             <Button asChild size="lg">
               <Link href="/scan">

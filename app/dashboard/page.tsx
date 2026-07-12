@@ -29,6 +29,7 @@ import { OnboardingChecklist } from "@/components/dashboard/onboarding-checklist
 import { UpdatesCard } from "@/components/dashboard/updates-card";
 import { ScoreRing } from "@/components/score-ring";
 import { PageHeader } from "@/components/dashboard/page-header";
+import { PendingPublicationNote } from "@/components/pending-publication-note";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
@@ -497,6 +498,7 @@ export default async function DashboardPage({
                     </div>
                   ))}
                 </div>
+                <PendingPublicationNote className="mt-3" />
               </AccordionContent>
             </AccordionItem>
           )}

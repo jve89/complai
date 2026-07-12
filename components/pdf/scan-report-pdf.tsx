@@ -1,6 +1,7 @@
 import { Document, Page, Text, View, StyleSheet } from "@react-pdf/renderer";
 
 import type { ComplianceProfile } from "@/lib/compliance/types";
+import { hasPendingPublication, PENDING_PUBLICATION_NOTE } from "@/lib/compliance/timeline";
 
 const NAVY = "#0f172a";
 const BRAND = "#6366f1"; // indigo
@@ -72,6 +73,17 @@ const styles = StyleSheet.create({
     borderTopColor: "#e2e8f0",
     paddingTop: 8,
   },
+  pendingNote: {
+    marginTop: 10,
+    backgroundColor: "#fffbeb",
+    borderWidth: 1,
+    borderColor: "#fde68a",
+    borderRadius: 6,
+    padding: 8,
+    fontSize: 8,
+    color: "#92400e",
+    lineHeight: 1.4,
+  },
 });
 
 function statusLabel(status: string) {
@@ -89,6 +101,7 @@ export function ScanReportPdf({
 }) {
   const required = profile.obligations.filter((o) => o.required);
   const advisory = profile.obligations.filter((o) => !o.required);
+  const showPending = hasPendingPublication() && profile.obligations.some((o) => o.deadline);
 
   return (
     <Document title="ComplAI compliance-rapport" author="ComplAI">
@@ -157,6 +170,12 @@ export function ScanReportPdf({
               </View>
             ))}
           </>
+        )}
+
+        {showPending && (
+          <View style={styles.pendingNote}>
+            <Text>{PENDING_PUBLICATION_NOTE}</Text>
+          </View>
         )}
 
         <Text style={styles.footer}>
