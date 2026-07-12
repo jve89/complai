@@ -88,6 +88,7 @@ export interface ComplianceProfile {
     | "excluded"
     | "prohibited"
     | "high_risk"
+    | "high_notify" // Annex III area but a valid Art. 6(3) exemption is claimed → NOT high-risk
     | "limited_risk"
     | "minimal";
   /** Self-assessed simplifications the user should have reviewed by a lawyer. */

@@ -19,6 +19,7 @@ export const docLabel = (slug: string): string => DOC_LABELS[slug] ?? slug;
 export const HEADLINE_LABEL: Record<string, string> = {
   prohibited: "Verboden praktijk",
   high_risk: "Hoog risico",
+  high_notify: "Geen hoog risico (Art. 6(3)-uitzondering)",
   limited_risk: "Beperkt risico",
   out_of_scope: "Buiten de reikwijdte",
   excluded: "Uitgesloten",

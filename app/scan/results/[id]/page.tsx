@@ -29,6 +29,7 @@ const HEADLINE: Record<
 > = {
   prohibited: { label: "Verboden praktijk", variant: "danger", note: "Eén of meer toepassingen lijken verboden onder Art. 5. Staak het gebruik en laat dit met spoed toetsen." },
   high_risk: { label: "Hoog risico", variant: "warning", note: "U gebruikt hoog-risico AI. Daar horen stevige verplichtingen bij — zie hieronder." },
+  high_notify: { label: "Geen hoog risico (Art. 6(3))", variant: "info", note: "U beroept zich op de Art. 6(3)-uitzondering: geen volledige set hoog-risicoverplichtingen, maar wél een gedocumenteerde beoordeling (Art. 6(4)) en registratie (Art. 49(2)) vóór ingebruikname." },
   limited_risk: { label: "Beperkt risico", variant: "info", note: "Vooral transparantieverplichtingen (Art. 50) zijn van toepassing." },
   out_of_scope: { label: "Buiten de reikwijdte", variant: "secondary", note: "Op basis van uw antwoorden valt u (grotendeels) buiten de AI Act. Houd dit actueel." },
   excluded: { label: "Uitgesloten", variant: "secondary", note: "Uw gebruik lijkt te zijn uitgesloten van de AI Act." },
@@ -311,7 +312,7 @@ export default async function ScanResultsPage({
       {/* High-risk application-date note — only when the profile is actually
           high-risk, so a limited-risk company doesn't see an Annex note that
           doesn't apply to it. */}
-      {hasFuture && (profile.riskTiers.includes("high") || profile.riskTiers.includes("high_notify")) && (
+      {hasFuture && profile.riskTiers.includes("high") && (
         <p className="mb-8 rounded-lg border border-dashed px-4 py-3 text-xs text-muted-foreground">
           De grote verplichtingen voor hoog-risico AI zijn met de Digital Omnibus verschoven: Annex III
           geldt vanaf 2 december 2027 (was 2 augustus 2026) en Annex I (als product) vanaf 2 augustus

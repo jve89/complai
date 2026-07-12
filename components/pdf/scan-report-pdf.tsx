@@ -9,6 +9,7 @@ const MUTED = "#64748b";
 const HEADLINE_LABEL: Record<ComplianceProfile["headline"], string> = {
   prohibited: "Verboden praktijk",
   high_risk: "Hoog risico",
+  high_notify: "Geen hoog risico (Art. 6(3)-uitzondering)",
   limited_risk: "Beperkt risico",
   out_of_scope: "Buiten de reikwijdte",
   excluded: "Uitgesloten",

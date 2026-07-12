@@ -70,6 +70,14 @@ function check(name: string, cond: boolean, detail = "") {
   check("score reflects risk_assessment done", p.score > 35, `score=${p.score}`);
 }
 
+// ── Row 3b — Annex III area + valid Art. 6(3) carve-out → high_notify, NOT high_risk ──
+{
+  const p = profileOf(base({ roles: ["deployer"], scopeCriteria: ["established_eu"], annexIII_areas: ["4"], art6_3_carveout: true }));
+  console.log("Row 3b — Annex III area 4 with Art. 6(3) carve-out:");
+  check("high_notify headline (not high_risk)", p.headline === "high_notify", p.headline);
+  check("Art. 6(4) assessment is a required obligation", p.obligations.some((o) => o.code === "ART_6_4_ASSESSMENT"));
+}
+
 // ── Row 4 — bank credit scoring deployer → high + FRIA ───────────────────────
 {
   const p = profileOf(base({ roles: ["deployer"], size: "51-250", scopeCriteria: ["established_eu"], annexIII_areas: ["5"], annexIII_subareas: ["5b"] }));

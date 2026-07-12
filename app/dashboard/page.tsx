@@ -43,6 +43,7 @@ const HEADLINE: Record<
 > = {
   prohibited: { label: "Verboden praktijk", variant: "danger" },
   high_risk: { label: "Hoog risico", variant: "warning" },
+  high_notify: { label: "Geen hoog risico (Art. 6(3))", variant: "info" },
   limited_risk: { label: "Beperkt risico", variant: "info" },
   out_of_scope: { label: "Buiten de reikwijdte", variant: "secondary" },
   excluded: { label: "Uitgesloten", variant: "secondary" },

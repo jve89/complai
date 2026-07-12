@@ -103,17 +103,22 @@ export function buildProfile(
   // ── Risk posture (headline) ───────────────────────────────────────────────
   const isProhibited = c.riskTiers.includes("prohibited");
 
+  // `high` (genuine high-risk) outranks `high_notify` (Annex III area but a valid
+  // Art. 6(3) exemption claimed): a company holding both is high-risk overall. A
+  // high_notify-only company is NOT high-risk — it owes documentation + registration.
   const headline: ComplianceProfile["headline"] = isProhibited
     ? "prohibited"
-    : c.riskTiers.includes("high") || c.riskTiers.includes("high_notify")
+    : c.riskTiers.includes("high")
       ? "high_risk"
-      : c.riskTiers.includes("limited")
-        ? "limited_risk"
-        : c.riskTiers.includes("out_of_scope")
-          ? "out_of_scope"
-          : c.riskTiers.includes("excluded")
-            ? "excluded"
-            : "minimal";
+      : c.riskTiers.includes("high_notify")
+        ? "high_notify"
+        : c.riskTiers.includes("limited")
+          ? "limited_risk"
+          : c.riskTiers.includes("out_of_scope")
+            ? "out_of_scope"
+            : c.riskTiers.includes("excluded")
+              ? "excluded"
+              : "minimal";
 
   // ── Gereedheidsscore ──────────────────────────────────────────────────────
   // Weighted over applicable REQUIRED obligations with partial credit, lifted off
