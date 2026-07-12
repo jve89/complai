@@ -611,17 +611,17 @@ export const AUTHORED_MODULES = [
         "explanation": "Art. 26 bevat de deployer-plichten (correct gebruik, menselijk toezicht toewijzen, monitoren, logs bewaren, betrokkenen informeren). Art. 9, 11 en 15 zijn aanbiedersverplichtingen bij het ontwerp en de bouw van het systeem."
       },
       {
-        "question": "Vanaf welke datum gelden de hoog-risicoverplichtingen voor Annex III-systemen (na de Digital Omnibus)?",
+        "question": "De Digital Omnibus wil de Annex III hoog-risicodatum naar 2 december 2027 verschuiven. Wat geldt er nu juridisch?",
         "options": [
-          "2 augustus 2026",
-          "2 december 2027",
-          "2 februari 2025",
-          "2 augustus 2028"
+          "De Omnibus is aangenomen maar nog niet in het Publicatieblad gepubliceerd; tot dan geldt formeel 2 augustus 2026 (art. 113), daarna 2 december 2027.",
+          "2 december 2027 staat definitief vast als ingangsdatum.",
+          "De datum is 2 februari 2025.",
+          "De datum is 2 augustus 2028."
         ],
         "correct": [
-          "2 december 2027"
+          "De Omnibus is aangenomen maar nog niet in het Publicatieblad gepubliceerd; tot dan geldt formeel 2 augustus 2026 (art. 113), daarna 2 december 2027."
         ],
-        "explanation": "Met de Digital Omnibus is de Annex III hoog-risicodatum verschoven van 2 augustus 2026 naar 2 december 2027. (2 februari 2025 = verboden praktijken + AI-geletterdheid; 2 augustus 2025 = GPAI en bestuur/boetes; 2 augustus 2028 = Annex I productgebonden.)"
+        "explanation": "De Digital Omnibus is in juni 2026 aangenomen maar nog niet gepubliceerd in het Publicatieblad. Tot publicatie geldt formeel de oorspronkelijke datum uit art. 113: 2 augustus 2026; daarna verschuift die naar 2 december 2027. (2 februari 2025 = verboden praktijken + AI-geletterdheid; 2 augustus 2025 = GPAI en bestuur/boetes; 2 augustus 2028 = Annex I productgebonden.)"
       },
       {
         "question": "Welke uitspraken zijn juist? (meerdere antwoorden mogelijk)",
@@ -1369,17 +1369,17 @@ export const AUTHORED_MODULES = [
       },
       {
         "scenario": "Het is medio 2026. Uw HR-afdeling wil een hoog-risico AI-tool voor cv-selectie (Annex III, werving) in gebruik nemen.",
-        "question": "Wanneer moeten de eisen voor hoog-risico AI, waaronder het menselijk toezicht, uiterlijk op orde zijn (na de Digital Omnibus)?",
+        "question": "Wanneer moeten de eisen voor hoog-risico AI, waaronder het menselijk toezicht, uiterlijk op orde zijn?",
         "options": [
-          "Vanaf 2 december 2027",
-          "Vanaf 2 augustus 2026",
-          "Vanaf 2 februari 2025",
-          "Er geldt geen concrete datum voor hoog-risico AI"
+          "Op de wettelijke ingangsdatum: 2 augustus 2026 volgens de gepubliceerde verordening (art. 113); de Digital Omnibus verschuift dit naar 2 december 2027 zodra die is gepubliceerd.",
+          "Definitief uiterlijk 2 december 2027.",
+          "Vanaf 2 februari 2025.",
+          "Er geldt geen concrete datum voor hoog-risico AI."
         ],
         "correct": [
-          "Vanaf 2 december 2027"
+          "Op de wettelijke ingangsdatum: 2 augustus 2026 volgens de gepubliceerde verordening (art. 113); de Digital Omnibus verschuift dit naar 2 december 2027 zodra die is gepubliceerd."
         ],
-        "explanation": "Met de Digital Omnibus is de Annex III hoog-risicodatum (zoals werving) verschoven van 2 augustus 2026 naar 2 december 2027; uiterlijk dan moet het menselijk toezicht werkend zijn. 2 februari 2025 gold voor verboden praktijken en AI-geletterdheid; Annex I product-gebonden hoog-risico volgt op 2 augustus 2028."
+        "explanation": "De Annex III hoog-risico-eisen gelden volgens de gepubliceerde verordening (art. 113) vanaf 2 augustus 2026. De Digital Omnibus (juni 2026 aangenomen, nog niet gepubliceerd) wil dit verschuiven naar 2 december 2027; uiterlijk op de dan geldende datum moet het menselijk toezicht werkend zijn. 2 februari 2025 gold voor verboden praktijken en AI-geletterdheid; Annex I product-gebonden hoog-risico volgt op 2 augustus 2028."
       },
       {
         "question": "Een manager zegt: 'Als de AI de beslissing neemt, is niemand bij ons persoonlijk verantwoordelijk voor de uitkomst.' Waarom klopt deze redenering niet onder art. 14?",

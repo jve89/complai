@@ -153,17 +153,17 @@ export const AI_ACT_MODULE = {
       "scenario": "Uw website heeft een chatbot die klantvragen beantwoordt."
     },
     {
-      "question": "Wanneer gaan de hoog-risicoverplichtingen voor Annex III-systemen gelden (Art. 113, na de Digital Omnibus)?",
+      "question": "De Digital Omnibus wil de Annex III hoog-risicodatum naar 2 december 2027 verschuiven. Wat is op dit moment juridisch de juiste stand van zaken?",
       "options": [
-        "2 februari 2025",
-        "2 augustus 2026",
-        "2 december 2027",
-        "Ze gelden nog niet"
+        "De Omnibus is aangenomen maar nog niet gepubliceerd; tot publicatie geldt formeel de oorspronkelijke datum 2 augustus 2026 (art. 113).",
+        "2 december 2027 geldt al als definitieve, vaststaande ingangsdatum.",
+        "De verplichtingen gelden al sinds 2 februari 2025.",
+        "De verordening kent geen ingangsdatum voor Annex III."
       ],
       "correct": [
-        "2 december 2027"
+        "De Omnibus is aangenomen maar nog niet gepubliceerd; tot publicatie geldt formeel de oorspronkelijke datum 2 augustus 2026 (art. 113)."
       ],
-      "explanation": "Met de Digital Omnibus (in juni 2026 aangenomen) is de Annex III hoog-risicodatum verschoven van de oorspronkelijke 2 augustus 2026 naar 2 december 2027. Verboden praktijken (Art. 5) en AI-geletterdheid (Art. 4) gelden al sinds 2 februari 2025; product-gebonden hoog-risico (Annex I) volgt op 2 augustus 2028."
+      "explanation": "De Digital Omnibus is in juni 2026 aangenomen (Parlement 16 juni, Raad 29 juni) maar nog niet in het Publicatieblad gepubliceerd. Zolang publicatie uitblijft, geldt formeel de oorspronkelijke datum uit art. 113: 2 augustus 2026. Zodra de Omnibus in werking treedt, verschuift die naar 2 december 2027. Verboden praktijken (Art. 5) en AI-geletterdheid (Art. 4) gelden al sinds 2 februari 2025."
     },
     {
       "question": "Wat is de maximale boete voor een verboden AI-praktijk (Art. 99)?",
