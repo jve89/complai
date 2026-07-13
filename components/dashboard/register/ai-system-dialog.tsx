@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState, useTransition } from "react";
+import { forwardRef, useEffect, useImperativeHandle, useMemo, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Sparkles, Loader2, List } from "lucide-react";
 import type { AiSystem, AiRole, RiskLevel } from "@prisma/client";
@@ -47,20 +47,29 @@ interface Props {
 /** Naam field as a searchable combobox over the recognised-systems catalog.
  *  Typing filters known systems; picking one fills name + vendor. A name that
  *  isn't in the list is fine too — that's just manual entry, as before. */
-function NameCombobox({
-  value,
-  onType,
-  onPick,
-  inputRef,
-}: {
-  value: string;
-  onType: (v: string) => void;
-  onPick: (s: { name: string; vendor: string }) => void;
-  inputRef?: React.RefObject<HTMLInputElement>;
-}) {
+interface NameComboboxHandle {
+  open: () => void;
+}
+
+const NameCombobox = forwardRef<
+  NameComboboxHandle,
+  {
+    value: string;
+    onType: (v: string) => void;
+    onPick: (s: { name: string; vendor: string }) => void;
+  }
+>(({ value, onType, onPick }, ref) => {
   const [open, setOpen] = useState(false);
   const [active, setActive] = useState(0);
   const wrapRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  useImperativeHandle(ref, () => ({
+    open: () => {
+      setOpen(true);
+      inputRef.current?.focus();
+    },
+  }));
 
   const results = useMemo(() => {
     const q = value.trim().toLowerCase();
@@ -92,7 +101,6 @@ function NameCombobox({
           setOpen(true);
           setActive(0);
         }}
-        onFocus={() => setOpen(true)}
         onKeyDown={(e) => {
           if (!open || results.length === 0) return;
           if (e.key === "ArrowDown") {
@@ -134,7 +142,8 @@ function NameCombobox({
       )}
     </div>
   );
-}
+});
+NameCombobox.displayName = "NameCombobox";
 
 export function AiSystemDialog({ system, trigger }: Props) {
   const router = useRouter();
@@ -142,7 +151,7 @@ export function AiSystemDialog({ system, trigger }: Props) {
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
   const [suggestion, setSuggestion] = useState<string | null>(null);
-  const nameRef = useRef<HTMLInputElement>(null);
+  const comboRef = useRef<NameComboboxHandle>(null);
 
   const [form, setForm] = useState<{
     name: string;
@@ -207,10 +216,10 @@ export function AiSystemDialog({ system, trigger }: Props) {
             <div className="space-y-2">
               <Label htmlFor="name">Naam *</Label>
               <NameCombobox
+                ref={comboRef}
                 value={form.name}
                 onType={(v) => set("name", v)}
                 onPick={(s) => setForm((f) => ({ ...f, name: s.name, vendor: s.vendor }))}
-                inputRef={nameRef}
               />
             </div>
             <div className="space-y-2">
@@ -227,15 +236,14 @@ export function AiSystemDialog({ system, trigger }: Props) {
           <div className="rounded-lg border border-dashed bg-secondary/40 p-3">
             <div className="flex items-center justify-between gap-3">
               <p className="text-sm text-muted-foreground">
-                Staat uw AI-systeem in onze catalogus? Typ de naam en kies het —
-                wij vullen de leverancier automatisch aan.
+                Kies een bekend systeem uit onze catalogus.
               </p>
               <Button
                 type="button"
                 variant="outline"
                 size="sm"
                 className="shrink-0"
-                onClick={() => nameRef.current?.focus()}
+                onClick={() => comboRef.current?.open()}
               >
                 <List className="h-4 w-4" /> Toon catalogus
               </Button>
