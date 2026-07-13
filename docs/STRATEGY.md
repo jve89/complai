@@ -140,6 +140,54 @@ Turn what worked in Stage 1 into a predictable engine.
 Revisit this doc at every **stage gate**, and lightly each month against the
 metrics above. Change the plan freely; change the **guardrails** only on purpose.
 
+## Compliance-completeness roadmap (operational duties for high-risk)
+
+The five pillars (register · documents · e-learning · knowledge bank · updates)
+cover "get compliant." Below are the ONGOING operational duties that bind
+**high-risk deployers and providers** once Annex III applies (**2 Dec 2027**,
+Digital Omnibus). A limited/minimal-risk SME (the majority) needs none of this —
+so we **build ahead of the rollout** and **gate by who owes the duty**, never
+make a legally-required tool Audit-only.
+
+**Gating principle** (extends `DOC_MIN_TIER` in `lib/plan.ts`): duties of a
+**deployer** of high-risk AI → **Compliance (groei)**; duties of a
+**provider/maker** → **Audit (schaal)**. The scan already recommends the lowest
+pakket that unlocks a customer's required items — these must keep that promise
+(so: *not* Audit-only).
+
+### Wave 1 — high-risk deployer essentials (Compliance tier)
+- [ ] **Incident register + serious-incident reporting** — Art 73, Art 26(5).
+      Log incidents, generate the authority report, surface the 2 / 10 / 15-day
+      deadlines. New `Incident` model.
+- [ ] **Human-oversight register** — Art 26(2), Art 14. Per high-risk system: a
+      named, competent overseer linked to their AI-literacy certificate (extends
+      the AI-register).
+- [ ] **Notification & explanation templates** — Art 26(7) (workers), Art 26(11)
+      (affected individuals), Art 86 (right to explanation). New document types +
+      a record that notices were issued.
+
+### Wave 2 — high-risk deployer completeness (Compliance tier)
+- [ ] **Log-retention record** — Art 26(6) (≥ 6 months). Per system: location,
+      retention, owner. (We can't hold the logs; we evidence the policy.)
+- [ ] **Complaint procedure + register** — Art 27(1)(f), Art 85.
+- [ ] **EU-database registration tracker** — Art 49, Art 71, Art 26(8) (public
+      bodies). Status per system (future — DB not yet live).
+- [ ] **DPIA template / linkage** — Art 26(9) + GDPR Art 35 (FRIA complements it,
+      Art 27(4)). Optional — avoid scope-creep into a GDPR product.
+- [ ] Fold deployer post-market monitoring (Art 26(5)) into the existing
+      governance kwartaalcheck cadence.
+
+### Wave 3 — provider / maker duties (Audit tier)
+- [ ] **Quality management system** — Art 17 (simplified for micro-enterprises,
+      Art 63).
+- [ ] **Post-market monitoring plan** — Art 72 (part of the Annex IV tech doc).
+- [ ] **Conformity-assessment tracker** — Art 43, Art 47, Art 48 (steps + status;
+      complements the existing EU-conformiteitsverklaring doc).
+- [ ] **Corrective-action log** — Art 20 (ties to the incident register).
+
+Out of scope (guardrail): Art 26(10) law-enforcement post-remote biometric
+authorisation — no law-enforcement sector logic in this product.
+
 ## Open items
 
 - Re-verify the Digital Omnibus dates against the published OJ (EUR-Lex) once the
