@@ -74,6 +74,7 @@ model Company {
   invites             Invite[]
   incidents           Incident[]
   notices             Notice[]
+  complaints          Complaint[]
 
   @@map("companies")
 }
@@ -157,9 +158,10 @@ model AiSystem {
   logReviewedAt      DateTime? @map("log_reviewed_at")
   createdAt   DateTime  @default(now()) @map("created_at")
 
-  company   Company   @relation(fields: [companyId], references: [id], onDelete: Cascade)
-  oversight Employee? @relation(fields: [oversightEmployeeId], references: [id], onDelete: SetNull)
-  notices   Notice[] // information/explanation notices issued for this system (Art 26(7)/(11), 86)
+  company    Company     @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  oversight  Employee?   @relation(fields: [oversightEmployeeId], references: [id], onDelete: SetNull)
+  notices    Notice[] // information/explanation notices issued for this system (Art 26(7)/(11), 86)
+  complaints Complaint[] // complaints logged about this system (Art 85 / 27(1)(f))
 
   @@index([companyId])
   @@map("ai_systems")
@@ -215,6 +217,36 @@ model Notice {
 
   @@index([companyId])
   @@map("notices")
+}
+
+/// Complaint register. Art 85 gives any natural or legal person with grounds the
+/// right to lodge a complaint about a (suspected) AI-Act infringement with the
+/// market surveillance authority — an EXTERNAL right, not a deployer duty. Art
+/// 27(1)(f) requires a FRIA-scoped deployer (public bodies, private providers of
+/// public services, credit-scoring/insurance) to DESCRIBE its internal complaint
+/// mechanism inside the FRIA. This register logs complaints received about an AI
+/// system and tracks handling (open → in behandeling → afgehandeld / doorverwezen)
+/// — good governance, and evidence of the Art 27(1)(f) mechanism where it applies.
+model Complaint {
+  id          String    @id @default(cuid())
+  companyId   String    @map("company_id")
+  subject     String // korte omschrijving van de klacht
+  description String?
+  aiSystemId  String?   @map("ai_system_id") // het AI-systeem waarover geklaagd wordt
+  complainant String? // wie klaagt (naam/rol) — mag anoniem
+  channel     String? // hoe binnengekomen: email | letter | phone | form | in_person | other
+  status      String    @default("open") // open | in_progress | resolved | escalated
+  receivedAt  DateTime  @map("received_at") // datum ontvangen
+  resolution  String? // uitkomst / afhandeling
+  resolvedAt  DateTime? @map("resolved_at")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  company  Company   @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  aiSystem AiSystem? @relation(fields: [aiSystemId], references: [id], onDelete: SetNull)
+
+  @@index([companyId])
+  @@map("complaints")
 }
 
 model ScanResult {

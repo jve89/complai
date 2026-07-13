@@ -7,6 +7,7 @@ import {
   GraduationCap,
   LayoutDashboard,
   Megaphone,
+  MessageSquareWarning,
   Settings,
   Siren,
   Users,
@@ -54,6 +55,12 @@ export const DASHBOARD_NAV: NavItem[] = [
     icon: Archive,
   },
   {
+    href: "/dashboard/klachten",
+    label: "Klachten",
+    description: "Klachten over AI-besluiten registreren (Art. 85)",
+    icon: MessageSquareWarning,
+  },
+  {
     href: "/dashboard/documents",
     label: "Documenten",
     description: "Genereer beleid, FRIA en beoordelingen",
@@ -93,15 +100,16 @@ export const DASHBOARD_NAV: NavItem[] = [
 ];
 
 /** Same nav, remapped to /demo/* for the public demo. Instellingen, Updates,
- *  Meldingen, Kennisgevingen and Logbewaring have no /demo/* counterpart, so
- *  they're excluded. */
+ *  Meldingen, Kennisgevingen, Logbewaring and Klachten have no /demo/*
+ *  counterpart, so they're excluded. */
 export const DEMO_NAV: NavItem[] = DASHBOARD_NAV.filter(
   (n) =>
     n.href !== "/dashboard/settings" &&
     n.href !== "/dashboard/updates" &&
     n.href !== "/dashboard/meldingen" &&
     n.href !== "/dashboard/kennisgevingen" &&
-    n.href !== "/dashboard/logbewaring"
+    n.href !== "/dashboard/logbewaring" &&
+    n.href !== "/dashboard/klachten"
 ).map((n) => ({
   ...n,
   href:

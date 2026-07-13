@@ -179,7 +179,13 @@ pakket that unlocks a customer's required items — these must keep that promise
       worklist over high-risk systems with a documented/under-min/missing status,
       and a "Logbewaringsbeleid (Art. 26 lid 6)" evidence PDF. Surfaces the "voor
       zover onder uw controle" limit so it never asserts a blanket duty.)*
-- [ ] **Complaint procedure + register** — Art 27(1)(f), Art 85.
+- [x] **Complaint procedure + register** — Art 27(1)(f), Art 85.
+      *(Shipped: `/dashboard/klachten` — a `Complaint` model + groei-gated register
+      (open → in behandeling → afgehandeld → doorverwezen) and a "Klachtenprocedure
+      & -register" evidence PDF. Framed honestly: Art 85 is an EXTERNAL right of any
+      person to complain to the markttoezichthouder (from 2 Aug 2026, not a deployer
+      duty); the internal mechanism is only legally required inside a FRIA, which
+      binds only the narrow Art 27(1) subset — good governance for everyone else.)*
 - [ ] **EU-database registration tracker** — Art 49, Art 71, Art 26(8) (public
       bodies). Status per system (future — DB not yet live).
 - [ ] **DPIA template / linkage** — Art 26(9) + GDPR Art 35 (FRIA complements it,

@@ -128,3 +128,15 @@ export const LOG_RETENTION_MIN_TIER: TierId = "groei";
 export function logRetentionUnlocked(plan: string | null | undefined): boolean {
   return tierRank(plan) >= tierRank(LOG_RETENTION_MIN_TIER);
 }
+
+/** Complaint register (Klachten — Art 85 external complaint right; Art 27(1)(f)
+ * internal complaint mechanism inside a FRIA) is a paid feature from Compliance
+ * (groei). Handling complaints about a high-risk system is deployer-side good
+ * governance (and required content of a FRIA for FRIA-scoped deployers), so it
+ * sits at the tier a high-risk deployer is recommended. Deliberately NOT
+ * Audit-only — see INCIDENTS_MIN_TIER. */
+export const COMPLAINTS_MIN_TIER: TierId = "groei";
+
+export function complaintsUnlocked(plan: string | null | undefined): boolean {
+  return tierRank(plan) >= tierRank(COMPLAINTS_MIN_TIER);
+}
