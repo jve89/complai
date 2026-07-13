@@ -107,3 +107,14 @@ export const INCIDENTS_MIN_TIER: TierId = "groei";
 export function incidentsUnlocked(plan: string | null | undefined): boolean {
   return tierRank(plan) >= tierRank(INCIDENTS_MIN_TIER);
 }
+
+/** Notification & explanation register (Kennisgevingen — Art 26(7), 26(11), 86)
+ * is a paid feature from Compliance (groei). These are high-risk DEPLOYER duties
+ * (inform workers / inform affected persons / answer a right-to-explanation
+ * request), so they sit at the same tier a high-risk deployer is recommended.
+ * Deliberately NOT Audit-only — see INCIDENTS_MIN_TIER. */
+export const NOTICES_MIN_TIER: TierId = "groei";
+
+export function noticesUnlocked(plan: string | null | undefined): boolean {
+  return tierRank(plan) >= tierRank(NOTICES_MIN_TIER);
+}

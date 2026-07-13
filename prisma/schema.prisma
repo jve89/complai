@@ -73,6 +73,7 @@ model Company {
   trainingCompletions TrainingCompletion[]
   invites             Invite[]
   incidents           Incident[]
+  notices             Notice[]
 
   @@map("companies")
 }
@@ -151,6 +152,7 @@ model AiSystem {
 
   company   Company   @relation(fields: [companyId], references: [id], onDelete: Cascade)
   oversight Employee? @relation(fields: [oversightEmployeeId], references: [id], onDelete: SetNull)
+  notices   Notice[] // information/explanation notices issued for this system (Art 26(7)/(11), 86)
 
   @@index([companyId])
   @@map("ai_systems")
@@ -179,6 +181,33 @@ model Incident {
 
   @@index([companyId])
   @@map("incidents")
+}
+
+/// Register of information & explanation notices a high-risk deployer must issue:
+/// Art 26(7) (inform workers + their representatives before workplace use),
+/// Art 26(11) (inform natural persons subject to an Annex III decision), and
+/// Art 86 (respond to a right-to-explanation request). Each row is BOTH the
+/// evidence the duty was met and the source for a pre-filled notice/explanation
+/// PDF. These Annex III deployer duties apply from 2 Dec 2027 (Digital Omnibus
+/// deferral — re-verify against the published OJ).
+model Notice {
+  id         String    @id @default(cuid())
+  companyId  String    @map("company_id")
+  type       String // worker (Art 26(7)) | affected (Art 26(11)) | explanation (Art 86)
+  aiSystemId String?   @map("ai_system_id") // the high-risk system the notice concerns
+  recipient  String // wie is/wordt geïnformeerd (OR, werknemers, betrokkene, naam)
+  method     String? // hoe verstrekt: e-mail | brief | intranet | gesprek
+  detail     String? // Art 86: hoofdelementen van het besluit / rol van het AI-systeem; of interne aantekening
+  status     String    @default("draft") // draft | issued
+  issuedAt   DateTime? @map("issued_at") // datum verstrekt (null zolang concept)
+  createdAt  DateTime  @default(now()) @map("created_at")
+  updatedAt  DateTime  @updatedAt @map("updated_at")
+
+  company  Company   @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  aiSystem AiSystem? @relation(fields: [aiSystemId], references: [id], onDelete: SetNull)
+
+  @@index([companyId])
+  @@map("notices")
 }
 
 model ScanResult {

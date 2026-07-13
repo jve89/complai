@@ -156,15 +156,21 @@ pakket that unlocks a customer's required items — these must keep that promise
 (so: *not* Audit-only).
 
 ### Wave 1 — high-risk deployer essentials (Compliance tier)
-- [ ] **Incident register + serious-incident reporting** — Art 73, Art 26(5).
+- [x] **Incident register + serious-incident reporting** — Art 73, Art 26(5).
       Log incidents, generate the authority report, surface the 2 / 10 / 15-day
-      deadlines. New `Incident` model.
-- [ ] **Human-oversight register** — Art 26(2), Art 14. Per high-risk system: a
+      deadlines. New `Incident` model. *(Shipped: `/dashboard/meldingen`.)*
+- [x] **Human-oversight register** — Art 26(2), Art 14. Per high-risk system: a
       named, competent overseer linked to their AI-literacy certificate (extends
-      the AI-register).
-- [ ] **Notification & explanation templates** — Art 26(7) (workers), Art 26(11)
-      (affected individuals), Art 86 (right to explanation). New document types +
-      a record that notices were issued.
+      the AI-register). *(Shipped: `AiSystem.oversightEmployeeId` + the register's
+      "Menselijk toezicht" column.)*
+- [x] **Notification & explanation templates** — Art 26(7) (workers), Art 26(11)
+      (affected individuals), Art 86 (right to explanation). *(Shipped as the
+      `/dashboard/kennisgevingen` module: a `Notice` register — the record that
+      notices were issued — plus a per-record fill-in notice/explanation PDF built
+      from `DocumentContent` and rendered by the existing `DocumentPdf`, rather
+      than generic slugs in the Documenten grid, since these notices are inherently
+      per-recipient/per-date. Gated at Compliance; framed as prepare-ahead — the
+      duties apply from 2 Dec 2027.)*
 
 ### Wave 2 — high-risk deployer completeness (Compliance tier)
 - [ ] **Log-retention record** — Art 26(6) (≥ 6 months). Per system: location,

@@ -5,6 +5,7 @@ import {
   FileText,
   GraduationCap,
   LayoutDashboard,
+  Megaphone,
   Settings,
   Siren,
   Users,
@@ -38,6 +39,12 @@ export const DASHBOARD_NAV: NavItem[] = [
     label: "Meldingen",
     description: "Ernstige incidenten melden (Art. 73)",
     icon: Siren,
+  },
+  {
+    href: "/dashboard/kennisgevingen",
+    label: "Kennisgevingen",
+    description: "Informeren & uitleg bij AI-besluiten (Art. 26, 86)",
+    icon: Megaphone,
   },
   {
     href: "/dashboard/documents",
@@ -78,13 +85,14 @@ export const DASHBOARD_NAV: NavItem[] = [
   },
 ];
 
-/** Same nav, remapped to /demo/* for the public demo. Instellingen, Updates and
- *  Meldingen have no /demo/* counterpart, so they're excluded. */
+/** Same nav, remapped to /demo/* for the public demo. Instellingen, Updates,
+ *  Meldingen and Kennisgevingen have no /demo/* counterpart, so they're excluded. */
 export const DEMO_NAV: NavItem[] = DASHBOARD_NAV.filter(
   (n) =>
     n.href !== "/dashboard/settings" &&
     n.href !== "/dashboard/updates" &&
-    n.href !== "/dashboard/meldingen"
+    n.href !== "/dashboard/meldingen" &&
+    n.href !== "/dashboard/kennisgevingen"
 ).map((n) => ({
   ...n,
   href:
