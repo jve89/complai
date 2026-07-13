@@ -130,7 +130,7 @@ const features = [
 ];
 
 const comparisonRows = [
-  { label: "Kosten", self: "Gratis (veel tijd)", consultant: "€ 5.000+", complai: "Vanaf € 29/mnd" },
+  { label: "Kosten", self: "Gratis (veel tijd)", consultant: "€ 5.000+", complai: "Vanaf € 19,99/mnd" },
   { label: "Doorlooptijd", self: "Weken", consultant: "Weken tot maanden", complai: "Dezelfde dag" },
   { label: "AI-register", self: false, consultant: true, complai: true },
   { label: "Automatische classificatie", self: false, consultant: false, complai: true },
@@ -386,7 +386,7 @@ export default function LandingPage() {
         <div className="container">
           <div className="mx-auto mb-14 max-w-2xl text-center">
             <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">
-              Zelf uitzoeken, inhuren of ComplAI?
+              Zelf uitzoeken, een consultant inhuren of ComplAI?
             </h2>
             <p className="mt-4 text-lg text-muted-foreground">
               Hetzelfde resultaat — zonder de rekening en de wachttijd van een
@@ -447,8 +447,8 @@ export default function LandingPage() {
                 key={plan.id}
                 className={
                   plan.highlighted
-                    ? "relative rounded-xl border-2 border-brand-500 bg-card p-6 shadow-lg"
-                    : "rounded-xl border bg-card p-6"
+                    ? "relative flex h-full flex-col rounded-xl border-2 border-brand-500 bg-card p-6 shadow-lg"
+                    : "flex h-full flex-col rounded-xl border bg-card p-6"
                 }
               >
                 {plan.highlighted && (
@@ -464,7 +464,7 @@ export default function LandingPage() {
                 <p className="mt-1 min-h-[1rem] text-xs font-medium text-brand-600">
                   {plan.monthly === 0 ? "Geen abonnement nodig" : "Maandelijks opzegbaar"}
                 </p>
-                <p className="mt-2 min-h-[2.5rem] text-sm text-muted-foreground">
+                <p className="mt-2 flex-1 text-sm text-muted-foreground">
                   {plan.tagline}
                 </p>
                 <Button
