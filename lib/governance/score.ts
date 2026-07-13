@@ -67,10 +67,15 @@ export function computeGovernance(
     employees: Employee[];
     complianceItems: ComplianceItem[];
     profile: ComplianceProfile | null;
+    /** Outstanding-escalation signal for the Art 26(5) monitoring check. */
+    incidents?: { status: string }[];
+    complaints?: { status: string }[];
   },
   now: Date
 ): GovernanceReport {
   const { aiSystems, documents, employees, complianceItems, profile } = data;
+  const incidents = data.incidents ?? [];
+  const complaints = data.complaints ?? [];
 
   // Obligations come from the profile; fall back to the materialised items for a
   // company that scanned before profileJson existed. No hardcoded articles.
@@ -152,6 +157,35 @@ export function computeGovernance(
       detail: `${doneObs.length}/${requiredObs.length} verplichte acties uit uw scan afgerond.`,
       done: doneObs.length === requiredObs.length,
       progress: requiredObs.length ? doneObs.length / requiredObs.length : 1,
+    });
+  }
+
+  // Post-market monitoring (Art 26(5)) — only for deployers of a high-risk system.
+  // Art 26(5) is a DEPLOYER duty (monitor operation per the instructions for use;
+  // on a risk, suspend + inform the aanbieder/markttoezichthouder) — NOT the
+  // provider's Art 72 monitoring system. It becomes mandatory 2 Dec 2027, so this
+  // is a get-ready quarterly review. "Done" reflects whether the monitoring loop
+  // has no outstanding escalations to review: open incidents + open/in-behandeling
+  // complaints. A clean company stays complete; open items nudge action.
+  if (aiSystems.some((s) => s.riskLevel === "high")) {
+    const incidentsOpen = incidents.filter((i) => i.status === "open").length;
+    const complaintsOpen = complaints.filter(
+      (c) => c.status === "open" || c.status === "in_progress"
+    ).length;
+    const total = incidents.length + complaints.length;
+    const outstanding = incidentsOpen + complaintsOpen;
+    const detail =
+      total === 0
+        ? "Nog geen incidenten of klachten. Volg de werking van uw hoog-risico systemen op basis van de gebruiksaanwijzing (Art. 26(5))."
+        : outstanding === 0
+          ? "Alle incidenten en klachten afgehandeld. Blijf de werking volgen en escaleer risico's tijdig."
+          : `${outstanding} openstaand(e) incident(en)/klacht(en) om te beoordelen. Schort bij een risico op en informeer de aanbieder en de markttoezichthouder.`;
+    checks.push({
+      id: "postmarket_monitoring",
+      label: "Werking hoog-risico AI gemonitord (Art. 26(5))",
+      detail,
+      done: outstanding === 0,
+      progress: total === 0 ? 1 : (total - outstanding) / total,
     });
   }
 

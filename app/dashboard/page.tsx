@@ -67,7 +67,7 @@ export default async function DashboardPage({
   const isAdmin = canAdminister(user);
   const profile = (company.profileJson as unknown as ComplianceProfile | null) ?? null;
 
-  const [aiSystems, documents, employees, items] = await Promise.all([
+  const [aiSystems, documents, employees, items, incidents, complaints] = await Promise.all([
     prisma.aiSystem.findMany({ where: { companyId: company.id } }),
     prisma.document.findMany({ where: { companyId: company.id } }),
     prisma.employee.findMany({ where: { companyId: company.id } }),
@@ -75,6 +75,10 @@ export default async function DashboardPage({
       where: { companyId: company.id },
       orderBy: { deadline: "asc" },
     }),
+    // For the Art 26(5) post-market-monitoring kwartaalcheck: outstanding
+    // escalations to review (open incidents + open/in-behandeling complaints).
+    prisma.incident.findMany({ where: { companyId: company.id }, select: { status: true } }),
+    prisma.complaint.findMany({ where: { companyId: company.id }, select: { status: true } }),
   ]);
 
   // "Aan de slag": account (inherently done here) + scan + pakket. Hidden
@@ -224,7 +228,7 @@ export default async function DashboardPage({
   // Ongoing-health view (was the separate Governance tab): quarterly checks and
   // drift signals, folded into the home dashboard. Also drives the Voortgang dial.
   const governance = computeGovernance(
-    { aiSystems, documents, employees, complianceItems: liveItems, profile },
+    { aiSystems, documents, employees, complianceItems: liveItems, profile, incidents, complaints },
     new Date()
   );
   const voortgangScore = governance.score;

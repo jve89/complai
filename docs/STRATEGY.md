@@ -190,8 +190,13 @@ pakket that unlocks a customer's required items — these must keep that promise
       bodies). Status per system (future — DB not yet live).
 - [ ] **DPIA template / linkage** — Art 26(9) + GDPR Art 35 (FRIA complements it,
       Art 27(4)). Optional — avoid scope-creep into a GDPR product.
-- [ ] Fold deployer post-market monitoring (Art 26(5)) into the existing
-      governance kwartaalcheck cadence.
+- [x] Fold deployer post-market monitoring (Art 26(5)) into the existing
+      governance kwartaalcheck cadence. *(Shipped: a high-risk-gated
+      "Werking hoog-risico AI gemonitord (Art. 26(5))" check in
+      `lib/governance/score.ts`; done reflects no outstanding escalations
+      (open incidents + open/in-behandeling complaints) — ties the monitoring
+      loop to the meldingen/klachten surfaces. Get-ready framing: Art 26(5)
+      binds from 2 Dec 2027. Pure code, no schema change.)*
 
 ### Wave 3 — provider / maker duties (Audit tier)
 - [ ] **Quality management system** — Art 17 (simplified for micro-enterprises,
