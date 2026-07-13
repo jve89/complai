@@ -1,12 +1,14 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Sparkles, Loader2 } from "lucide-react";
 import type { AiSystem, AiRole, RiskLevel } from "@prisma/client";
 
 import { upsertAiSystem } from "@/app/dashboard/register/actions";
 import { classifyAiSystem } from "@/lib/register/classify";
+import { AI_SYSTEMS } from "@/lib/compliance/questions";
+import { cn } from "@/lib/utils";
 import {
   RISK_LEVELS,
   RISK_LABEL,
@@ -40,6 +42,97 @@ import {
 interface Props {
   system?: AiSystem;
   trigger: React.ReactNode;
+}
+
+/** Naam field as a searchable combobox over the recognised-systems catalog.
+ *  Typing filters known systems; picking one fills name + vendor. A name that
+ *  isn't in the list is fine too — that's just manual entry, as before. */
+function NameCombobox({
+  value,
+  onType,
+  onPick,
+}: {
+  value: string;
+  onType: (v: string) => void;
+  onPick: (s: { name: string; vendor: string }) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const [active, setActive] = useState(0);
+  const wrapRef = useRef<HTMLDivElement>(null);
+
+  const results = useMemo(() => {
+    const q = value.trim().toLowerCase();
+    const list = q
+      ? AI_SYSTEMS.filter((s) => `${s.name} ${s.vendor}`.toLowerCase().includes(q))
+      : AI_SYSTEMS;
+    return list.slice(0, 8);
+  }, [value]);
+
+  useEffect(() => {
+    function onDoc(e: MouseEvent) {
+      if (wrapRef.current && !wrapRef.current.contains(e.target as Node)) setOpen(false);
+    }
+    document.addEventListener("mousedown", onDoc);
+    return () => document.removeEventListener("mousedown", onDoc);
+  }, []);
+
+  function choose(s: (typeof AI_SYSTEMS)[number]) {
+    onPick({ name: s.name, vendor: s.vendor });
+    setOpen(false);
+  }
+
+  return (
+    <div ref={wrapRef} className="relative">
+      <Input
+        id="name"
+        value={value}
+        onChange={(e) => {
+          onType(e.target.value);
+          setOpen(true);
+          setActive(0);
+        }}
+        onFocus={() => setOpen(true)}
+        onKeyDown={(e) => {
+          if (!open || results.length === 0) return;
+          if (e.key === "ArrowDown") {
+            e.preventDefault();
+            setActive((a) => Math.min(a + 1, results.length - 1));
+          } else if (e.key === "ArrowUp") {
+            e.preventDefault();
+            setActive((a) => Math.max(a - 1, 0));
+          } else if (e.key === "Enter") {
+            e.preventDefault();
+            choose(results[active]);
+          } else if (e.key === "Escape") {
+            setOpen(false);
+          }
+        }}
+        placeholder="bijv. ChatGPT — of typ zelf een naam"
+        autoComplete="off"
+        required
+      />
+      {open && results.length > 0 && (
+        <div className="absolute z-50 mt-1 max-h-56 w-full overflow-auto rounded-lg border bg-card py-1 shadow-md">
+          {results.map((s, i) => (
+            <button
+              key={s.id}
+              type="button"
+              onMouseDown={(e) => e.preventDefault()}
+              onMouseEnter={() => setActive(i)}
+              onClick={() => choose(s)}
+              className={cn(
+                "flex w-full items-center justify-between gap-3 px-3 py-2 text-left text-sm",
+                i === active ? "bg-secondary" : "hover:bg-secondary/60"
+              )}
+            >
+              <span className="font-medium">{s.name}</span>
+              <span className="text-xs text-muted-foreground">{s.vendor}</span>
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
 }
 
 export function AiSystemDialog({ system, trigger }: Props) {
@@ -111,12 +204,10 @@ export function AiSystemDialog({ system, trigger }: Props) {
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-2">
               <Label htmlFor="name">Naam *</Label>
-              <Input
-                id="name"
+              <NameCombobox
                 value={form.name}
-                onChange={(e) => set("name", e.target.value)}
-                placeholder="bijv. CV-screening tool"
-                required
+                onType={(v) => set("name", v)}
+                onPick={(s) => setForm((f) => ({ ...f, name: s.name, vendor: s.vendor }))}
               />
             </div>
             <div className="space-y-2">

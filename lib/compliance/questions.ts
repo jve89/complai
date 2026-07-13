@@ -30,50 +30,59 @@ export const MODIFICATIONS: Option[] = [
 ];
 
 // ── Section 1 — AI-gebruik (friendly opener; pre-fills via mapTools) ─────────
-// Named tools so users recognise their own situation instead of legal terms.
-export const TOOL_GROUPS: { label: string; options: Option[] }[] = [
-  {
-    label: "Chatbots & assistenten",
-    options: [
-      { value: "chatgpt", label: "ChatGPT (OpenAI)" },
-      { value: "copilot", label: "Microsoft Copilot" },
-      { value: "gemini", label: "Google Gemini" },
-      { value: "claude", label: "Claude (Anthropic)" },
-      { value: "grok", label: "Grok (xAI)" },
-      { value: "mistral", label: "Mistral / Le Chat" },
-      { value: "meta", label: "Meta AI" },
-      { value: "deepseek", label: "DeepSeek" },
-      { value: "perplexity", label: "Perplexity" },
-    ],
-  },
-  {
-    label: "Beeld, audio & video",
-    options: [
-      { value: "midjourney", label: "Midjourney" },
-      { value: "dalle", label: "DALL·E / Sora" },
-      { value: "stable_diffusion", label: "Stable Diffusion" },
-      { value: "elevenlabs", label: "ElevenLabs (stem)" },
-      { value: "synthesia", label: "Synthesia / HeyGen (video)" },
-    ],
-  },
-  {
-    label: "AI in zakelijke software",
-    options: [
-      { value: "m365_copilot", label: "Microsoft 365 Copilot" },
-      { value: "workspace_gemini", label: "Google Workspace (Gemini)" },
-      { value: "hubspot_ai", label: "HubSpot AI" },
-      { value: "salesforce_einstein", label: "Salesforce Einstein" },
-      { value: "notion_ai", label: "Notion AI" },
-      { value: "canva_ai", label: "Canva AI" },
-    ],
-  },
-  {
-    label: "Ontwikkeling",
-    options: [
-      { value: "github_copilot", label: "GitHub Copilot" },
-      { value: "cursor", label: "Cursor" },
-    ],
-  },
+// ONE canonical catalog of recognised AI systems — the single source of truth
+// shared by the scan's tool picker AND the register's "known system" combobox.
+// Add a system here once and it appears in both. Shaped like a future
+// `known_ai_systems` DB row, so this can move to a super-admin-editable table
+// later (à la the regulatory-updates feed) without touching consumers.
+export interface AiSystemCatalogEntry {
+  id: string;
+  name: string; // clean product name (register + TOOL_META)
+  vendor: string; // maker (register + TOOL_META)
+  group: string; // scan-picker group
+  /** Scan-picker label, only when it differs from `name` (e.g. adds the maker). */
+  scanLabel?: string;
+}
+
+export const AI_SYSTEMS: AiSystemCatalogEntry[] = [
+  // Chatbots & assistenten
+  { id: "chatgpt", name: "ChatGPT", vendor: "OpenAI", group: "Chatbots & assistenten", scanLabel: "ChatGPT (OpenAI)" },
+  { id: "copilot", name: "Microsoft Copilot", vendor: "Microsoft", group: "Chatbots & assistenten" },
+  { id: "gemini", name: "Google Gemini", vendor: "Google", group: "Chatbots & assistenten" },
+  { id: "claude", name: "Claude", vendor: "Anthropic", group: "Chatbots & assistenten", scanLabel: "Claude (Anthropic)" },
+  { id: "grok", name: "Grok", vendor: "xAI", group: "Chatbots & assistenten", scanLabel: "Grok (xAI)" },
+  { id: "mistral", name: "Mistral / Le Chat", vendor: "Mistral AI", group: "Chatbots & assistenten" },
+  { id: "meta", name: "Meta AI", vendor: "Meta", group: "Chatbots & assistenten" },
+  { id: "deepseek", name: "DeepSeek", vendor: "DeepSeek", group: "Chatbots & assistenten" },
+  { id: "perplexity", name: "Perplexity", vendor: "Perplexity AI", group: "Chatbots & assistenten" },
+  // Beeld, audio & video
+  { id: "midjourney", name: "Midjourney", vendor: "Midjourney", group: "Beeld, audio & video" },
+  { id: "dalle", name: "DALL·E / Sora", vendor: "OpenAI", group: "Beeld, audio & video" },
+  { id: "stable_diffusion", name: "Stable Diffusion", vendor: "Stability AI", group: "Beeld, audio & video" },
+  { id: "elevenlabs", name: "ElevenLabs", vendor: "ElevenLabs", group: "Beeld, audio & video", scanLabel: "ElevenLabs (stem)" },
+  { id: "synthesia", name: "Synthesia / HeyGen", vendor: "Synthesia", group: "Beeld, audio & video", scanLabel: "Synthesia / HeyGen (video)" },
+  // AI in zakelijke software
+  { id: "m365_copilot", name: "Microsoft 365 Copilot", vendor: "Microsoft", group: "AI in zakelijke software" },
+  { id: "workspace_gemini", name: "Google Workspace (Gemini)", vendor: "Google", group: "AI in zakelijke software" },
+  { id: "hubspot_ai", name: "HubSpot AI", vendor: "HubSpot", group: "AI in zakelijke software" },
+  { id: "salesforce_einstein", name: "Salesforce Einstein", vendor: "Salesforce", group: "AI in zakelijke software" },
+  { id: "notion_ai", name: "Notion AI", vendor: "Notion", group: "AI in zakelijke software" },
+  { id: "canva_ai", name: "Canva AI", vendor: "Canva", group: "AI in zakelijke software" },
+  // Ontwikkeling
+  { id: "github_copilot", name: "GitHub Copilot", vendor: "GitHub / Microsoft", group: "Ontwikkeling" },
+  { id: "cursor", name: "Cursor", vendor: "Anysphere", group: "Ontwikkeling" },
+];
+
+// Order of the recognised-system groups in the scan picker.
+const CATALOG_GROUPS = [
+  "Chatbots & assistenten",
+  "Beeld, audio & video",
+  "AI in zakelijke software",
+  "Ontwikkeling",
+] as const;
+
+// Scan-only pseudo-options (not real systems, so never in the register picker).
+const SCAN_EXTRA_GROUPS: { label: string; options: Option[] }[] = [
   {
     label: "Eigen of branche-specifieke AI",
     options: [
@@ -89,6 +98,19 @@ export const TOOL_GROUPS: { label: string; options: Option[] }[] = [
       { value: "anders", label: "Anders / staat er niet bij" },
     ],
   },
+];
+
+// The scan's grouped tool picker — recognised systems (from AI_SYSTEMS) plus the
+// scan-only pseudo-groups. Derived, so adding a system to AI_SYSTEMS is enough.
+export const TOOL_GROUPS: { label: string; options: Option[] }[] = [
+  ...CATALOG_GROUPS.map((label) => ({
+    label,
+    options: AI_SYSTEMS.filter((s) => s.group === label).map((s) => ({
+      value: s.id,
+      label: s.scanLabel ?? s.name,
+    })),
+  })),
+  ...SCAN_EXTRA_GROUPS,
 ];
 
 // Plain-verb use-cases → silent role/transparency/Annex III hints (confirmed later).
@@ -108,33 +130,13 @@ export const USE_CASES: Option[] = [
 
 const NON_TOOL = ["geen", "weet_niet", "anders"];
 
-/** Named tools → an AI-register entry (name + vendor). Used to pre-load the
- * register from the scan. Generic picks (eigen_ontwikkeld, branche_tool) and the
- * non-tools are intentionally absent. */
-export const TOOL_META: Record<string, { name: string; vendor: string }> = {
-  chatgpt: { name: "ChatGPT", vendor: "OpenAI" },
-  copilot: { name: "Microsoft Copilot", vendor: "Microsoft" },
-  gemini: { name: "Google Gemini", vendor: "Google" },
-  claude: { name: "Claude", vendor: "Anthropic" },
-  grok: { name: "Grok", vendor: "xAI" },
-  mistral: { name: "Mistral / Le Chat", vendor: "Mistral AI" },
-  meta: { name: "Meta AI", vendor: "Meta" },
-  deepseek: { name: "DeepSeek", vendor: "DeepSeek" },
-  perplexity: { name: "Perplexity", vendor: "Perplexity AI" },
-  midjourney: { name: "Midjourney", vendor: "Midjourney" },
-  dalle: { name: "DALL·E / Sora", vendor: "OpenAI" },
-  stable_diffusion: { name: "Stable Diffusion", vendor: "Stability AI" },
-  elevenlabs: { name: "ElevenLabs", vendor: "ElevenLabs" },
-  synthesia: { name: "Synthesia / HeyGen", vendor: "Synthesia" },
-  m365_copilot: { name: "Microsoft 365 Copilot", vendor: "Microsoft" },
-  workspace_gemini: { name: "Google Workspace (Gemini)", vendor: "Google" },
-  hubspot_ai: { name: "HubSpot AI", vendor: "HubSpot" },
-  salesforce_einstein: { name: "Salesforce Einstein", vendor: "Salesforce" },
-  notion_ai: { name: "Notion AI", vendor: "Notion" },
-  canva_ai: { name: "Canva AI", vendor: "Canva" },
-  github_copilot: { name: "GitHub Copilot", vendor: "GitHub / Microsoft" },
-  cursor: { name: "Cursor", vendor: "Anysphere" },
-};
+/** Recognised systems → an AI-register entry (name + vendor). Derived from the
+ * one catalog and used to pre-load the register from the scan. Generic picks
+ * (eigen_ontwikkeld, branche_tool) and the non-tools are absent by construction
+ * — they aren't real systems. */
+export const TOOL_META: Record<string, { name: string; vendor: string }> = Object.fromEntries(
+  AI_SYSTEMS.map((s) => [s.id, { name: s.name, vendor: s.vendor }])
+);
 
 // ── Section HR — high-risk status (Art. 6/7, Annex I & III) ──────────────────
 // Annex I Section B (transport/aviation): governed largely by sectoral law; only
