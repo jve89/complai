@@ -173,8 +173,12 @@ pakket that unlocks a customer's required items — these must keep that promise
       duties apply from 2 Dec 2027.)*
 
 ### Wave 2 — high-risk deployer completeness (Compliance tier)
-- [ ] **Log-retention record** — Art 26(6) (≥ 6 months). Per system: location,
+- [x] **Log-retention record** — Art 26(6) (≥ 6 months). Per system: location,
       retention, owner. (We can't hold the logs; we evidence the policy.)
+      *(Shipped: `/dashboard/logbewaring` — 4 fields on `AiSystem`, a groei-gated
+      worklist over high-risk systems with a documented/under-min/missing status,
+      and a "Logbewaringsbeleid (Art. 26 lid 6)" evidence PDF. Surfaces the "voor
+      zover onder uw controle" limit so it never asserts a blanket duty.)*
 - [ ] **Complaint procedure + register** — Art 27(1)(f), Art 85.
 - [ ] **EU-database registration tracker** — Art 49, Art 71, Art 26(8) (public
       bodies). Status per system (future — DB not yet live).

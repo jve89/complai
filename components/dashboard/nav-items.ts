@@ -1,4 +1,5 @@
 import {
+  Archive,
   BellRing,
   BookOpen,
   Database,
@@ -47,6 +48,12 @@ export const DASHBOARD_NAV: NavItem[] = [
     icon: Megaphone,
   },
   {
+    href: "/dashboard/logbewaring",
+    label: "Logbewaring",
+    description: "Bewaartermijn van AI-logs vastleggen (Art. 26 lid 6)",
+    icon: Archive,
+  },
+  {
     href: "/dashboard/documents",
     label: "Documenten",
     description: "Genereer beleid, FRIA en beoordelingen",
@@ -86,13 +93,15 @@ export const DASHBOARD_NAV: NavItem[] = [
 ];
 
 /** Same nav, remapped to /demo/* for the public demo. Instellingen, Updates,
- *  Meldingen and Kennisgevingen have no /demo/* counterpart, so they're excluded. */
+ *  Meldingen, Kennisgevingen and Logbewaring have no /demo/* counterpart, so
+ *  they're excluded. */
 export const DEMO_NAV: NavItem[] = DASHBOARD_NAV.filter(
   (n) =>
     n.href !== "/dashboard/settings" &&
     n.href !== "/dashboard/updates" &&
     n.href !== "/dashboard/meldingen" &&
-    n.href !== "/dashboard/kennisgevingen"
+    n.href !== "/dashboard/kennisgevingen" &&
+    n.href !== "/dashboard/logbewaring"
 ).map((n) => ({
   ...n,
   href:

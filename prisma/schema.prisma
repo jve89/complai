@@ -148,6 +148,13 @@ model AiSystem {
   status      String    @default("active") // active | review | retired
   // Art 26(2) — the employee assigned to human oversight of this (high-risk) system.
   oversightEmployeeId String? @map("oversight_employee_id")
+  // Art 26(6) — the deployer's log-retention policy for this (high-risk) system:
+  // where the auto-generated logs are kept, for how many months (≥ 6), who owns
+  // it, and when it was last reviewed. Evidence of the policy — we don't hold logs.
+  logLocation        String?   @map("log_location")
+  logRetentionMonths Int?      @map("log_retention_months")
+  logRetentionOwner  String?   @map("log_retention_owner")
+  logReviewedAt      DateTime? @map("log_reviewed_at")
   createdAt   DateTime  @default(now()) @map("created_at")
 
   company   Company   @relation(fields: [companyId], references: [id], onDelete: Cascade)

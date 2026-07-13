@@ -118,3 +118,13 @@ export const NOTICES_MIN_TIER: TierId = "groei";
 export function noticesUnlocked(plan: string | null | undefined): boolean {
   return tierRank(plan) >= tierRank(NOTICES_MIN_TIER);
 }
+
+/** Log-retention record (Logbewaring — Art 26(6)) is a paid feature from
+ * Compliance (groei). Keeping the auto-generated logs of a high-risk system for
+ * ≥ 6 months is a high-risk DEPLOYER duty, so it sits at the tier a high-risk
+ * deployer is recommended. Deliberately NOT Audit-only — see INCIDENTS_MIN_TIER. */
+export const LOG_RETENTION_MIN_TIER: TierId = "groei";
+
+export function logRetentionUnlocked(plan: string | null | undefined): boolean {
+  return tierRank(plan) >= tierRank(LOG_RETENTION_MIN_TIER);
+}
