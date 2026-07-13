@@ -236,7 +236,7 @@ export function AiSystemDialog({ system, trigger }: Props) {
           <div className="rounded-lg border border-dashed bg-secondary/40 p-3">
             <div className="flex items-center justify-between gap-3">
               <p className="text-sm text-muted-foreground">
-                Kies een bekend systeem uit onze catalogus.
+                Kies een AI-systeem uit de catalogus.
               </p>
               <Button
                 type="button"
