@@ -10,6 +10,7 @@ import {
   FileText,
   Lock,
   ScrollText,
+  ShieldCheck,
   ShieldQuestion,
   type LucideIcon,
 } from "lucide-react";
@@ -35,6 +36,7 @@ const ICONS: Record<string, LucideIcon> = {
   ai_policy: ScrollText,
   risk_assessment: FileText,
   fria: ShieldQuestion,
+  dpia: ShieldCheck,
   transparency: FileCheck2,
   tech_doc: FileCog,
   doc_conformity: BadgeCheck,

@@ -37,6 +37,7 @@ export const DOC_MIN_TIER: Record<string, TierId> = {
   ai_policy: "starter",
   transparency: "starter",
   fria: "groei",
+  dpia: "groei",
   risk_assessment: "groei",
   assessment_record: "groei",
   tech_doc: "schaal",

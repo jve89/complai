@@ -7,6 +7,7 @@ export type DocumentType =
   | "ai_policy"
   | "risk_assessment"
   | "fria"
+  | "dpia"
   | "transparency"
   | "tech_doc"
   | "doc_conformity"
@@ -61,6 +62,13 @@ export const DOCUMENT_META: DocumentMeta[] = [
     name: "FRIA (grondrechtentoets)",
     description:
       "Fundamental Rights Impact Assessment voor uw hoog-risico AI-systemen.",
+    highRiskFocused: true,
+  },
+  {
+    type: "dpia",
+    name: "DPIA-koppeling (AVG Art. 35)",
+    description:
+      "Koppelt uw AI-inzet aan uw gegevensbeschermingseffectbeoordeling (AVG Art. 35, AI-Act Art. 26 lid 9).",
     highRiskFocused: true,
   },
   {
@@ -758,6 +766,78 @@ function buildGpaiDocs(company: Company): DocumentContent {
   };
 }
 
+/** DPIA-koppeling — a LIGHT linkage, not a full DPIA. The DPIA itself is an AVG
+ *  (GDPR) Art 35 instrument that is in force TODAY; the AI-Act only says a deployer
+ *  must use the provider's Art 13 information for it (Art 26(9)) and that the FRIA
+ *  complements it (Art 27(4)). So this document maps what the company's AI dossier
+ *  already produces onto the DPIA, leaves the AVG-specific analysis as fill-in, and
+ *  is explicit that it is not a substitute for a DPIA, an AVG tool, or legal advice. */
+function buildDpia(company: Company, systems: AiSystem[]): DocumentContent {
+  const ctx = docContext(company);
+  const high = highRiskSystems(systems);
+  return {
+    title: "DPIA-koppeling (AVG Art. 35 & AI-verordening)",
+    subtitle: company.name,
+    intro: `Dit hulpmiddel koppelt de AI-inzet van ${ctx.name} aan de gegevensbeschermingseffectbeoordeling (DPIA) onder de AVG (Art. 35). De AI-verordening verplicht u de informatie van de aanbieder (Art. 13) te gebruiken voor uw DPIA (Art. 26 lid 9) en laat de grondrechtentoets (FRIA, Art. 27) de DPIA aanvullen (Art. 27 lid 4). Dit is een koppeling en checklist — geen volledige DPIA, geen AVG-tool en geen juridisch advies.`,
+    sections: [
+      {
+        heading: "1. Wanneer een DPIA (AVG Art. 35)",
+        paragraphs: [
+          "Een DPIA is onder de AVG vereist wanneer een verwerking waarschijnlijk een hoog risico oplevert voor de rechten en vrijheden van personen — bijvoorbeeld bij grootschalige profilering of systematische, geautomatiseerde besluitvorming. Deze plicht geldt nu al onder de AVG en staat los van de AI-verordening.",
+        ],
+        bullets: [
+          "Verwerkt uw hoog-risico AI-systeem persoonsgegevens? Dan is een DPIA doorgaans vereist (AVG Art. 35).",
+          "De AI-verordening vervangt de DPIA niet — DPIA (AVG) en FRIA (AI-verordening) gelden naast elkaar.",
+        ],
+        fields: [field("Is voor uw AI-verwerking een DPIA vereist? Onderbouw kort (AVG Art. 35).", 2)],
+      },
+      {
+        heading: "2. Wat uw AI-dossier al oplevert voor de DPIA (Art. 26 lid 9)",
+        paragraphs: [
+          high.length
+            ? "Op grond van Art. 26 lid 9 gebruikt u de informatie van de aanbieder (Art. 13) voor uw DPIA. De volgende hoog-risico systemen vergen het meest waarschijnlijk een DPIA; neem de onderstaande gegevens over in de beoordeling:"
+            : "Op grond van Art. 26 lid 9 gebruikt u de informatie van de aanbieder (Art. 13) voor uw DPIA. Ga per AI-systeem na of het persoonsgegevens met een hoog risico verwerkt; neem de onderstaande gegevens over in de beoordeling:",
+        ],
+        table: high.length ? systemsTable(high) : undefined,
+        bullets: [
+          "Doel en werking van het systeem — uit uw AI-register en de gebruiksaanwijzing (Art. 13 lid 3(b)(i)).",
+          "Nauwkeurigheid, robuustheid en beperkingen — uit de instructies van de aanbieder (Art. 13 lid 3(b)(ii)).",
+          "Risico's voor grondrechten en betrokken groepen — uit uw FRIA (Art. 27) en Art. 13 lid 3(b)(iii)/(v).",
+          "Menselijk toezicht — uit uw toezichtregister (Art. 26 lid 2 / Art. 14) en Art. 13 lid 3(d).",
+          "Logging en bewaartermijn — uit uw logbewaring (Art. 26 lid 6).",
+        ],
+      },
+      {
+        heading: "3. DPIA-onderdelen om zelf in te vullen (AVG Art. 35 lid 7)",
+        paragraphs: [
+          "De AVG vereist ten minste de volgende onderdelen. Vul deze aan met uw eigen analyse — de AI-verordening levert de input, maar niet de DPIA zelf:",
+        ],
+        fields: [
+          field("Systematische beschrijving van de verwerking en het doel", 4),
+          field("Beoordeling van de noodzaak en evenredigheid van de verwerking", 3),
+          field("Risico's voor de rechten en vrijheden van betrokkenen", 4),
+          field("Maatregelen om de risico's te beperken (waarborgen, beveiliging, betrokkenheid)", 4),
+          field("Advies van de functionaris voor gegevensbescherming (FG), indien aangesteld", 2),
+        ],
+      },
+      {
+        heading: "4. FRIA en DPIA (Art. 27 lid 4)",
+        paragraphs: [
+          "Waar een onderdeel van uw grondrechtentoets (FRIA) al in de DPIA is behandeld, vult de FRIA de DPIA aan — u doet dat werk niet dubbel (Art. 27 lid 4). De DPIA blijft de basis vanuit de AVG; de FRIA is de aanvulling vanuit de AI-verordening.",
+        ],
+      },
+      {
+        heading: "Wettelijke grondslag en reikwijdte",
+        paragraphs: [
+          "AVG (Verordening (EU) 2016/679) Art. 35: verplichting tot een gegevensbeschermingseffectbeoordeling bij hoog-risico verwerking. AI-verordening Art. 26 lid 9: gebruik de informatie van de aanbieder (Art. 13) voor die DPIA. AI-verordening Art. 27 lid 4: de FRIA vult de DPIA aan.",
+          "De DPIA-plicht geldt nu al onder de AVG. De AI-verordening-koppeling (Art. 26 lid 9) wordt met de overige Annex III hoog-risico-verplichtingen van toepassing vanaf 2 december 2027 (onder voorbehoud — wetgeving kan nog wijzigen).",
+          "Dit document is een hulpmiddel om uw AI-inzet aan uw DPIA te koppelen. Het is geen volledige DPIA, geen AVG-tool en geen juridisch advies.",
+        ],
+      },
+    ],
+  };
+}
+
 const BUILDERS: Record<
   DocumentType,
   (company: Company, systems: AiSystem[]) => DocumentContent
@@ -765,6 +845,7 @@ const BUILDERS: Record<
   ai_policy: buildAiPolicy,
   risk_assessment: buildRiskAssessment,
   fria: buildFria,
+  dpia: buildDpia,
   transparency: buildTransparency,
   tech_doc: buildTechDoc,
   doc_conformity: buildDocConformity,

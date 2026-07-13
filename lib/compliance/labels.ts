@@ -6,6 +6,7 @@ export const DOC_LABELS: Record<string, string> = {
   ai_policy: "AI-beleid",
   transparency: "Transparantieverklaring",
   fria: "FRIA (grondrechtentoets)",
+  dpia: "DPIA-koppeling (AVG Art. 35)",
   risk_assessment: "Risicobeoordeling",
   tech_doc: "Technische documentatie (Annex IV)",
   doc_conformity: "EU-conformiteitsverklaring",

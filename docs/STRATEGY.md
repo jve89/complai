@@ -188,8 +188,14 @@ pakket that unlocks a customer's required items — these must keep that promise
       binds only the narrow Art 27(1) subset — good governance for everyone else.)*
 - [ ] **EU-database registration tracker** — Art 49, Art 71, Art 26(8) (public
       bodies). Status per system (future — DB not yet live).
-- [ ] **DPIA template / linkage** — Art 26(9) + GDPR Art 35 (FRIA complements it,
-      Art 27(4)). Optional — avoid scope-creep into a GDPR product.
+- [x] **DPIA template / linkage** — Art 26(9) + GDPR Art 35 (FRIA complements it,
+      Art 27(4)). *(Shipped as a LIGHT linkage — a new `dpia` document type in the
+      Documenten module (groei), not a GDPR/DPIA builder. Maps what the AI-register/
+      FRIA/Art-13 info already capture onto the DPIA (Art 26(9)), leaves the AVG
+      Art 35(7) analysis as fill-in, notes the FRIA complements the DPIA (Art 27(4)),
+      and is explicit it's "geen volledige DPIA, geen AVG-tool en geen juridisch
+      advies". The DPIA duty is framed as CURRENT under the AVG; the Art 26(9) overlay
+      applies 2 Dec 2027.)*
 - [x] Fold deployer post-market monitoring (Art 26(5)) into the existing
       governance kwartaalcheck cadence. *(Shipped: a high-risk-gated
       "Werking hoog-risico AI gemonitord (Art. 26(5))" check in
