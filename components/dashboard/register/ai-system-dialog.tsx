@@ -42,6 +42,8 @@ import {
 interface Props {
   system?: AiSystem;
   trigger: React.ReactNode;
+  /** Company employees, for the human-oversight (Art 26(2)) assignee select. */
+  employees?: { id: string; name: string; trainingCompleted: boolean }[];
 }
 
 /** Naam field as a searchable combobox over the recognised-systems catalog.
@@ -145,7 +147,7 @@ const NameCombobox = forwardRef<
 });
 NameCombobox.displayName = "NameCombobox";
 
-export function AiSystemDialog({ system, trigger }: Props) {
+export function AiSystemDialog({ system, trigger, employees = [] }: Props) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
@@ -160,6 +162,7 @@ export function AiSystemDialog({ system, trigger }: Props) {
     role: AiRole;
     riskLevel: RiskLevel;
     status: SystemStatus;
+    oversightEmployeeId: string; // "none" sentinel = niemand toegewezen
   }>({
     name: system?.name ?? "",
     vendor: system?.vendor ?? "",
@@ -167,6 +170,7 @@ export function AiSystemDialog({ system, trigger }: Props) {
     role: system?.role ?? "deployer",
     riskLevel: system?.riskLevel ?? "limited",
     status: (system?.status as SystemStatus) ?? "active",
+    oversightEmployeeId: system?.oversightEmployeeId ?? "none",
   });
 
   function set<K extends keyof typeof form>(key: K, value: (typeof form)[K]) {
@@ -187,7 +191,12 @@ export function AiSystemDialog({ system, trigger }: Props) {
     e.preventDefault();
     setError(null);
     startTransition(async () => {
-      const res = await upsertAiSystem({ id: system?.id, ...form });
+      const res = await upsertAiSystem({
+        id: system?.id,
+        ...form,
+        oversightEmployeeId:
+          form.oversightEmployeeId === "none" ? null : form.oversightEmployeeId,
+      });
       if (res.ok) {
         setOpen(false);
         setSuggestion(null);
@@ -319,6 +328,32 @@ export function AiSystemDialog({ system, trigger }: Props) {
                 </SelectContent>
               </Select>
             </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label>Menselijk toezicht (Art. 26)</Label>
+            <Select
+              value={form.oversightEmployeeId}
+              onValueChange={(v) => set("oversightEmployeeId", v)}
+            >
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="none">Niemand toegewezen</SelectItem>
+                {employees.map((e) => (
+                  <SelectItem key={e.id} value={e.id}>
+                    {e.name}
+                    {e.trainingCompleted ? " — getraind" : " — nog niet getraind"}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <p className="text-xs text-muted-foreground">
+              {employees.length === 0
+                ? "Voeg eerst medewerkers toe (via e-learning) om een toezichthouder aan te wijzen."
+                : "Hoog-risico systemen vereisen een bekwame, getrainde toezichthouder (Art. 26 lid 2)."}
+            </p>
           </div>
 
           <div className="rounded-lg border border-dashed bg-secondary/40 p-3">

@@ -61,9 +61,18 @@ export default async function RegisterPage({
     ...(statusFilter ? { status: statusFilter } : {}),
   };
 
-  const [systems, total] = await Promise.all([
-    prisma.aiSystem.findMany({ where, orderBy: { createdAt: "asc" } }),
+  const [systems, total, employees] = await Promise.all([
+    prisma.aiSystem.findMany({
+      where,
+      orderBy: { createdAt: "asc" },
+      include: { oversight: { select: { name: true, trainingCompleted: true } } },
+    }),
     prisma.aiSystem.count({ where: { companyId: company.id } }),
+    prisma.employee.findMany({
+      where: { companyId: company.id },
+      orderBy: { name: "asc" },
+      select: { id: true, name: true, trainingCompleted: true },
+    }),
   ]);
   const atLimit = unlocked && total >= limit;
   const limitLabel = limit === Infinity ? "onbeperkt" : String(limit);
@@ -94,6 +103,7 @@ export default async function RegisterPage({
             </Button>
           ) : (
             <AiSystemDialog
+              employees={employees}
               trigger={
                 <Button>
                   <Plus className="h-4 w-4" /> Nieuw systeem
@@ -166,6 +176,7 @@ export default async function RegisterPage({
                 isAdmin &&
                 (unlocked ? (
                   <AiSystemDialog
+                    employees={employees}
                     trigger={
                       <Button>
                         <Plus className="h-4 w-4" /> Eerste systeem toevoegen
@@ -187,6 +198,7 @@ export default async function RegisterPage({
                   <TableHead>Systeem</TableHead>
                   <TableHead>Rol</TableHead>
                   <TableHead>Risiconiveau</TableHead>
+                  <TableHead>Menselijk toezicht</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead>Toegevoegd</TableHead>
                   <TableHead className="text-right">Acties</TableHead>
@@ -209,6 +221,27 @@ export default async function RegisterPage({
                         {RISK_LABEL[system.riskLevel]}
                       </Badge>
                     </TableCell>
+                    <TableCell className="text-sm">
+                      {system.oversight ? (
+                        <div className="flex flex-col gap-1">
+                          <span className="font-medium">{system.oversight.name}</span>
+                          <Badge
+                            variant={
+                              system.oversight.trainingCompleted ? "success" : "warning"
+                            }
+                            className="w-fit"
+                          >
+                            {system.oversight.trainingCompleted
+                              ? "Getraind"
+                              : "Nog niet getraind"}
+                          </Badge>
+                        </div>
+                      ) : system.riskLevel === "high" ? (
+                        <Badge variant="danger">Niet toegewezen</Badge>
+                      ) : (
+                        <span className="text-muted-foreground">—</span>
+                      )}
+                    </TableCell>
                     <TableCell>
                       <Badge variant={STATUS_BADGE[system.status] ?? "secondary"}>
                         {STATUS_LABEL[system.status] ?? system.status}
@@ -224,6 +257,7 @@ export default async function RegisterPage({
                             {unlocked && (
                               <AiSystemDialog
                                 system={system}
+                                employees={employees}
                                 trigger={
                                   <Button
                                     variant="ghost"

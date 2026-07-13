@@ -18,6 +18,7 @@ const schema = z.object({
   role: z.enum(["provider", "deployer"]),
   riskLevel: z.enum(["minimal", "limited", "high", "unacceptable"]),
   status: z.enum(["active", "review", "retired"]),
+  oversightEmployeeId: z.string().nullable().optional(), // Art 26(2) — human-oversight assignee
 });
 
 export type AiSystemInput = z.input<typeof schema>;
@@ -43,12 +44,24 @@ export async function upsertAiSystem(
     };
   }
 
+  // Human-oversight assignee (Art 26(2)) must be one of this company's own
+  // employees; ignore anything that isn't.
+  let oversightEmployeeId = data.oversightEmployeeId || null;
+  if (oversightEmployeeId) {
+    const emp = await prisma.employee.findFirst({
+      where: { id: oversightEmployeeId, companyId: company.id },
+      select: { id: true },
+    });
+    if (!emp) oversightEmployeeId = null;
+  }
+  const record = { ...data, oversightEmployeeId };
+
   try {
     if (id) {
       // Scope the update to the active company so systems can't be edited cross-tenant.
       const result = await prisma.aiSystem.updateMany({
         where: { id, companyId: company.id },
-        data,
+        data: record,
       });
       if (result.count === 0) {
         return { ok: false, error: "Systeem niet gevonden." };
@@ -67,7 +80,7 @@ export async function upsertAiSystem(
         };
       }
       await prisma.aiSystem.create({
-        data: { ...data, companyId: company.id },
+        data: { ...record, companyId: company.id },
       });
     }
   } catch {

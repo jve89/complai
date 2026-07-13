@@ -145,9 +145,12 @@ model AiSystem {
   role        AiRole    @default(deployer)
   riskLevel   RiskLevel @default(limited) @map("risk_level")
   status      String    @default("active") // active | review | retired
+  // Art 26(2) — the employee assigned to human oversight of this (high-risk) system.
+  oversightEmployeeId String? @map("oversight_employee_id")
   createdAt   DateTime  @default(now()) @map("created_at")
 
-  company Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  company   Company   @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  oversight Employee? @relation(fields: [oversightEmployeeId], references: [id], onDelete: SetNull)
 
   @@index([companyId])
   @@map("ai_systems")
@@ -223,6 +226,7 @@ model Employee {
   company             Company              @relation(fields: [companyId], references: [id], onDelete: Cascade)
   user                User?                @relation(fields: [userId], references: [id], onDelete: SetNull)
   trainingCompletions TrainingCompletion[]
+  oversightSystems    AiSystem[] // high-risk systems this employee oversees (Art 26(2))
 
   @@index([companyId])
   @@map("employees")
