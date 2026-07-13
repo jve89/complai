@@ -96,3 +96,14 @@ export const TRAINING_MIN_TIER: TierId = "groei";
 export function trainingUnlocked(plan: string | null | undefined): boolean {
   return tierRank(plan) >= tierRank(TRAINING_MIN_TIER);
 }
+
+/** Incident reporting (Meldingen, Art 73) is a paid feature from Compliance
+ * (groei) — a serious-incident duty binds high-risk DEPLOYERS, who are recommended
+ * this tier (same level as FRIA / risicobeoordeling). Basis and below see the page
+ * as a teaser but can't log or manage meldingen. Deliberately NOT Audit-only:
+ * that would withhold a legally-required tool from a customer told to buy Compliance. */
+export const INCIDENTS_MIN_TIER: TierId = "groei";
+
+export function incidentsUnlocked(plan: string | null | undefined): boolean {
+  return tierRank(plan) >= tierRank(INCIDENTS_MIN_TIER);
+}

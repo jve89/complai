@@ -6,6 +6,7 @@ import {
   GraduationCap,
   LayoutDashboard,
   Settings,
+  Siren,
   Users,
   type LucideIcon,
 } from "lucide-react";
@@ -31,6 +32,12 @@ export const DASHBOARD_NAV: NavItem[] = [
     label: "AI-register",
     description: "Beheer al uw AI-systemen en risicoclassificatie",
     icon: Database,
+  },
+  {
+    href: "/dashboard/meldingen",
+    label: "Meldingen",
+    description: "Ernstige incidenten melden (Art. 73)",
+    icon: Siren,
   },
   {
     href: "/dashboard/documents",
@@ -71,10 +78,13 @@ export const DASHBOARD_NAV: NavItem[] = [
   },
 ];
 
-/** Same nav, remapped to /demo/* for the public demo. Instellingen and Updates
- *  have no /demo/* counterpart, so they're excluded. */
+/** Same nav, remapped to /demo/* for the public demo. Instellingen, Updates and
+ *  Meldingen have no /demo/* counterpart, so they're excluded. */
 export const DEMO_NAV: NavItem[] = DASHBOARD_NAV.filter(
-  (n) => n.href !== "/dashboard/settings" && n.href !== "/dashboard/updates"
+  (n) =>
+    n.href !== "/dashboard/settings" &&
+    n.href !== "/dashboard/updates" &&
+    n.href !== "/dashboard/meldingen"
 ).map((n) => ({
   ...n,
   href:
