@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { Sparkles, Loader2 } from "lucide-react";
+import { Sparkles, Loader2, List } from "lucide-react";
 import type { AiSystem, AiRole, RiskLevel } from "@prisma/client";
 
 import { upsertAiSystem } from "@/app/dashboard/register/actions";
@@ -51,10 +51,12 @@ function NameCombobox({
   value,
   onType,
   onPick,
+  inputRef,
 }: {
   value: string;
   onType: (v: string) => void;
   onPick: (s: { name: string; vendor: string }) => void;
+  inputRef?: React.RefObject<HTMLInputElement>;
 }) {
   const [open, setOpen] = useState(false);
   const [active, setActive] = useState(0);
@@ -62,10 +64,8 @@ function NameCombobox({
 
   const results = useMemo(() => {
     const q = value.trim().toLowerCase();
-    const list = q
-      ? AI_SYSTEMS.filter((s) => `${s.name} ${s.vendor}`.toLowerCase().includes(q))
-      : AI_SYSTEMS;
-    return list.slice(0, 8);
+    if (!q) return AI_SYSTEMS; // empty → browse the whole catalog (scrollable)
+    return AI_SYSTEMS.filter((s) => `${s.name} ${s.vendor}`.toLowerCase().includes(q)).slice(0, 8);
   }, [value]);
 
   useEffect(() => {
@@ -84,6 +84,7 @@ function NameCombobox({
   return (
     <div ref={wrapRef} className="relative">
       <Input
+        ref={inputRef}
         id="name"
         value={value}
         onChange={(e) => {
@@ -141,6 +142,7 @@ export function AiSystemDialog({ system, trigger }: Props) {
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
   const [suggestion, setSuggestion] = useState<string | null>(null);
+  const nameRef = useRef<HTMLInputElement>(null);
 
   const [form, setForm] = useState<{
     name: string;
@@ -208,6 +210,7 @@ export function AiSystemDialog({ system, trigger }: Props) {
                 value={form.name}
                 onType={(v) => set("name", v)}
                 onPick={(s) => setForm((f) => ({ ...f, name: s.name, vendor: s.vendor }))}
+                inputRef={nameRef}
               />
             </div>
             <div className="space-y-2">
@@ -218,6 +221,24 @@ export function AiSystemDialog({ system, trigger }: Props) {
                 onChange={(e) => set("vendor", e.target.value)}
                 placeholder="bijv. OpenAI"
               />
+            </div>
+          </div>
+
+          <div className="rounded-lg border border-dashed bg-secondary/40 p-3">
+            <div className="flex items-center justify-between gap-3">
+              <p className="text-sm text-muted-foreground">
+                Staat uw AI-systeem in onze catalogus? Typ de naam en kies het —
+                wij vullen de leverancier automatisch aan.
+              </p>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="shrink-0"
+                onClick={() => nameRef.current?.focus()}
+              >
+                <List className="h-4 w-4" /> Toon catalogus
+              </Button>
             </div>
           </div>
 
