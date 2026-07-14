@@ -33,9 +33,9 @@ const HEADLINE: Record<
   high_risk: { label: "Hoog risico", variant: "warning", note: "U gebruikt hoog-risico AI. Daar horen stevige verplichtingen bij — zie hieronder." },
   high_notify: { label: "Geen hoog risico (Art. 6(3))", variant: "info", note: "Uw AI valt in een hoog-risico gebied, maar speelt volgens u alleen een beperkte, ondersteunende rol. Dan gelden niet álle hoog-risico plichten — maar u moet die inschatting wél onderbouwd vastleggen en het systeem registreren vóór ingebruikname (Art. 6(3)/6(4)/49(2))." },
   limited_risk: { label: "Beperkt risico", variant: "info", note: "Vooral transparantieverplichtingen (Art. 50) zijn van toepassing." },
-  out_of_scope: { label: "Buiten de reikwijdte", variant: "secondary", note: "Op basis van uw antwoorden valt u (grotendeels) buiten de AI Act. Houd dit actueel." },
-  excluded: { label: "Uitgesloten", variant: "secondary", note: "Uw gebruik lijkt te zijn uitgesloten van de AI Act." },
-  minimal: { label: "Minimaal risico", variant: "success", note: "Weinig verplichtingen — borg wel de basis zoals AI-geletterdheid." },
+  out_of_scope: { label: "Buiten de reikwijdte", variant: "secondary", note: "Op basis van uw antwoorden gebruikt u (nog) geen AI die onder de wet valt. Gebruikt u wél AI? Controleer dan uw antwoorden — de meeste organisaties die AI gebruiken vallen er wél onder." },
+  excluded: { label: "Uitgezonderd", variant: "secondary", note: "U beroept zich op een wettelijke uitzondering (Art. 2). Die is smal — controleer of ze echt van toepassing is, en houd dit actueel als uw AI-gebruik verandert." },
+  minimal: { label: "Minimaal risico", variant: "success", note: "Weinig verplichtingen nú — maar de wet en uw AI-gebruik veranderen. Borg de basis (zoals AI-geletterdheid) en houd het bij." },
 };
 
 const TIER_LABEL: Record<string, string> = {
@@ -144,6 +144,10 @@ export default async function ScanResultsPage({
 
   const profile = result.profile as unknown as ComplianceProfile;
   const headline = HEADLINE[profile.headline] ?? HEADLINE.minimal;
+  // Out-of-scope / excluded means the AI Act doesn't apply — a gereedheidsscore is
+  // meaningless there, so we show a neutral "controleer dit" state instead of a
+  // triumphant 100% that reads as "you're fully compliant, done".
+  const outOfReach = profile.headline === "out_of_scope" || profile.headline === "excluded";
   const requiredObligations = profile.obligations.filter((o) => o.required);
   const advisoryObligations = profile.obligations.filter((o) => !o.required);
 
@@ -184,7 +188,14 @@ export default async function ScanResultsPage({
       {/* Score + headline */}
       <Card className="mb-4">
         <CardContent className="flex flex-col items-center gap-6 py-8 sm:flex-row sm:gap-10">
-          <ScoreRing score={profile.score} label="gereedheid" />
+          {outOfReach ? (
+            <div className="flex h-28 w-28 shrink-0 flex-col items-center justify-center gap-1 rounded-full border-4 border-dashed border-muted-foreground/25 text-center">
+              <Info className="h-6 w-6 text-muted-foreground" />
+              <span className="text-xs font-medium text-muted-foreground">geen score</span>
+            </div>
+          ) : (
+            <ScoreRing score={profile.score} label="gereedheid" />
+          )}
           <div className="text-center sm:text-left">
             <Badge variant={headline.variant}>{headline.label}</Badge>
             <p className="mt-3 text-lg">{headline.note}</p>
@@ -206,16 +217,18 @@ export default async function ScanResultsPage({
             Een mogelijk <strong className="text-foreground">verboden praktijk</strong> weegt zwaar:
             uw gereedheidsscore is gemaximeerd op 20 totdat dit is opgelost.
           </p>
-        ) : profile.headline === "out_of_scope" || profile.headline === "excluded" ? (
+        ) : outOfReach ? (
           <p>
-            U heeft op dit moment geen verplichtingen onder de AI Act, dus uw score staat op{" "}
-            <strong className="text-foreground">100</strong>. Houd dit actueel als uw AI-gebruik
-            verandert.
+            Op basis van uw antwoorden gelden er nu geen verplichtingen onder de AI-wet — daarom
+            tonen we geen gereedheidsscore. <strong className="text-foreground">Klopt dit?</strong>{" "}
+            De meeste organisaties die AI gebruiken vallen er wél onder. Controleer uw antwoorden,
+            of houd dit actueel als uw AI-gebruik verandert.
           </p>
         ) : total === 0 ? (
           <p>
-            Er zijn geen verplichte acties gevonden — uw score weerspiegelt vooral de basis
-            (AI-geletterdheid).
+            Weinig verplichte acties nu. Compliant blijven is wél doorlopend werk: de wet
+            verandert en elk nieuw AI-systeem kan nieuwe plichten meebrengen — houd uw scan en
+            register actueel.
           </p>
         ) : (
           <p>

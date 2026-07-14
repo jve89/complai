@@ -7,6 +7,7 @@ import {
   CheckCircle2,
   Circle,
   Database,
+  Info,
   GraduationCap,
   ListChecks,
   Search,
@@ -188,6 +189,10 @@ export default async function DashboardPage({
 
   const required = obligations.filter((o) => o.required);
   const open = required.filter((o) => o.status !== "done" && o.status !== "compliant");
+
+  // Out-of-scope / excluded: the AI Act doesn't apply, so a gereedheidsscore is
+  // meaningless — show a neutral state instead of a triumphant 100%.
+  const outOfReach = profile?.headline === "out_of_scope" || profile?.headline === "excluded";
 
   // Gereedheid = the frozen scan snapshot; it does NOT move with dashboard
   // activity (only a re-scan changes it). The Voortgang dial below is the live one.
@@ -396,15 +401,23 @@ export default async function DashboardPage({
             <CardTitle className="text-base">Gereedheid</CardTitle>
           </CardHeader>
           <CardContent className="flex flex-col items-center gap-3 text-center">
-            <ScoreRing score={gereedheidScore} label="gereedheid" />
+            {outOfReach ? (
+              <div className="flex h-28 w-28 shrink-0 flex-col items-center justify-center gap-1 rounded-full border-4 border-dashed border-muted-foreground/25 text-center">
+                <Info className="h-6 w-6 text-muted-foreground" />
+                <span className="text-xs font-medium text-muted-foreground">geen score</span>
+              </div>
+            ) : (
+              <ScoreRing score={gereedheidScore} label="gereedheid" />
+            )}
             {profile && (
               <Badge variant={(HEADLINE[profile.headline] ?? HEADLINE.minimal).variant}>
                 {(HEADLINE[profile.headline] ?? HEADLINE.minimal).label}
               </Badge>
             )}
             <p className="max-w-xs text-xs text-muted-foreground">
-              Op basis van uw laatste risicoscan. Loop de scan elk kwartaal opnieuw
-              door om dit actueel te houden.
+              {outOfReach
+                ? "Op basis van uw laatste scan valt u buiten de AI-wet. Controleer of dit klopt — gebruikt u AI, dan valt u er meestal wél onder."
+                : "Op basis van uw laatste risicoscan. Loop de scan elk kwartaal opnieuw door om dit actueel te houden."}
             </p>
           </CardContent>
         </Card>
