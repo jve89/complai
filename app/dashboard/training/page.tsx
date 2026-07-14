@@ -52,7 +52,7 @@ export default async function TrainingPage() {
     prisma.trainingCompletion.findMany({ where: { employeeId: learner.id } }),
     prisma.aiSystem.findMany({
       where: { companyId: company.id },
-      select: { riskLevel: true },
+      select: { riskLevel: true, role: true },
     }),
   ]);
 
@@ -79,6 +79,9 @@ export default async function TrainingPage() {
     profile,
     aiSystems.map((s) => s.riskLevel)
   );
+  // companySignals reads the provider role only from the scan; also honour the
+  // live AI-register so a register-only provider still sees the aanbieder module.
+  const isProviderLive = isProvider || aiSystems.some((s) => s.role === "provider");
 
   const moduleRelevance = new Map<string, string>();
   if (hasProhibited)
@@ -103,13 +106,15 @@ export default async function TrainingPage() {
       "responsible-use",
       "U gebruikt AI met transparantieplichten (Art. 50) — verantwoord gebruik is dan cruciaal."
     );
-  if (isProvider)
+  if (isProviderLive)
     moduleRelevance.set(
       "technical-docs",
       "U treedt (mede) op als aanbieder — technische documentatie is dan verplicht (Art. 11)."
     );
 
-  const anyRelevant = unlocked && learnerModules.some((m) => moduleRelevance.has(m.id));
+  // Show relevance markers even before the tier unlocks, so a groei-recommended
+  // gratis/starter buyer sees WHY to upgrade (the module actions stay locked).
+  const anyRelevant = learnerModules.some((m) => moduleRelevance.has(m.id));
 
   return (
     <>
@@ -241,7 +246,7 @@ export default async function TrainingPage() {
                     <p className="text-sm text-muted-foreground">
                       {module.minutes} min · {askCount(module)} vragen
                     </p>
-                    {unlocked && moduleRelevance.has(module.id) && (
+                    {moduleRelevance.has(module.id) && (
                       <p className="mt-1 text-xs font-medium text-brand-700">
                         {moduleRelevance.get(module.id)}
                       </p>
@@ -249,11 +254,11 @@ export default async function TrainingPage() {
                   </div>
                 </div>
                 <div className="flex items-center gap-3 pl-10 sm:pl-0">
+                  {moduleRelevance.has(module.id) && !done && (
+                    <Badge variant="warning">Voor u relevant</Badge>
+                  )}
                   {unlocked ? (
                     <>
-                      {moduleRelevance.has(module.id) && !done && (
-                        <Badge variant="warning">Voor u relevant</Badge>
-                      )}
                       {done && <Badge variant="success">Afgerond</Badge>}
                       <ModuleQuiz
                         module={module}
