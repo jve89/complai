@@ -72,7 +72,8 @@ export const PLANS: Plan[] = [
     features: [
       "Alles uit Basis",
       "AI-register (max. 10 systemen)",
-      "FRIA, risicobeoordeling & beoordelingsdossier",
+      "FRIA, DPIA, risicobeoordeling & beoordelingsdossier",
+      "Incidentmelding, klachten, logbewaring & kennisgevingen",
       "E-learning met certificaten",
       "Tot 25 gebruikers",
     ],
@@ -87,7 +88,9 @@ export const PLANS: Plan[] = [
     tagline: "Voor aanbieders en grotere organisaties die hun naleving volledig willen documenteren.",
     features: [
       "Alles uit Compliance",
-      "Technische documentatie, EU-conformiteit & GPAI-docs",
+      "Technische documentatie, KMS & post-market plan",
+      "EU-conformiteit, conformiteitstracker & correctieregister",
+      "GPAI-documentatie",
       "Onbeperkt AI-systemen & gebruikers",
       "Persoonlijke onboarding",
     ],

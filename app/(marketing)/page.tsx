@@ -90,7 +90,7 @@ const features = [
   {
     icon: Database,
     title: "AI-register",
-    text: "Al uw AI-systemen overzichtelijk bij elkaar, met automatische risico-indeling volgens Annex III.",
+    text: "Al uw AI-systemen overzichtelijk bij elkaar, met een automatische risico-suggestie op basis van Annex III die u zelf bevestigt.",
   },
   {
     icon: ScanSearch,
@@ -133,7 +133,7 @@ const comparisonRows = [
   { label: "Kosten", self: "Gratis (veel tijd)", consultant: "€ 5.000+", complai: "Vanaf € 19,99/mnd" },
   { label: "Doorlooptijd", self: "Weken", consultant: "Weken tot maanden", complai: "Dezelfde dag" },
   { label: "AI-register", self: false, consultant: true, complai: true },
-  { label: "Automatische classificatie", self: false, consultant: false, complai: true },
+  { label: "Automatische risico-suggestie", self: false, consultant: false, complai: true },
   { label: "Documenten (beleid, FRIA)", self: false, consultant: true, complai: true },
   { label: "E-learning & certificaten", self: false, consultant: false, complai: true },
   { label: "Continue monitoring", self: false, consultant: false, complai: true },
@@ -360,8 +360,8 @@ export default function LandingPage() {
               Alles op één plek
             </h2>
             <p className="mt-4 text-lg text-muted-foreground">
-              Eenmaal binnen heeft u alles in handen om elke verplichting uit de
-              AI Act af te dekken — en het aantoonbaar te houden.
+              Eenmaal binnen heeft u de tools om uw AI Act-verplichtingen
+              gestructureerd aan te pakken en uw stappen vast te leggen.
             </p>
           </div>
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
@@ -437,8 +437,8 @@ export default function LandingPage() {
               Voor elke organisatie een passend pakket
             </h2>
             <p className="mt-4 text-lg text-muted-foreground">
-              De scan is gratis, zonder account. Elk betaald pakket begint met
-              een gratis eerste maand.
+              De scan is gratis, zonder account. Bij jaarlijkse betaling krijgt u
+              2 maanden gratis.
             </p>
           </div>
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
@@ -452,7 +452,7 @@ export default function LandingPage() {
                 }
               >
                 {plan.highlighted && (
-                  <Badge className="absolute -top-3 left-6">Meest gekozen</Badge>
+                  <Badge className="absolute -top-3 left-6">Aanbevolen</Badge>
                 )}
                 <h3 className="font-semibold">{plan.name}</h3>
                 <p className="mt-2 text-3xl font-bold">

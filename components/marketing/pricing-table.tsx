@@ -107,7 +107,7 @@ export function PricingTable({ scanId }: { scanId?: string }) {
               )}
             >
               {plan.highlighted && (
-                <Badge className="absolute -top-3 left-6">Meest gekozen</Badge>
+                <Badge className="absolute -top-3 left-6">Aanbevolen</Badge>
               )}
 
               <h3 className="font-semibold">{plan.name}</h3>

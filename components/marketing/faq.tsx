@@ -30,7 +30,7 @@ const faqs = [
   },
   {
     q: "Is de risicoscan echt kosteloos?",
-    a: "Ja. U doorloopt de volledige scan zonder account en downloadt een PDF-rapport met uw score. Met een gratis account bewaart u uw resultaten en krijgt u toegang tot een basis-AI-register.",
+    a: "Ja. U doorloopt de volledige scan zonder account en downloadt een PDF-rapport met uw score. Met een gratis account bewaart u uw resultaten en volgt u relevante wetswijzigingen in het dashboard. Het AI-register en de documenten zitten vanaf het pakket Basis.",
   },
 ];
 
