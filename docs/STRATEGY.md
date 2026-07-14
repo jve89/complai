@@ -236,6 +236,31 @@ pakket that unlocks a customer's required items — these must keep that promise
 Out of scope (guardrail): Art 26(10) law-enforcement post-remote biometric
 authorisation — no law-enforcement sector logic in this product.
 
+## Risicoscan — accuracy + relevance (planned, two phases)
+
+The scan is how we build the picture of a customer's business, so it must be
+correct, deep enough, and still understandable. It currently does two jobs:
+recommends a pakket and pre-fills dashboard data. We're adding a third:
+driving what each customer *sees*.
+
+- **Phase A — audit the scan (do first).** Verify every question against
+  `docs/regulatory/ai-act-full-text.md`: coverage (provider/deployer split,
+  Annex III high-risk triggers, Art 5 prohibitions incl. the two new ones,
+  Art 50 transparency, GPAI, FRIA scope (Art 27), Art 6(3) carve-out,
+  Art 4 literacy), correctness (answers → right classification, verbatim-
+  grounded, no over-calling — guardrail #2), currency (Digital Omnibus dates),
+  and comprehension (plain Dutch, branch length, result-screen clarity).
+  Report-first, then fix one classification rule at a time (CLAUDE.md rules).
+- **Phase B — scan-driven visibility (after A).** A `relevance(profile) →
+  { applies, requiredTier }` layer on top of the `lib/plan.ts` pakket gate,
+  giving three states per surface: **not relevant → de-emphasized, NOT hidden**
+  (with a "toon ook wat nu niet van toepassing lijkt" reveal — a self-declared
+  scan must never silently hide a real duty), **relevant + tier too low →
+  locked** (upsell), **relevant + covered → shown**. Applied to nav, overview
+  cards, documents, obligations and the Wave 1–3 modules. Invariants: the
+  recommended pakket unlocks everything relevant-and-required; relevance
+  re-derives live from the AI-register.
+
 ## Open items
 
 - Re-verify the Digital Omnibus dates against the published OJ (EUR-Lex) once the
