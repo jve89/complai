@@ -113,19 +113,12 @@ export const DASHBOARD_NAV: NavItem[] = [
   },
 ];
 
-/** Same nav, remapped to /demo/* for the public demo. Instellingen, Updates,
- *  Meldingen, Kennisgevingen, Logbewaring, Klachten, Conformiteit and
- *  Corrigerende maatregelen have no /demo/* counterpart, so they're excluded. */
+/** Same nav, remapped to /demo/* for the public demo. Only Instellingen is left
+ *  out (account/billing config that has no meaning without a real account); every
+ *  other surface — including the Wave modules and Updates — has a /demo/* re-export
+ *  so the demo IS the full Audit-tier dashboard. */
 export const DEMO_NAV: NavItem[] = DASHBOARD_NAV.filter(
-  (n) =>
-    n.href !== "/dashboard/settings" &&
-    n.href !== "/dashboard/updates" &&
-    n.href !== "/dashboard/meldingen" &&
-    n.href !== "/dashboard/kennisgevingen" &&
-    n.href !== "/dashboard/logbewaring" &&
-    n.href !== "/dashboard/klachten" &&
-    n.href !== "/dashboard/conformiteit" &&
-    n.href !== "/dashboard/corrigerend"
+  (n) => n.href !== "/dashboard/settings"
 ).map((n) => ({
   ...n,
   href:

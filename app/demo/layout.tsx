@@ -56,8 +56,8 @@ export default function DemoLayout({ children }: { children: React.ReactNode }) 
 
         <div className="border-b border-brand-200 bg-brand-50 px-4 py-3 text-sm text-brand-900 sm:px-6">
           U bekijkt een <strong>demo</strong> met de fictieve organisatie{" "}
-          <strong>Demo Recruitment B.V.</strong> Dit is een selectie van de
-          modules — doe de gratis scan om uw eigen, volledige omgeving te vullen.
+          <strong>Demo Recruitment B.V.</strong> — het volledige dashboard op ons
+          hoogste pakket. Doe de gratis scan om uw eigen omgeving te vullen.
         </div>
 
         <main className="px-4 py-6 sm:px-6 lg:px-8">{children}</main>

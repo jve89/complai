@@ -189,6 +189,98 @@ async function ensureDemoData(company: Company): Promise<void> {
     }
   }
 
+  // Wave-module demo data (Art 73/26/85/43/20) so the newly-exposed module pages
+  // show a realistic Audit-tier picture instead of empty states. Each guarded on
+  // its own count, so it back-fills an older demo company without duplicating.
+  const cid = company.id;
+  const hrSystem = await prisma.aiSystem.findFirst({
+    where: { companyId: cid, riskLevel: "high" },
+  });
+  if (hrSystem) {
+    // Logbewaring — the deployer's log-retention policy for the high-risk system.
+    if (hrSystem.logLocation === null) {
+      await prisma.aiSystem.update({
+        where: { id: hrSystem.id },
+        data: {
+          logLocation: "Azure Monitor (regio EU-west)",
+          logRetentionMonths: 12,
+          logRetentionOwner: "Security Officer",
+          logReviewedAt: new Date("2026-06-30"),
+        },
+      });
+    }
+    // Conformiteit — one assessment in progress (internal route, Annex VI).
+    if ((await prisma.conformityAssessment.count({ where: { companyId: cid } })) === 0) {
+      await prisma.conformityAssessment.create({
+        data: {
+          companyId: cid,
+          aiSystemId: hrSystem.id,
+          route: "internal",
+          steps: {
+            techdoc: "done",
+            qms: "in_progress",
+            assessment: "in_progress",
+            declaration: "todo",
+            ce: "todo",
+            registration: "todo",
+          } as Prisma.InputJsonValue,
+          notes: "Interne controle (Annex VI). Technische documentatie gereed; KMS en beoordeling lopen.",
+          reviewedAt: new Date("2026-06-25"),
+        },
+      });
+    }
+  }
+  const aiId = hrSystem?.id ?? null;
+  if ((await prisma.incident.count({ where: { companyId: cid } })) === 0) {
+    await prisma.incident.createMany({
+      data: [
+        {
+          companyId: cid,
+          title: "Onterechte afwijzing door voorselectie",
+          description: "Een sollicitant werd door een configuratiefout ten onrechte automatisch afgewezen.",
+          category: "fundamental_rights",
+          awareAt: new Date("2026-06-18"),
+          status: "reported",
+          reportedAt: new Date("2026-06-20"),
+          reference: "AP-2026-0042",
+        },
+        {
+          companyId: cid,
+          title: "Onverwacht gedrag na modelupdate",
+          description: "Na een update week de rangschikking af van het verwachte patroon; onder onderzoek.",
+          category: "fundamental_rights",
+          awareAt: new Date("2026-07-05"),
+          status: "open",
+        },
+      ],
+    });
+  }
+  if ((await prisma.notice.count({ where: { companyId: cid } })) === 0) {
+    await prisma.notice.createMany({
+      data: [
+        { companyId: cid, type: "worker", aiSystemId: aiId, recipient: "Ondernemingsraad", method: "email", detail: "Informatie over de inzet van TalentScan AI bij werving en het menselijk toezicht daarop.", status: "issued", issuedAt: new Date("2026-05-12") },
+        { companyId: cid, type: "affected", aiSystemId: aiId, recipient: "Sollicitanten (kandidatenportaal)", method: "intranet", detail: "Melding dat AI wordt ingezet bij de voorselectie en hoe men bezwaar kan maken.", status: "issued", issuedAt: new Date("2026-05-15") },
+        { companyId: cid, type: "explanation", aiSystemId: aiId, recipient: "Individuele sollicitant", method: "email", detail: "Uitleg bij een afwijzingsbesluit, op verzoek (Art. 86).", status: "draft" },
+      ],
+    });
+  }
+  if ((await prisma.complaint.count({ where: { companyId: cid } })) === 0) {
+    await prisma.complaint.createMany({
+      data: [
+        { companyId: cid, subject: "Bezwaar tegen geautomatiseerde afwijzing", description: "Sollicitant vraagt om een herbeoordeling door een mens.", aiSystemId: aiId, complainant: "Sollicitant (extern)", channel: "email", status: "resolved", receivedAt: new Date("2026-06-02"), resolution: "Handmatige herbeoordeling uitgevoerd; besluit toegelicht.", resolvedAt: new Date("2026-06-06") },
+        { companyId: cid, subject: "Vraag over gebruik van AI in de selectie", aiSystemId: aiId, complainant: "Kandidaat", channel: "form", status: "in_progress", receivedAt: new Date("2026-07-01") },
+      ],
+    });
+  }
+  if ((await prisma.correctiveAction.count({ where: { companyId: cid } })) === 0) {
+    await prisma.correctiveAction.createMany({
+      data: [
+        { companyId: cid, aiSystemId: aiId, title: "Bias in voorselectie verminderd", nonConformity: "Onevenredige afwijzing van een subgroep vastgesteld tijdens monitoring.", actionType: "bring_into_conformity", actionTaken: "Model opnieuw afgesteld en drempels aangepast; extra menselijke controle toegevoegd.", informed: "Interne stakeholders", presentsRisk: false, authorityInformed: false, status: "done", identifiedAt: new Date("2026-05-20"), resolvedAt: new Date("2026-06-10") },
+        { companyId: cid, aiSystemId: aiId, title: "Logging-hiaat hersteld", nonConformity: "Niet alle relevante gebeurtenissen werden gelogd.", actionType: "bring_into_conformity", actionTaken: "Loggingconfiguratie gecorrigeerd en gecontroleerd.", presentsRisk: false, status: "in_progress", identifiedAt: new Date("2026-07-03") },
+      ],
+    });
+  }
+
   // Simulate e-learning progress so the overview shows a realistic mix and the
   // demo learner (Lars) has some finished modules. Guard on Sanne, who is never
   // the demo learner — so her completions only exist once we've seeded — making
