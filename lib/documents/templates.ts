@@ -10,6 +10,7 @@ export type DocumentType =
   | "dpia"
   | "transparency"
   | "tech_doc"
+  | "qms"
   | "doc_conformity"
   | "assessment_record"
   | "gpai_docs";
@@ -82,6 +83,13 @@ export const DOCUMENT_META: DocumentMeta[] = [
     name: "Technische documentatie (Annex IV)",
     description:
       "Technisch dossier voor hoog-risico AI-systemen conform Artikel 11 en Annex IV.",
+    highRiskFocused: true,
+  },
+  {
+    type: "qms",
+    name: "Kwaliteitsmanagementsysteem (Art. 17)",
+    description:
+      "Gedocumenteerd kwaliteitsmanagementsysteem voor aanbieders van hoog-risico AI (Artikel 17).",
     highRiskFocused: true,
   },
   {
@@ -838,6 +846,135 @@ function buildDpia(company: Company, systems: AiSystem[]): DocumentContent {
   };
 }
 
+/** Quality management system (Art 17) — a fill-in scaffold for the 13 elements a
+ *  PROVIDER's QMS must document. Art 17 binds only aanbieders (makers) of high-risk
+ *  AI, so the doc opens by telling a pure gebruiksverantwoordelijke it does not
+ *  apply to them, and states the Art 63(1) microenterprise-only simplification
+ *  (pending Commission guidelines; Art 63(2) preserves all other duties). Each
+ *  Art 17(1)(a)–(m) element is a ruled fill-in — the substance is provider-specific. */
+function buildQms(company: Company, systems: AiSystem[]): DocumentContent {
+  const ctx = docContext(company);
+  const high = highRiskSystems(systems);
+  return {
+    title: "Kwaliteitsmanagementsysteem (Artikel 17)",
+    subtitle: company.name,
+    intro: `Dit sjabloon helpt aanbieders van hoog-risico AI-systemen een kwaliteitsmanagementsysteem (KMS) vast te leggen conform Artikel 17 van de EU AI Act. ${
+      ctx.isProvider
+        ? "Als aanbieder legt u dit systeem vast in schriftelijke beleidsregels, procedures en instructies en houdt u het actueel."
+        : "Let op: een KMS is een verplichting voor de aanbieder (maker) van een hoog-risico systeem. Bent u uitsluitend gebruiksverantwoordelijke, dan geldt Artikel 17 niet voor u."
+    } De inhoud per onderdeel vult u zelf in — die is specifiek voor uw organisatie en systemen.`,
+    sections: [
+      {
+        heading: "Voor wie geldt dit? (Artikel 16/17)",
+        paragraphs: [
+          "Artikel 17 verplicht alleen de aanbieder van een hoog-risico AI-systeem tot een kwaliteitsmanagementsysteem. Een gebruiksverantwoordelijke (deployer) hoeft geen KMS te hebben.",
+          "Micro-ondernemingen (minder dan 10 werknemers én ten hoogste € 2 mln omzet of balanstotaal, zonder partner- of verbonden ondernemingen) mogen bepaalde onderdelen vereenvoudigd invullen (Artikel 63 lid 1); de Europese Commissie werkt hiervoor nog richtsnoeren uit. Deze vereenvoudiging ontslaat u niet van de overige verplichtingen (o.a. Artikelen 9, 10, 11, 12, 13, 14, 15, 72 en 73 — Artikel 63 lid 2).",
+        ],
+        table: high.length ? systemsTable(high) : undefined,
+      },
+      {
+        heading: "1. Strategie voor naleving (Art. 17 lid 1(a))",
+        fields: [
+          field(
+            "Uw strategie voor regelgevingsnaleving, inclusief de conformiteitsbeoordeling en het beheer van wijzigingen aan het systeem",
+            4
+          ),
+        ],
+      },
+      {
+        heading: "2. Ontwerp en ontwerpverificatie (Art. 17 lid 1(b))",
+        fields: [field("Technieken en procedures voor ontwerp, ontwerpcontrole en ontwerpverificatie", 3)],
+      },
+      {
+        heading: "3. Ontwikkeling en kwaliteitsborging (Art. 17 lid 1(c))",
+        fields: [field("Technieken en procedures voor ontwikkeling, kwaliteitscontrole en kwaliteitsborging", 3)],
+      },
+      {
+        heading: "4. Test- en validatieprocedures (Art. 17 lid 1(d))",
+        fields: [
+          field(
+            "Onderzoeks-, test- en validatieprocedures vóór, tijdens en na de ontwikkeling — en hoe vaak deze worden uitgevoerd",
+            3
+          ),
+        ],
+      },
+      {
+        heading: "5. Technische specificaties en normen (Art. 17 lid 1(e))",
+        fields: [
+          field(
+            "Toegepaste technische specificaties en normen; en waar geharmoniseerde normen niet volledig gelden, hoe u toch aan de eisen van Sectie 2 voldoet",
+            3
+          ),
+        ],
+      },
+      {
+        heading: "6. Datamanagement (Art. 17 lid 1(f))",
+        fields: [
+          field(
+            "Systemen en procedures voor datamanagement (verzameling, labeling, opslag, filtering, aggregatie en bewaring) vóór en met het oog op het in de handel brengen",
+            4
+          ),
+        ],
+      },
+      {
+        heading: "7. Risicobeheersysteem (Art. 17 lid 1(g) → Artikel 9)",
+        fields: [
+          field("Verwijs naar uw risicobeheersysteem (Artikel 9) — bijvoorbeeld uw risicobeoordeling en FRIA", 2),
+        ],
+      },
+      {
+        heading: "8. Post-market monitoring (Art. 17 lid 1(h) → Artikel 72)",
+        fields: [field("Opzet, uitvoering en onderhoud van uw post-market monitoringsysteem (Artikel 72)", 3)],
+      },
+      {
+        heading: "9. Melding van ernstige incidenten (Art. 17 lid 1(i) → Artikel 73)",
+        fields: [field("Procedures voor het melden van ernstige incidenten (Artikel 73)", 2)],
+      },
+      {
+        heading: "10. Communicatie met autoriteiten (Art. 17 lid 1(j))",
+        fields: [
+          field(
+            "Hoe u communiceert met markttoezichthouders, aangemelde instanties, andere operatoren, klanten en andere belanghebbenden",
+            3
+          ),
+        ],
+      },
+      {
+        heading: "11. Documentatiebeheer (Art. 17 lid 1(k))",
+        fields: [field("Systemen en procedures voor het bewaren van alle relevante documentatie en informatie", 2)],
+      },
+      {
+        heading: "12. Resource- en leveringszekerheid (Art. 17 lid 1(l))",
+        fields: [field("Resourcemanagement, inclusief maatregelen voor leveringszekerheid", 2)],
+      },
+      {
+        heading: "13. Verantwoordingskader (Art. 17 lid 1(m))",
+        fields: [
+          field(
+            "Verantwoordelijkheden van het management en de overige medewerkers voor alle bovengenoemde onderdelen",
+            3
+          ),
+        ],
+      },
+      {
+        heading: "Evenredigheid en uitzonderingen (Art. 17 lid 2–4)",
+        paragraphs: [
+          "De uitvoering is evenredig aan de omvang van uw organisatie, maar de vereiste striktheid en het beschermingsniveau blijven gewaarborgd (Artikel 17 lid 2).",
+          "Valt u al onder kwaliteitsmanagement-eisen uit sectoraal Unierecht, dan mag u de bovenstaande onderdelen daarin integreren (Artikel 17 lid 3). Financiële instellingen worden geacht te voldoen via hun interne governance, met uitzondering van de onderdelen (g), (h) en (i) (Artikel 17 lid 4).",
+        ],
+      },
+      {
+        heading: "Wettelijke grondslag",
+        paragraphs: [
+          "Artikel 17 van Verordening (EU) 2024/1689 (de AI Act): aanbieders van hoog-risico AI-systemen beschikken over een gedocumenteerd kwaliteitsmanagementsysteem.",
+          "Deze verplichting voor Annex III hoog-risico systemen is van toepassing vanaf 2 december 2027 (voor AI in gereguleerde producten, Annex I: 2 augustus 2028) — uitgestelde datum onder de Digital Omnibus, onder voorbehoud; wetgeving kan nog wijzigen.",
+          "Dit is een bewerkbaar concept-sjabloon en geen juridisch advies.",
+        ],
+      },
+    ],
+  };
+}
+
 const BUILDERS: Record<
   DocumentType,
   (company: Company, systems: AiSystem[]) => DocumentContent
@@ -848,6 +985,7 @@ const BUILDERS: Record<
   dpia: buildDpia,
   transparency: buildTransparency,
   tech_doc: buildTechDoc,
+  qms: buildQms,
   doc_conformity: buildDocConformity,
   assessment_record: buildAssessmentRecord,
   gpai_docs: (company) => buildGpaiDocs(company),

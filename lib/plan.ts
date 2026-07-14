@@ -41,6 +41,7 @@ export const DOC_MIN_TIER: Record<string, TierId> = {
   risk_assessment: "groei",
   assessment_record: "groei",
   tech_doc: "schaal",
+  qms: "schaal",
   doc_conformity: "schaal",
   gpai_docs: "schaal",
 };

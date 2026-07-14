@@ -12,6 +12,7 @@ import {
   ScrollText,
   ShieldCheck,
   ShieldQuestion,
+  Workflow,
   type LucideIcon,
 } from "lucide-react";
 import type { Document as DocumentRow } from "@prisma/client";
@@ -39,6 +40,7 @@ const ICONS: Record<string, LucideIcon> = {
   dpia: ShieldCheck,
   transparency: FileCheck2,
   tech_doc: FileCog,
+  qms: Workflow,
   doc_conformity: BadgeCheck,
   assessment_record: ClipboardCheck,
   gpai_docs: Cpu,

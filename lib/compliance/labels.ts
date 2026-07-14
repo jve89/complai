@@ -9,6 +9,7 @@ export const DOC_LABELS: Record<string, string> = {
   dpia: "DPIA-koppeling (AVG Art. 35)",
   risk_assessment: "Risicobeoordeling",
   tech_doc: "Technische documentatie (Annex IV)",
+  qms: "Kwaliteitsmanagementsysteem (Art. 17)",
   doc_conformity: "EU-conformiteitsverklaring",
   assessment_record: "Beoordelingsdossier (Art. 6(4))",
   gpai_docs: "GPAI-documentatie",

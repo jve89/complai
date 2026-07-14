@@ -205,8 +205,13 @@ pakket that unlocks a customer's required items — these must keep that promise
       binds from 2 Dec 2027. Pure code, no schema change.)*
 
 ### Wave 3 — provider / maker duties (Audit tier)
-- [ ] **Quality management system** — Art 17 (simplified for micro-enterprises,
-      Art 63).
+- [x] **Quality management system** — Art 17 (simplified for micro-enterprises,
+      Art 63). *(Shipped as a LIGHT fill-in `qms` document type in the Documenten
+      module (schaal), mirroring tech_doc/doc_conformity. Scaffolds all 13 Art 17(1)
+      (a)–(m) elements; opens with a provider-role gate ("een KMS is een aanbieders-
+      plicht; als u alleen gebruiksverantwoordelijke bent geldt Art. 17 niet voor u")
+      and the Art 63(1) MICRO-enterprise-only simplification (pending Commission
+      guidelines; Art 63(2) preserves all other duties). Applies 2 Dec 2027.)*
 - [ ] **Post-market monitoring plan** — Art 72 (part of the Annex IV tech doc).
 - [ ] **Conformity-assessment tracker** — Art 43, Art 47, Art 48 (steps + status;
       complements the existing EU-conformiteitsverklaring doc).
