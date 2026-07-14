@@ -225,7 +225,13 @@ pakket that unlocks a customer's required items — these must keep that promise
       6-step tracker (tech doc, QMS, assessment, EU-DoC Art 47, CE Art 48, EU-db
       Art 49) + route (Annex VI/VII) + a "Conformiteitsbeoordeling — statusoverzicht"
       evidence PDF. Provider-scoped; Art 49 EU-database caveat; applies 2 Dec 2027.)*
-- [ ] **Corrective-action log** — Art 20 (ties to the incident register).
+- [x] **Corrective-action log** — Art 20 (ties to the incident register).
+      *(Shipped: `/dashboard/corrigerend` — a `CorrectiveAction` model + register
+      (bring into conformity / withdraw / disable / recall; open → in behandeling →
+      afgehandeld) with an Art 79(1)-risk flag that surfaces the Art 20(2) authority
+      + notified-body duty, an "informed" field for the supply chain, and a register
+      evidence PDF. Provider-scoped (schaal); framed as distinct-but-linkable to the
+      Art 73 incident register; applies 2 Dec 2027.)*
 
 Out of scope (guardrail): Art 26(10) law-enforcement post-remote biometric
 authorisation — no law-enforcement sector logic in this product.

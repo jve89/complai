@@ -12,6 +12,7 @@ import {
   Settings,
   Siren,
   Users,
+  Wrench,
   type LucideIcon,
 } from "lucide-react";
 
@@ -68,6 +69,12 @@ export const DASHBOARD_NAV: NavItem[] = [
     icon: ClipboardCheck,
   },
   {
+    href: "/dashboard/corrigerend",
+    label: "Corrigerende maatregelen",
+    description: "Maatregelen bij non-conformiteit (Art. 20)",
+    icon: Wrench,
+  },
+  {
     href: "/dashboard/documents",
     label: "Documenten",
     description: "Genereer beleid, FRIA en beoordelingen",
@@ -107,8 +114,8 @@ export const DASHBOARD_NAV: NavItem[] = [
 ];
 
 /** Same nav, remapped to /demo/* for the public demo. Instellingen, Updates,
- *  Meldingen, Kennisgevingen, Logbewaring, Klachten and Conformiteit have no
- *  /demo/* counterpart, so they're excluded. */
+ *  Meldingen, Kennisgevingen, Logbewaring, Klachten, Conformiteit and
+ *  Corrigerende maatregelen have no /demo/* counterpart, so they're excluded. */
 export const DEMO_NAV: NavItem[] = DASHBOARD_NAV.filter(
   (n) =>
     n.href !== "/dashboard/settings" &&
@@ -117,7 +124,8 @@ export const DEMO_NAV: NavItem[] = DASHBOARD_NAV.filter(
     n.href !== "/dashboard/kennisgevingen" &&
     n.href !== "/dashboard/logbewaring" &&
     n.href !== "/dashboard/klachten" &&
-    n.href !== "/dashboard/conformiteit"
+    n.href !== "/dashboard/conformiteit" &&
+    n.href !== "/dashboard/corrigerend"
 ).map((n) => ({
   ...n,
   href:

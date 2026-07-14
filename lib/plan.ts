@@ -153,3 +153,13 @@ export const CONFORMITY_MIN_TIER: TierId = "schaal";
 export function conformityUnlocked(plan: string | null | undefined): boolean {
   return tierRank(plan) >= tierRank(CONFORMITY_MIN_TIER);
 }
+
+/** Corrective-action log (Corrigerende maatregelen — Art 20). Taking corrective
+ * action / withdrawal when a high-risk system is not in conformity is a PROVIDER
+ * duty (Art 16(j)/20), so — like the conformity tracker above — it sits at the
+ * provider tier (schaal), not the deployer tier. */
+export const CORRECTIVE_MIN_TIER: TierId = "schaal";
+
+export function correctiveUnlocked(plan: string | null | undefined): boolean {
+  return tierRank(plan) >= tierRank(CORRECTIVE_MIN_TIER);
+}

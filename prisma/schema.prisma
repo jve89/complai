@@ -76,6 +76,7 @@ model Company {
   notices             Notice[]
   complaints          Complaint[]
   conformityAssessments ConformityAssessment[]
+  correctiveActions   CorrectiveAction[]
 
   @@map("companies")
 }
@@ -164,6 +165,7 @@ model AiSystem {
   notices    Notice[] // information/explanation notices issued for this system (Art 26(7)/(11), 86)
   complaints Complaint[] // complaints logged about this system (Art 85 / 27(1)(f))
   conformityAssessment ConformityAssessment? // provider conformity-assessment tracker (Art 43)
+  correctiveActions CorrectiveAction[] // corrective actions on this system (Art 20)
 
   @@index([companyId])
   @@map("ai_systems")
@@ -274,6 +276,37 @@ model ConformityAssessment {
 
   @@index([companyId])
   @@map("conformity_assessments")
+}
+
+/// Corrective-action log (Art 20). A PROVIDER records the corrective action taken
+/// when a high-risk system it placed on the market is (or may be) NOT in conformity:
+/// bring into conformity / withdraw / disable / recall, plus who was informed
+/// (distributors, deployers, authorised rep, importers). If the system presents an
+/// Art 79(1) risk (health/safety/fundamental rights), the provider also informs the
+/// market surveillance authority + notified body (Art 20(2)). Distinct from — but
+/// linkable to — a serious-incident report (Art 73). Applies 2 Dec 2027 (Annex III).
+model CorrectiveAction {
+  id            String    @id @default(cuid())
+  companyId     String    @map("company_id")
+  aiSystemId    String?   @map("ai_system_id") // the (possibly) non-conforming system
+  title         String // korte omschrijving van de non-conformiteit
+  nonConformity String?   @map("non_conformity") // aard van de non-conformiteit / hoe ontdekt
+  actionType    String    @default("bring_into_conformity") @map("action_type") // bring_into_conformity | withdraw | disable | recall
+  actionTaken   String?   @map("action_taken") // welke corrigerende maatregel is genomen
+  informed      String? // wie geïnformeerd: distributeurs / deployers / gemachtigde / importeurs
+  presentsRisk  Boolean   @default(false) @map("presents_risk") // Art 79(1) — risico voor gezondheid/veiligheid/grondrechten
+  authorityInformed Boolean @default(false) @map("authority_informed") // markttoezichthouder geïnformeerd (Art 20(2))
+  status        String    @default("open") // open | in_progress | done
+  identifiedAt  DateTime  @map("identified_at") // datum vastgesteld
+  resolvedAt    DateTime? @map("resolved_at")
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+
+  company  Company   @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  aiSystem AiSystem? @relation(fields: [aiSystemId], references: [id], onDelete: SetNull)
+
+  @@index([companyId])
+  @@map("corrective_actions")
 }
 
 model ScanResult {
