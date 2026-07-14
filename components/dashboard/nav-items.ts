@@ -2,6 +2,7 @@ import {
   Archive,
   BellRing,
   BookOpen,
+  ClipboardCheck,
   Database,
   FileText,
   GraduationCap,
@@ -61,6 +62,12 @@ export const DASHBOARD_NAV: NavItem[] = [
     icon: MessageSquareWarning,
   },
   {
+    href: "/dashboard/conformiteit",
+    label: "Conformiteit",
+    description: "Conformiteitsbeoordeling per hoog-risico systeem (Art. 43)",
+    icon: ClipboardCheck,
+  },
+  {
     href: "/dashboard/documents",
     label: "Documenten",
     description: "Genereer beleid, FRIA en beoordelingen",
@@ -100,8 +107,8 @@ export const DASHBOARD_NAV: NavItem[] = [
 ];
 
 /** Same nav, remapped to /demo/* for the public demo. Instellingen, Updates,
- *  Meldingen, Kennisgevingen, Logbewaring and Klachten have no /demo/*
- *  counterpart, so they're excluded. */
+ *  Meldingen, Kennisgevingen, Logbewaring, Klachten and Conformiteit have no
+ *  /demo/* counterpart, so they're excluded. */
 export const DEMO_NAV: NavItem[] = DASHBOARD_NAV.filter(
   (n) =>
     n.href !== "/dashboard/settings" &&
@@ -109,7 +116,8 @@ export const DEMO_NAV: NavItem[] = DASHBOARD_NAV.filter(
     n.href !== "/dashboard/meldingen" &&
     n.href !== "/dashboard/kennisgevingen" &&
     n.href !== "/dashboard/logbewaring" &&
-    n.href !== "/dashboard/klachten"
+    n.href !== "/dashboard/klachten" &&
+    n.href !== "/dashboard/conformiteit"
 ).map((n) => ({
   ...n,
   href:

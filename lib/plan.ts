@@ -143,3 +143,13 @@ export const COMPLAINTS_MIN_TIER: TierId = "groei";
 export function complaintsUnlocked(plan: string | null | undefined): boolean {
   return tierRank(plan) >= tierRank(COMPLAINTS_MIN_TIER);
 }
+
+/** Conformity-assessment tracker (Conformiteit — Art 43 + Annex VI/VII) is a paid
+ * feature from Audit (schaal). Running the conformity assessment before market
+ * placement is a PROVIDER duty — so, unlike the deployer tools above, it sits at
+ * the provider tier, alongside tech_doc / doc_conformity in DOC_MIN_TIER. */
+export const CONFORMITY_MIN_TIER: TierId = "schaal";
+
+export function conformityUnlocked(plan: string | null | undefined): boolean {
+  return tierRank(plan) >= tierRank(CONFORMITY_MIN_TIER);
+}

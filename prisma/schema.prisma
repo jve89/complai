@@ -75,6 +75,7 @@ model Company {
   incidents           Incident[]
   notices             Notice[]
   complaints          Complaint[]
+  conformityAssessments ConformityAssessment[]
 
   @@map("companies")
 }
@@ -162,6 +163,7 @@ model AiSystem {
   oversight  Employee?   @relation(fields: [oversightEmployeeId], references: [id], onDelete: SetNull)
   notices    Notice[] // information/explanation notices issued for this system (Art 26(7)/(11), 86)
   complaints Complaint[] // complaints logged about this system (Art 85 / 27(1)(f))
+  conformityAssessment ConformityAssessment? // provider conformity-assessment tracker (Art 43)
 
   @@index([companyId])
   @@map("ai_systems")
@@ -247,6 +249,31 @@ model Complaint {
 
   @@index([companyId])
   @@map("complaints")
+}
+
+/// Conformity-assessment tracker (Art 43 + Annex VI/VII) — a PROVIDER duty before a
+/// high-risk system is placed on the market. One row per high-risk AI system the
+/// company provides: which route applies (Annex VI internal control for Annex III
+/// points 2–8; Annex VII notified body only for point 1 biometrics under Art 43(1)),
+/// and the status of each fixed checklist step (tech doc, QMS, assessment, EU
+/// declaration Art 47, CE marking Art 48, EU-database registration Art 49). `steps`
+/// is a stepKey → status map (todo|in_progress|done). Applies 2 Dec 2027 (Annex III).
+model ConformityAssessment {
+  id         String    @id @default(cuid())
+  companyId  String    @map("company_id")
+  aiSystemId String    @unique @map("ai_system_id") // 1:1 per high-risk system
+  route      String    @default("internal") // internal (Annex VI) | notified_body (Annex VII)
+  steps      Json      @default("{}") // { [stepKey]: "todo" | "in_progress" | "done" }
+  notes      String?
+  reviewedAt DateTime? @map("reviewed_at")
+  createdAt  DateTime  @default(now()) @map("created_at")
+  updatedAt  DateTime  @updatedAt @map("updated_at")
+
+  company  Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  aiSystem AiSystem @relation(fields: [aiSystemId], references: [id], onDelete: Cascade)
+
+  @@index([companyId])
+  @@map("conformity_assessments")
 }
 
 model ScanResult {

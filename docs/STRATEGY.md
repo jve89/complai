@@ -218,8 +218,13 @@ pakket that unlocks a customer's required items — these must keep that promise
       the deployer's Art 26(5) kwartaalcheck; notes it is Annex IV point 9 of the
       tech doc (Art 11 mkb-simplification) and that the Commission template is due
       2 Feb 2026 — so framed as prep. Applies 2 Dec 2027.)*
-- [ ] **Conformity-assessment tracker** — Art 43, Art 47, Art 48 (steps + status;
-      complements the existing EU-conformiteitsverklaring doc).
+- [x] **Conformity-assessment tracker** — Art 43, Art 47, Art 48 (steps + status;
+      complements the existing EU-conformiteitsverklaring doc). *(Shipped:
+      `/dashboard/conformiteit` — a `ConformityAssessment` model (1:1 per high-risk
+      system, route + a `steps` JSON checklist), schaal-gated, with a per-system
+      6-step tracker (tech doc, QMS, assessment, EU-DoC Art 47, CE Art 48, EU-db
+      Art 49) + route (Annex VI/VII) + a "Conformiteitsbeoordeling — statusoverzicht"
+      evidence PDF. Provider-scoped; Art 49 EU-database caveat; applies 2 Dec 2027.)*
 - [ ] **Corrective-action log** — Art 20 (ties to the incident register).
 
 Out of scope (guardrail): Art 26(10) law-enforcement post-remote biometric
