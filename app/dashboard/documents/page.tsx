@@ -26,6 +26,7 @@ import { docLabel } from "@/lib/compliance/labels";
 import { docUnlocked, minTierFor, tierRank, TIER_LABEL, TIER_ORDER } from "@/lib/plan";
 import type { ComplianceProfile } from "@/lib/compliance/types";
 import { PageHeader } from "@/components/dashboard/page-header";
+import { RelevanceReveal } from "@/components/dashboard/relevance";
 import { GenerateButton } from "@/components/dashboard/documents/generate-button";
 import { DeleteVersionButton } from "@/components/dashboard/documents/delete-version-button";
 import { Badge } from "@/components/ui/badge";
@@ -245,9 +246,16 @@ export default async function DocumentsPage() {
         catalogOrder.indexOf(a.slug) - catalogOrder.indexOf(b.slug)
     );
 
-  // Yours now (in your pakket) vs. what a higher pakket would add.
-  const owned = allItems.filter((i) => docUnlocked(plan, i.slug));
-  const locked = allItems
+  // Relevance is the primary axis (Phase B): a scanned company sees the documents
+  // its scan flagged as required/recommended; everything else is de-emphasized into
+  // a reveal (never removed — an owned doc stays generatable). Without a scan we
+  // can't tell, so all documents count as relevant (unchanged behaviour).
+  const relevantItems = allItems.filter((i) => !profile || scanHint.has(i.slug));
+  const notRelevantItems = profile ? allItems.filter((i) => !scanHint.has(i.slug)) : [];
+
+  // Within the relevant set: yours now (in your pakket) vs. what a higher pakket adds.
+  const owned = relevantItems.filter((i) => docUnlocked(plan, i.slug));
+  const locked = relevantItems
     .filter((i) => !docUnlocked(plan, i.slug))
     .sort((a, b) => tierRank(minTierFor(a.slug)) - tierRank(minTierFor(b.slug)));
 
@@ -292,7 +300,7 @@ export default async function DocumentsPage() {
         <section className="mb-10">
           <h2 className="mb-1 text-lg font-semibold">Uw documenten ({owned.length})</h2>
           <p className="mb-4 text-sm text-muted-foreground">
-            Alle documenten in uw pakket. Documenten met{" "}
+            De documenten in uw pakket die voor u van toepassing zijn. Documenten met{" "}
             <span className="font-medium text-foreground/70">&ldquo;voor u&rdquo;</span> zijn
             volgens uw risicoscan extra relevant voor uw organisatie.
           </p>
@@ -327,6 +335,32 @@ export default async function DocumentsPage() {
               />
             ))}
           </div>
+        </section>
+      )}
+
+      {notRelevantItems.length > 0 && (
+        <section className="mt-2">
+          <RelevanceReveal
+            count={notRelevantItems.length}
+            label="Toon documenten die nu niet van toepassing lijken"
+          >
+            <p className="mb-4 text-sm text-muted-foreground">
+              Deze documenten horen bij situaties die uw scan niet aanwees (bijvoorbeeld
+              aanbieder- of GPAI-documenten). U kunt ze alsnog opstellen — werk dan ook
+              uw scan bij als uw situatie is veranderd.
+            </p>
+            <div className="grid gap-6 lg:grid-cols-2">
+              {notRelevantItems.map((item) => (
+                <DocCard
+                  key={item.slug}
+                  item={item}
+                  versions={versionsFor(item.slug)}
+                  plan={plan}
+                  isAdmin={isAdmin}
+                />
+              ))}
+            </div>
+          </RelevanceReveal>
         </section>
       )}
 
