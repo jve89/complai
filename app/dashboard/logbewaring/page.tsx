@@ -5,6 +5,8 @@ import { prisma } from "@/lib/prisma";
 import { getActiveCompany, canAdminister } from "@/lib/auth";
 import { cn, formatDate } from "@/lib/utils";
 import { logRetentionUnlocked, TIER_LABEL, LOG_RETENTION_MIN_TIER } from "@/lib/plan";
+import { surfaceRelevance } from "@/lib/compliance/relevance";
+import type { ComplianceProfile } from "@/lib/compliance/types";
 import {
   logStatus,
   LOG_STATUS_LABEL,
@@ -14,6 +16,7 @@ import {
   UNDER_CONTROL_NOTE,
 } from "@/lib/logbewaring/labels";
 import { PageHeader } from "@/components/dashboard/page-header";
+import { NotRelevantBanner } from "@/components/dashboard/relevance";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
@@ -52,6 +55,15 @@ export default async function LogbewaringPage() {
 
   const documented = systems.filter((s) => logStatus(s) === "ok").length;
 
+  // Scan-driven visibility (Phase B): does this module apply to the company?
+  const relSystems = await prisma.aiSystem.findMany({
+    where: { companyId: company.id },
+    select: { role: true, riskLevel: true },
+  });
+  const profile = (company.profileJson as unknown as ComplianceProfile | null) ?? null;
+  const rel = surfaceRelevance(profile, relSystems).logbewaring;
+  const notRelevant = !rel.applies;
+
   return (
     <>
       <PageHeader
@@ -67,7 +79,9 @@ export default async function LogbewaringPage() {
         )}
       </PageHeader>
 
-      {!unlocked && (
+      {notRelevant && <NotRelevantBanner reason={rel.reason} />}
+
+      {!notRelevant && !unlocked && (
         <div className="mb-6 flex flex-col gap-3 rounded-lg border border-navy-100 bg-navy-50 p-4 text-navy-900 sm:flex-row sm:items-center sm:justify-between">
           <div className="text-sm">
             <p className="font-semibold">
@@ -95,7 +109,7 @@ export default async function LogbewaringPage() {
         <p className="mt-1">{UNDER_CONTROL_NOTE}</p>
       </div>
 
-      <Card>
+      <Card className={cn(notRelevant && "opacity-60")}>
         <CardContent className="p-0">
           {systems.length === 0 ? (
             <div className="flex flex-col items-center gap-3 py-16 text-center">

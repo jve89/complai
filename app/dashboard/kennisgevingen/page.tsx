@@ -5,6 +5,8 @@ import { prisma } from "@/lib/prisma";
 import { getActiveCompany, canAdminister } from "@/lib/auth";
 import { cn, formatDate } from "@/lib/utils";
 import { noticesUnlocked, TIER_LABEL, NOTICES_MIN_TIER } from "@/lib/plan";
+import { surfaceRelevance } from "@/lib/compliance/relevance";
+import type { ComplianceProfile } from "@/lib/compliance/types";
 import {
   NOTICE_TYPE_SHORT,
   NOTICE_TYPE_ARTICLE,
@@ -26,6 +28,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { NotRelevantBanner } from "@/components/dashboard/relevance";
 import { NoticeDialog } from "@/components/dashboard/kennisgevingen/notice-dialog";
 import { DeleteNoticeButton } from "@/components/dashboard/kennisgevingen/delete-notice-button";
 
@@ -45,12 +48,17 @@ export default async function KennisgevingenPage() {
     prisma.aiSystem.findMany({
       where: { companyId: company.id },
       orderBy: { name: "asc" },
-      select: { id: true, name: true, riskLevel: true },
+      select: { id: true, name: true, riskLevel: true, role: true },
     }),
   ]);
 
   const systemOptions = systems.map((s) => ({ id: s.id, name: s.name }));
   const highRiskCount = systems.filter((s) => s.riskLevel === "high").length;
+
+  // Scan-driven visibility (Phase B): does this module apply to the company?
+  const profile = (company.profileJson as unknown as ComplianceProfile | null) ?? null;
+  const rel = surfaceRelevance(profile, systems).kennisgevingen;
+  const notRelevant = !rel.applies;
 
   const addTrigger = (
     <Button>
@@ -76,7 +84,9 @@ export default async function KennisgevingenPage() {
           ))}
       </PageHeader>
 
-      {!unlocked && (
+      {notRelevant && <NotRelevantBanner reason={rel.reason} />}
+
+      {!notRelevant && !unlocked && (
         <div className="mb-6 flex flex-col gap-3 rounded-lg border border-navy-100 bg-navy-50 p-4 text-navy-900 sm:flex-row sm:items-center sm:justify-between">
           <div className="text-sm">
             <p className="font-semibold">
@@ -113,7 +123,7 @@ export default async function KennisgevingenPage() {
         )}
       </div>
 
-      <Card>
+      <Card className={cn(notRelevant && "opacity-60")}>
         <CardContent className="p-0">
           {notices.length === 0 ? (
             <div className="flex flex-col items-center gap-3 py-16 text-center">

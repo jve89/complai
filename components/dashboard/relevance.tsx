@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { ChevronDown, Lock } from "lucide-react";
+import { ChevronDown, Info, Lock } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import { TIER_LABEL } from "@/lib/plan";
@@ -35,6 +35,24 @@ export function RelevanceReveal({
         {label} ({count})
       </button>
       {open && <div className="mt-4">{children}</div>}
+    </div>
+  );
+}
+
+/** Banner shown on a module page that the scan/register suggests does NOT apply to
+ *  this company. Informs, never blocks — the page stays fully usable, mirroring the
+ *  "de-emphasize, don't hide" rule for a self-declared scan. */
+export function NotRelevantBanner({ reason }: { reason: string }) {
+  return (
+    <div className="mb-6 flex items-start gap-3 rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
+      <Info className="mt-0.5 h-5 w-5 shrink-0" />
+      <div>
+        <p className="font-medium">Dit lijkt nu niet op uw organisatie van toepassing.</p>
+        <p className="mt-0.5 text-amber-900/80">
+          {reason} We tonen het toch — werk uw risicoscan of AI-register bij als uw
+          situatie verandert.
+        </p>
+      </div>
     </div>
   );
 }

@@ -5,6 +5,8 @@ import { prisma } from "@/lib/prisma";
 import { getActiveCompany, canAdminister } from "@/lib/auth";
 import { cn, formatDate } from "@/lib/utils";
 import { incidentsUnlocked, TIER_LABEL, INCIDENTS_MIN_TIER } from "@/lib/plan";
+import { surfaceRelevance } from "@/lib/compliance/relevance";
+import type { ComplianceProfile } from "@/lib/compliance/types";
 import {
   CATEGORY_LABEL,
   STATUS_LABEL,
@@ -15,6 +17,7 @@ import {
   type IncidentStatus,
 } from "@/lib/meldingen/labels";
 import { PageHeader } from "@/components/dashboard/page-header";
+import { NotRelevantBanner } from "@/components/dashboard/relevance";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
@@ -64,6 +67,15 @@ export default async function MeldingenPage() {
     orderBy: { createdAt: "desc" },
   });
 
+  // Scan-driven visibility (Phase B): does this module apply to the company?
+  const systems = await prisma.aiSystem.findMany({
+    where: { companyId: company.id },
+    select: { role: true, riskLevel: true },
+  });
+  const profile = (company.profileJson as unknown as ComplianceProfile | null) ?? null;
+  const rel = surfaceRelevance(profile, systems).meldingen;
+  const notRelevant = !rel.applies;
+
   const addTrigger = (
     <Button>
       <Plus className="h-4 w-4" /> Incident melden
@@ -88,7 +100,9 @@ export default async function MeldingenPage() {
           ))}
       </PageHeader>
 
-      {!unlocked && (
+      {notRelevant && <NotRelevantBanner reason={rel.reason} />}
+
+      {!notRelevant && !unlocked && (
         <div className="mb-6 flex flex-col gap-3 rounded-lg border border-navy-100 bg-navy-50 p-4 text-navy-900 sm:flex-row sm:items-center sm:justify-between">
           <div className="text-sm">
             <p className="font-semibold">
@@ -119,7 +133,7 @@ export default async function MeldingenPage() {
         eerst de aanbieder (Art. 26(5)).
       </div>
 
-      <Card>
+      <Card className={cn(notRelevant && "opacity-60")}>
         <CardContent className="p-0">
           {incidents.length === 0 ? (
             <div className="flex flex-col items-center gap-3 py-16 text-center">
