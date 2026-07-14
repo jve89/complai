@@ -6,7 +6,7 @@ import { PricingTable } from "@/components/marketing/pricing-table";
 export const metadata: Metadata = {
   title: "Prijzen",
   description:
-    "Heldere prijzen voor AI Act-compliance. Start gratis met de Scan en groei mee met Basis, Compliance of Audit.",
+    "Wat kost AI Act-compliance? Begin kosteloos met de Scan en stap door naar Basis, Compliance of Audit zodra uw situatie daarom vraagt.",
   alternates: { canonical: "/pricing" },
 };
 
@@ -43,11 +43,10 @@ export default function PricingPage({
       <section className="border-b bg-navy-900 py-16 text-center text-white">
         <div className="container">
           <h1 className="text-4xl font-bold tracking-tight sm:text-5xl">
-            Heldere prijzen, geen verrassingen
+            Wat u vooraf ziet, is wat u betaalt.
           </h1>
           <p className="mx-auto mt-4 max-w-2xl text-lg text-white/70">
-            Begin kosteloos met de risicoscan en stap over op het volledige
-            platform zodra u eraan toe bent.
+            De risicoscan is gratis. Het volledige platform neemt u erbij op het moment dat het u past.
           </p>
         </div>
       </section>
@@ -62,7 +61,7 @@ export default function PricingPage({
       <section className="border-t bg-secondary/40 py-16">
         <div className="container">
           <h2 className="mb-10 text-center text-3xl font-bold tracking-tight">
-            Alle functies vergeleken
+            Alle plannen naast elkaar
           </h2>
 
           <div className="overflow-x-auto">
@@ -109,8 +108,7 @@ export default function PricingPage({
           </div>
 
           <p className="mt-8 text-center text-sm text-muted-foreground">
-            Alle prijzen zijn exclusief btw. Maandelijks opzegbaar. Bij
-            jaarlijkse betaling krijgt u 2 maanden gratis.
+            Bedragen zijn exclusief btw. Maandabonnementen kunt u elke maand opzeggen. Betaalt u per jaar, dan zijn twee maanden gratis.
           </p>
         </div>
       </section>

@@ -37,7 +37,7 @@ export const PLANS: Plan[] = [
     name: "Scan",
     monthly: 0,
     yearly: 0,
-    tagline: "Gratis risicoscan + uw status en relevante wetsupdates in het dashboard. Upgrade voor de documenten en tools.",
+    tagline: "Doe de risicoscan zonder kosten en houd uw status en de voor u relevante wetswijzigingen bij in het dashboard. Documenten en tools horen bij de betaalde plannen.",
     features: [
       "Gratis risicoscan (zonder account)",
       "Gereedheidsscore, risicocategorie & rol",
@@ -52,7 +52,7 @@ export const PLANS: Plan[] = [
     yearly: 199.9,
     priceIdMonthly: process.env.STRIPE_PRICE_STARTER_MONTHLY,
     priceIdYearly: process.env.STRIPE_PRICE_STARTER_YEARLY,
-    tagline: "Voor wie nu de eerste verplichtingen wil regelen.",
+    tagline: "Om uw eerste verplichtingen nu op orde te brengen.",
     features: [
       "Alles uit Scan",
       "AI-register (max. 3 systemen)",
@@ -67,7 +67,7 @@ export const PLANS: Plan[] = [
     yearly: 299.9,
     priceIdMonthly: process.env.STRIPE_PRICE_PRO_MONTHLY,
     priceIdYearly: process.env.STRIPE_PRICE_PRO_YEARLY,
-    tagline: "Voor hoog-risico AI of een documentatieplicht.",
+    tagline: "Voor wie met hoog-risico AI werkt of onder een documentatieplicht valt.",
     highlighted: true,
     features: [
       "Alles uit Basis",
@@ -85,7 +85,7 @@ export const PLANS: Plan[] = [
     yearly: 399.9,
     priceIdMonthly: process.env.STRIPE_PRICE_CORP_MONTHLY,
     priceIdYearly: process.env.STRIPE_PRICE_CORP_YEARLY,
-    tagline: "Voor aanbieders en grotere organisaties die hun naleving volledig willen documenteren.",
+    tagline: "Voor aanbieders en grotere organisaties die hun naleving tot in detail willen vastleggen.",
     features: [
       "Alles uit Compliance",
       "Technische documentatie, KMS & post-market plan",

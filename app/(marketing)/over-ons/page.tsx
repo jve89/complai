@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 export const metadata: Metadata = {
   title: "Over ons",
   description:
-    "ComplAI vertaalt de EU AI Act naar heldere, aantoonbare stappen voor het Nederlandse mkb — vanuit een achtergrond in luchtvaartcompliance en AI.",
+    "ComplAI zet de EU AI Act om in duidelijke, aantoonbare stappen voor het Nederlandse mkb — met wortels in AI en luchtvaartcompliance.",
   alternates: { canonical: "/over-ons" },
 };
 
@@ -15,17 +15,17 @@ const values = [
   {
     icon: ShieldCheck,
     title: "Eerlijk",
-    text: "Beslissingsondersteuning, geen juridisch advies. We beloven niets wat we niet kunnen waarmaken en zetten alleen claims op de site die we kunnen onderbouwen.",
+    text: "Hulp bij uw beslissingen, geen juridisch advies. We doen geen beloften die we niet kunnen nakomen en plaatsen alleen claims op de site die we hard kunnen maken.",
   },
   {
     icon: Plane,
     title: "Uit de praktijk",
-    text: "Onze aanpak komt uit een sector waar compliance letterlijk over veiligheid gaat: concreet, controleerbaar en te vertrouwen als het erop aankomt.",
+    text: "Onze methode komt uit een wereld waarin naleving letterlijk over mensenlevens gaat: concreet, verifieerbaar en betrouwbaar op het moment dat het telt.",
   },
   {
     icon: ScanSearch,
     title: "Voor het mkb",
-    text: "Geen dure adviestrajecten of dikke rapporten. Een risicoscan, een AI-register, de juiste documenten en aantoonbare governance — begrijpelijk en betaalbaar.",
+    text: "Geen kostbare adviestrajecten of lijvige rapporten. Wél een risicoscan, een AI-register, de juiste documenten en aantoonbare governance — helder en betaalbaar.",
   },
 ];
 
@@ -39,15 +39,14 @@ export default function AboutPage() {
             Over ons
           </p>
           <h1 className="mt-3 text-4xl font-bold tracking-tight sm:text-5xl">
-            Complexe regels werkbaar maken, met de discipline van de{" "}
+            Zware regelgeving hanteerbaar maken, met de nauwkeurigheid van de{" "}
             <span className="bg-gradient-to-r from-brand-500 to-violet-500 bg-clip-text text-transparent">
               luchtvaart
             </span>
             .
           </h1>
           <p className="mt-5 text-lg text-muted-foreground">
-            ComplAI vertaalt de EU AI Act naar heldere, aantoonbare stappen voor
-            het Nederlandse mkb. Die aanpak komt niet uit de lucht vallen.
+            ComplAI zet de EU AI Act om in heldere stappen die u kunt aantonen, toegesneden op het Nederlandse mkb. Waar die aanpak vandaan komt, leest u hieronder.
           </p>
         </div>
       </section>
@@ -56,35 +55,16 @@ export default function AboutPage() {
       <section className="py-16">
         <div className="container max-w-3xl space-y-6 text-[15px] leading-relaxed text-foreground/80">
           <p>
-            ComplAI is gebouwd door mensen die weten wat compliance écht
-            betekent. Onze experts hebben jarenlange ervaring in zowel{" "}
-            <strong className="text-foreground">AI</strong> als{" "}
-            <strong className="text-foreground">luchtvaartcompliance</strong> — een
-            van de meest gereguleerde en veiligheidskritische sectoren die er
-            bestaat. Daar leer je hoe je een berg complexe regelgeving vertaalt
-            naar iets werkbaars: concreet, aantoonbaar, en te vertrouwen wanneer
-            het erop aankomt. In de luchtvaart is compliance geen bijzaak — het is
-            de reden dat mensen veilig aankomen.
+            Achter ComplAI staan mensen die weten wat naleving in de praktijk vraagt. Ons team bracht jarenlang ervaring mee in zowel <strong className="text-foreground">AI</strong> als <strong className="text-foreground">luchtvaartcompliance</strong> — een van de strengst gereguleerde en meest veiligheidskritische sectoren die er zijn. Juist daar leer je hoe je een woud aan regels terugbrengt tot iets uitvoerbaars: concreet, aantoonbaar en betrouwbaar wanneer het er echt toe doet. In de luchtvaart is naleving nooit bijzaak — het is de reden dat mensen veilig op hun bestemming aankomen.
           </p>
           <p>
-            Toen de EU AI Act eraan kwam, herkenden we het patroon meteen.
-            Nieuwe, ingrijpende regels. Stevige boetes. En organisaties die door
-            de bomen het bos niet meer zien. Precies het probleem dat de
-            luchtvaart decennia geleden al oploste — met duidelijke processen,
-            checklists en documentatie in plaats van dure, ontoegankelijke
-            rapporten.
+            De EU AI Act voelde meteen vertrouwd. Verstrekkende nieuwe regels, forse boetes en bedrijven die door de bomen het bos niet meer zien — het is exact het vraagstuk waar de luchtvaart decennia terug al een antwoord op vond. Niet met dikke, ontoegankelijke rapporten, maar met heldere processen, checklists en documentatie.
           </p>
           <p>
-            Die combinatie — diepgaande AI-kennis en beproefde
-            compliance-discipline — zit in alles wat we bouwen. ComplAI is geen
-            juridisch adviesbureau, maar een werkomgeving die de AI Act voor u
-            ontwart en omzet in stappen die u zelf kunt zetten en aantonen.
+            Die twee werelden — grondige AI-kennis en bewezen compliance-discipline — komen samen in alles wat we maken. ComplAI is geen juridisch adviesbureau, maar een werkomgeving die de AI Act voor u ontrafelt en vertaalt naar stappen die u zelf zet en zelf kunt aantonen.
           </p>
           <p>
-            Onze missie is simpel: de AI Act begrijpelijk en behapbaar maken voor
-            elke Nederlandse mkb-organisatie, zonder dat u een jurist of een duur
-            adviestraject nodig heeft. Eerlijk over wat we wél en niet zijn, en
-            met uw gegevens veilig binnen de EU.
+            Onze missie laat zich kort samenvatten: de AI Act begrijpelijk en uitvoerbaar maken voor elk Nederlands mkb-bedrijf, zonder jurist en zonder kostbaar adviestraject. Transparant over wat we wél en niet doen, en met uw gegevens veilig binnen de EU.
           </p>
         </div>
       </section>
@@ -110,11 +90,10 @@ export default function AboutPage() {
       <section className="py-16">
         <div className="container max-w-3xl text-center">
           <h2 className="text-2xl font-bold tracking-tight sm:text-3xl">
-            Benieuwd waar u staat?
+            Wilt u weten waar u staat?
           </h2>
           <p className="mx-auto mt-3 max-w-xl text-muted-foreground">
-            Doe de gratis risicoscan en ontdek in vijf minuten welke AI
-            Act-verplichtingen voor uw organisatie gelden.
+            Doe de gratis risicoscan en zie binnen een paar minuten welke verplichtingen uit de AI Act voor uw organisatie gelden.
           </p>
           <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
             <Button asChild size="lg">

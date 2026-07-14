@@ -10,7 +10,7 @@ import { KennisbankContent } from "@/components/kennisbank-content";
 export const metadata: Metadata = {
   title: "Kennisbank — de EU AI-wet in begrijpelijk Nederlands",
   description:
-    "Risiconiveaus, deadlines, rollen en boetes van de EU AI Act (Verordening (EU) 2024/1689) — helder uitgelegd.",
+    "De EU AI Act (Verordening (EU) 2024/1689) in gewone taal: hoe de risiconiveaus werken, welke deadlines er lopen, wie welke rol heeft en hoe hoog de boetes zijn.",
   alternates: { canonical: "/kennisbank" },
 };
 
@@ -25,8 +25,7 @@ export default function KennisbankPage() {
           De EU AI-wet in begrijpelijk Nederlands
         </h1>
         <p className="mt-4 text-lg text-muted-foreground">
-          De AI Act (Verordening (EU) 2024/1689) in het kort: welke risiconiveaus
-          er zijn, wanneer wat ingaat, wie wat moet doen en wat de boetes zijn.
+          Een beknopt overzicht van de AI Act (Verordening (EU) 2024/1689): hoe de risiconiveaus in elkaar zitten, welke datum wanneer ingaat, welke rol welke plichten meebrengt en hoe hoog de boetes kunnen oplopen.
         </p>
       </div>
 
@@ -36,8 +35,7 @@ export default function KennisbankPage() {
         <CardContent className="flex flex-col items-center gap-4 py-10 text-center">
           <h2 className="text-2xl font-bold">Wat geldt er voor úw organisatie?</h2>
           <p className="max-w-lg text-white/70">
-            Doe de gratis scan en ontdek binnen vijf minuten uw risicocategorie,
-            rol en deadlines — met een stappenplan op maat.
+            Doorloop de gratis scan en u weet binnen enkele minuten welke risicocategorie en rol voor u gelden, welke deadlines daarbij horen en welke stappen u kunt zetten.
           </p>
           <Button asChild size="lg">
             <Link href="/scan">
