@@ -164,16 +164,17 @@ export default function LandingPage() {
               Van kracht sinds 2 februari 2025
             </Badge>
             <h1 className="text-4xl font-bold leading-[1.05] tracking-tight sm:text-6xl lg:text-7xl">
-              Weet binnen 5 minuten{" "}
+              De AI-wet, vertaald naar{" "}
               <span className="bg-gradient-to-r from-brand-600 to-violet-500 bg-clip-text text-transparent">
-                waar u staat
-              </span>{" "}
-              met de AI-wet.
+                wat ú moet doen
+              </span>
+              .
             </h1>
             <p className="max-w-xl text-lg text-muted-foreground sm:text-xl">
-              De EU AI-wet is al van kracht. Doe de gratis scan en ontdek meteen uw
-              risicocategorie, uw rol en de deadlines die voor u gelden — met een
-              afvinkbaar stappenplan. Geen account, geen advieskosten.
+              De EU AI-wet geldt nu al en wordt stapsgewijs uitgebreid. Doe de
+              gratis scan en zie binnen een paar minuten uw risicocategorie, uw rol
+              en de deadlines die voor u gelden — plus een stappenplan dat u kunt
+              afvinken. Zonder account, zonder advieskosten.
             </p>
             <div className="flex flex-col gap-3 sm:flex-row">
               <Button asChild size="lg">
