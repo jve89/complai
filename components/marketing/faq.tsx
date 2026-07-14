@@ -26,7 +26,7 @@ const faqs = [
   },
   {
     q: "Wat gebeurt er met mijn gegevens?",
-    a: "Uw data wordt binnen de EU verwerkt en versleuteld bewaard. We tekenen een verwerkersovereenkomst en geven niets door aan derden zonder uw akkoord.",
+    a: "Uw scans, documenten en accountgegevens worden binnen de EU opgeslagen (Supabase, regio eu-west-1) en versleuteld bewaard. We werken met zorgvuldig geselecteerde subverwerkers onder een verwerkersovereenkomst en delen uw gegevens niet met derden voor hún eigen doeleinden. De details staan in ons privacybeleid en onze verwerkersovereenkomst.",
   },
   {
     q: "Is de risicoscan echt kosteloos?",
