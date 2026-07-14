@@ -168,24 +168,49 @@ export const ANNEX_I_A: Option[] = [
   { value: "none", label: "Geen van bovenstaande" },
 ];
 
-// Annex III high-risk use-case areas (Art. 6(2)).
+// Annex I / Art. 6(1): a product-embedded AI is high-risk only when the product
+// needs a THIRD-PARTY conformity assessment. This hinges on jargon a layperson
+// can't parse, so we give concrete examples and an honest "weet ik niet" that
+// routes to a verification caveat instead of silently resolving high/not-high.
+export const THIRD_PARTY_CONFORMITY: Option[] = [
+  {
+    value: "yes",
+    label: "Ja — een externe instantie keurt het product",
+    help: "Een aangemelde instantie (notified body) beoordeelt het product vóór de CE-markering. Bijv. medische hulpmiddelen, liften, kabelbanen of bepaalde machines.",
+  },
+  {
+    value: "no",
+    label: "Nee — wij verklaren de conformiteit zelf",
+    help: "De fabrikant verklaart zelf de conformiteit (interne controle), zonder externe keuring.",
+  },
+  {
+    value: "unsure",
+    label: "Weet ik niet",
+    help: "Geen probleem — we markeren dit dan als 'uit te zoeken' in plaats van te gokken.",
+  },
+];
+
+// Annex III high-risk use-case areas (Art. 6(2)). Each carries a plain "Bijv. …"
+// example — area 4 (work/HR) is the single most common SME trigger, so it leads
+// with the everyday cases.
 export const ANNEX_III_AREAS: Option[] = [
-  { value: "1", label: "Biometrie", help: "Identificatie, categorisering, emotieherkenning (buiten verboden gevallen)." },
-  { value: "2", label: "Kritieke infrastructuur" },
-  { value: "3", label: "Onderwijs en beroepsopleiding" },
-  { value: "4", label: "Werk, personeelsbeheer en toegang tot zelfstandige arbeid" },
-  { value: "5", label: "Essentiële private en publieke diensten (incl. krediet, verzekering)" },
-  { value: "6", label: "Rechtshandhaving" },
-  { value: "7", label: "Migratie, asiel en grenstoezicht" },
-  { value: "8", label: "Rechtsbedeling en democratische processen" },
+  { value: "1", label: "Biometrie", help: "Bijv. gezichtsherkenning op afstand, biometrische categorisering of emotieherkenning (buiten verboden gevallen)." },
+  { value: "2", label: "Kritieke infrastructuur", help: "Bijv. besturing van energie- of waternetten, wegverkeer of digitale infrastructuur." },
+  { value: "3", label: "Onderwijs en beroepsopleiding", help: "Bijv. toelating tot een opleiding, het beoordelen van toetsen of toezicht bij examens." },
+  { value: "4", label: "Werk, personeelsbeheer en toegang tot zelfstandige arbeid", help: "Bijv. cv-screening of werving, beoordeling of promotie van medewerkers, of het inplannen/roosteren van personeel." },
+  { value: "5", label: "Essentiële private en publieke diensten", help: "Bijv. kredietwaardigheidsbeoordeling, prijsstelling van levens-/zorgverzekeringen, of toegang tot uitkeringen en hulpdiensten." },
+  { value: "6", label: "Rechtshandhaving", help: "Bijv. AI die de politie of justitie inzet bij opsporing of risico-inschatting." },
+  { value: "7", label: "Migratie, asiel en grenstoezicht", help: "Bijv. beoordeling van visum-, asiel- of verblijfsaanvragen door de overheid." },
+  { value: "8", label: "Rechtsbedeling en democratische processen", help: "Bijv. AI die rechters ondersteunt of die verkiezingen/stemgedrag beïnvloedt." },
   { value: "none", label: "Geen van bovenstaande" },
 ];
 
-// Sub-areas that matter for FRIA (Art. 27) — credit & insurance fire FRIA for any deployer.
+// Sub-areas that matter for FRIA (Art. 27) — credit & insurance fire FRIA for any
+// deployer. The (5b)/(5c)/(6d) codes stay internal-only (values), not in labels.
 export const ANNEX_III_SUBAREAS: Option[] = [
-  { value: "5b", label: "Kredietwaardigheidsbeoordeling / credit scoring (5b)" },
-  { value: "5c", label: "Risicobeoordeling & prijsstelling levens-/zorgverzekering (5c)" },
-  { value: "6d", label: "Risico dat iemand (opnieuw) een strafbaar feit pleegt (6d)" },
+  { value: "5b", label: "Kredietwaardigheidsbeoordeling / credit scoring van personen" },
+  { value: "5c", label: "Risicobeoordeling & prijsstelling voor levens- of zorgverzekeringen" },
+  { value: "6d", label: "Inschatten van het risico dat iemand (opnieuw) een strafbaar feit pleegt" },
 ];
 
 // Annex III point 1(a): 1:1 biometric *verification* ("confirm that a specific
@@ -292,7 +317,7 @@ export interface ScanAnswers {
   // Section HR — high-risk status
   annexI_B: string[];
   annexI_A: string[];
-  thirdPartyConformity?: boolean;
+  thirdPartyConformity?: "yes" | "no" | "unsure";
   annexIII_areas: string[];
   annexIII_subareas: string[];
   biometricUse?: "verification" | "identification"; // Annex III 1(a): verification-only → NOT high-risk area 1

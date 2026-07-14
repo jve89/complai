@@ -170,7 +170,7 @@ function check(name: string, cond: boolean, detail = "") {
     base({ roles: ["deployer"], scopeCriteria: ["established_eu"], annexIII_areas: ["4"] }),
     base({ roles: ["deployer"], scopeCriteria: ["established_eu"], annexIII_areas: ["5"], annexIII_subareas: ["5b"], publicBodyOrService: true }),
     base({ roles: ["provider"], scopeCriteria: ["place_system"], annexIII_areas: ["4"] }),
-    base({ roles: ["provider"], scopeCriteria: ["place_system"], annexI_A: ["machinery"], thirdPartyConformity: true }),
+    base({ roles: ["provider"], scopeCriteria: ["place_system"], annexI_A: ["machinery"], thirdPartyConformity: "yes" }),
     base({ scopeCriteria: ["place_gpai_model"], gpaiSystemic: ["none"] }),
     base({ roles: ["deployer"], scopeCriteria: ["established_eu"], annexIII_areas: ["4"], art6_3_carveout: true }),
   ];
@@ -265,7 +265,7 @@ function check(name: string, cond: boolean, detail = "") {
 
   // #5 — Annex I §B never flips to high-risk (Art. 2(2)); routes to sectoral law.
   const sectionB = classify(
-    base({ roles: ["provider"], scopeCriteria: ["place_system"], annexI_B: ["aviation"], thirdPartyConformity: true })
+    base({ roles: ["provider"], scopeCriteria: ["place_system"], annexI_B: ["aviation"], thirdPartyConformity: "yes" })
   );
   check("#5 §B does NOT become high-risk", !sectionB.riskTiers.includes("high"));
   check("#5 §B emits no Chapter III provider set", !sectionB.emitted.some((e) => e.code === "ART_16_PROVIDER"));
@@ -293,6 +293,18 @@ function check(name: string, cond: boolean, detail = "") {
   const modHidden = visibleSteps(base({ annexIII_areas: ["none"] })).some((s) => s.field === "modifications");
   check("#7 modification step shown under a high-risk signal", modShown);
   check("#7 modification step hidden otherwise", !modHidden);
+}
+
+// ── Wave D — Art. 6(1) third-party conformity is now Ja/Nee/Weet-ik-niet (audit #2) ──
+{
+  console.log("Wave D — third-party conformity (Annex I / Art. 6(1)):");
+  const yes = classify(base({ roles: ["provider"], scopeCriteria: ["place_system"], annexI_A: ["machinery"], thirdPartyConformity: "yes" }));
+  check("#2 'ja' → high-risk", yes.riskTiers.includes("high"));
+  const no = classify(base({ roles: ["provider"], scopeCriteria: ["place_system"], annexI_A: ["machinery"], thirdPartyConformity: "no" }));
+  check("#2 'nee' (self-assessed) → NOT high-risk", !no.riskTiers.includes("high"));
+  const unsure = classify(base({ roles: ["provider"], scopeCriteria: ["place_system"], annexI_A: ["machinery"], thirdPartyConformity: "unsure" }));
+  check("#2 'weet ik niet' → NOT resolved high (no over-call)", !unsure.riskTiers.includes("high"));
+  check("#2 'weet ik niet' → surfaces a verification caveat", unsure.caveats.some((c) => /aangemelde instantie|uitzoeken|zoek dit uit/i.test(c)));
 }
 
 console.log("");

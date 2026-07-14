@@ -9,6 +9,7 @@ import {
   Circle,
   Clock,
   Download,
+  Info,
   Sparkles,
 } from "lucide-react";
 
@@ -30,7 +31,7 @@ const HEADLINE: Record<
 > = {
   prohibited: { label: "Verboden praktijk", variant: "danger", note: "Eén of meer toepassingen lijken verboden onder Art. 5. Staak het gebruik en laat dit met spoed toetsen." },
   high_risk: { label: "Hoog risico", variant: "warning", note: "U gebruikt hoog-risico AI. Daar horen stevige verplichtingen bij — zie hieronder." },
-  high_notify: { label: "Geen hoog risico (Art. 6(3))", variant: "info", note: "U beroept zich op de Art. 6(3)-uitzondering: geen volledige set hoog-risicoverplichtingen, maar wél een gedocumenteerde beoordeling (Art. 6(4)) en registratie (Art. 49(2)) vóór ingebruikname." },
+  high_notify: { label: "Geen hoog risico (Art. 6(3))", variant: "info", note: "Uw AI valt in een hoog-risico gebied, maar speelt volgens u alleen een beperkte, ondersteunende rol. Dan gelden niet álle hoog-risico plichten — maar u moet die inschatting wél onderbouwd vastleggen en het systeem registreren vóór ingebruikname (Art. 6(3)/6(4)/49(2))." },
   limited_risk: { label: "Beperkt risico", variant: "info", note: "Vooral transparantieverplichtingen (Art. 50) zijn van toepassing." },
   out_of_scope: { label: "Buiten de reikwijdte", variant: "secondary", note: "Op basis van uw antwoorden valt u (grotendeels) buiten de AI Act. Houd dit actueel." },
   excluded: { label: "Uitgesloten", variant: "secondary", note: "Uw gebruik lijkt te zijn uitgesloten van de AI Act." },
@@ -266,6 +267,25 @@ export default async function ScanResultsPage({
         </details>
       )}
 
+      {/* Caveats — decision-changing notes, surfaced prominently near the top
+          (they tell you whether a duty is yours, or applies at all). */}
+      {profile.caveats.length > 0 && (
+        <div className="mb-6 rounded-xl border-2 border-amber-300 bg-amber-50 p-5">
+          <div className="flex items-center gap-2 text-amber-900">
+            <Info className="h-5 w-5 shrink-0" />
+            <p className="font-semibold">Let op — dit bepaalt mee wat voor u geldt</p>
+          </div>
+          <ul className="mt-3 space-y-2 text-sm text-amber-900/90">
+            {profile.caveats.map((c, i) => (
+              <li key={i} className="flex items-start gap-2">
+                <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-amber-500" />
+                <span>{c}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
       {/* Prohibited banner */}
       {profile.headline === "prohibited" && (
         <div className="mb-8 flex items-start gap-3 rounded-xl border-2 border-red-300 bg-red-50 p-5 text-red-800">
@@ -352,17 +372,6 @@ export default async function ScanResultsPage({
           )}
         </CardContent>
       </Card>
-
-      {/* Caveats */}
-      {profile.caveats.length > 0 && (
-        <Card className="mb-8 border-dashed">
-          <CardContent className="space-y-1 py-5 text-sm text-muted-foreground">
-            {profile.caveats.map((c, i) => (
-              <p key={i}>• {c}</p>
-            ))}
-          </CardContent>
-        </Card>
-      )}
 
       {/* CTA — shows only the onboarding steps that remain for THIS viewer */}
       <Card className="overflow-hidden border-0 bg-navy-900 text-white">

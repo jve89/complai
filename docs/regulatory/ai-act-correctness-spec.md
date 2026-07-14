@@ -125,15 +125,23 @@ Many SMEs use biometric login. If the scan flags that as high-risk, it is wrong.
 
 ## BUG 6 — Timeline must reflect the Digital Omnibus
 
-| Obligation | Correct date |
-|---|---|
-| Art 5 prohibited practices | **LIVE — 2 Feb 2025** |
-| Art 4 AI literacy | **LIVE — 2 Feb 2025** |
-| Art 50 transparency; enforcement powers | **2 Aug 2026** |
-| **Annex III high-risk obligations** | **2 Dec 2027** (deferred from 2 Aug 2026 by the Digital Omnibus) |
-| Annex I high-risk (AI in regulated products) | **2 Aug 2028** |
+`lib/compliance/timeline.ts` is the operational source of truth; keep this table in
+sync with it. Every Digital-Omnibus date is `pending_publication` — adopted
+(Parliament 16 Jun, Council 29 Jun 2026) but not yet in the Official Journal
+(expected ~late Jul 2026). Until it publishes, the ORIGINAL Art. 113 date formally
+applies, so the UI carries a "publicatie in afwachting" caveat.
 
-The site already reflects this. Keep it that way, and keep the "wetgeving kan wijzigen" caveat.
+| Obligation | Applicable date | Basis |
+|---|---|---|
+| Art 5 prohibited practices (original) | **LIVE — 2 Feb 2025** | Art 113 |
+| Art 4 AI literacy | **LIVE — 2 Feb 2025** | Art 113 |
+| GPAI (Ch. V), governance, penalties | **2 Aug 2025** | Art 113 |
+| Art 50 transparency (existing systems) + 2 new Art 5 prohibitions (NCII, CSAM) | **2 Dec 2026** (was 2 Aug 2026) | Digital Omnibus |
+| **Annex III high-risk obligations** | **2 Dec 2027** (was 2 Aug 2026) | Digital Omnibus |
+| Annex I high-risk (AI in regulated products) | **2 Aug 2028** (was 2 Aug 2027) | Digital Omnibus |
+
+Keep this in sync with `timeline.ts`, keep the "wetgeving kan wijzigen / publicatie
+in afwachting" caveat, and re-verify against the published OJ (~late Jul 2026).
 
 ---
 

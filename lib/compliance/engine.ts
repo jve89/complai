@@ -189,8 +189,17 @@ export function classify(answers: ScanAnswers): ClassificationResult {
         "Annex I (sectie B: transport/luchtvaart) valt grotendeels onder bestaande sectorale wetgeving. Controleer welke AI Act-bepalingen van toepassing zijn."
       );
     }
-    // Annex I Section A — high-risk WITH third-party conformity assessment.
-    if (hasAnyReal(answers.annexI_A) && answers.thirdPartyConformity) isHigh = true;
+    // Annex I Section A — high-risk WITH third-party conformity assessment. When
+    // the user can't tell ('unsure'), do NOT resolve high or not-high — surface a
+    // verification caveat instead (audit #2; guardrail: don't resolve ambiguity up).
+    if (hasAnyReal(answers.annexI_A)) {
+      if (answers.thirdPartyConformity === "yes") isHigh = true;
+      else if (answers.thirdPartyConformity === "unsure") {
+        caveats.push(
+          "Uw AI zit in een gereguleerd product (bijlage I). Of het hoog-risico is, hangt ervan af of dat product vóór de CE-markering door een aangemelde instantie (derde partij) wordt gekeurd — dat kon u niet aangeven. Zoek dit uit: is dat zo, dan gelden de hoog-risico plichten (Art. 6(1))."
+        );
+      }
+    }
 
     // Annex III use-case areas (verification-only biometrics already carved out).
     if (hasAnyReal(annexIIIareas)) {

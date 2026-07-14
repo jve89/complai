@@ -271,10 +271,14 @@ driving what each customer *sees*.
       (Art 2(10)) kept as a narrower caveat-only exemption so Art 5 still surfaces
       (#4); Annex I §B no longer over-emits (Art 2(2), #5); Art 25 modification step
       added + promotion gated on isHigh (#7).
-    - **Wave D — next.** Comprehension + doc drift: decision-changing caveats
-      surfaced (not buried at the bottom); the unanswerable third-party-conformity
-      boolean gets examples + "weet ik niet"; raw "Annex III"/(5b) codes and
-      missing area-4 examples relabelled; correctness-spec Art 50 date drift.
+    - **Wave D — done.** Comprehension + doc drift: decision-changing caveats now
+      surfaced in a prominent "Let op" card near the top (not buried); the third-
+      party-conformity boolean is Ja/Nee/Weet-ik-niet with examples ("weet ik niet"
+      → verification caveat, no over/under-call, #2); Annex III areas gained plain
+      "Bijv. …" examples (area 4/HR leads) and the (5b)/(5c)/(6d) codes left the
+      labels; "Annex III" → "de wettelijke lijst … (bijlage III)"; correctness-spec
+      Bug-6 table realigned to timeline.ts (Art 50 = 2 Dec 2026, pending OJ).
+    **Phase A complete** — next is **Phase B (scan-driven visibility)** below.
     **Scan-engine backlog (pre-existing, low):** Annex I §B stays unreachable in the
     live wizard by design (scope rule #4 — route to sectoral law, don't build §B);
     ART_25_HANDOVER obligation text vs Art 25(2) party-direction is a wording nuance.
