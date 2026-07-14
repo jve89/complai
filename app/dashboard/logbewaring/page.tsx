@@ -17,6 +17,7 @@ import {
 } from "@/lib/logbewaring/labels";
 import { PageHeader } from "@/components/dashboard/page-header";
 import { NotRelevantBanner } from "@/components/dashboard/relevance";
+import { RuleNote } from "@/components/dashboard/rule-note";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
@@ -104,10 +105,24 @@ export default async function LogbewaringPage() {
         </div>
       )}
 
-      <div className="mb-4 rounded-lg border bg-secondary/30 px-4 py-3 text-sm text-muted-foreground">
+      <RuleNote
+        summary={
+          <>
+            Bewaar de logs die uw hoog-risico AI automatisch bijhoudt —{" "}
+            <strong className="font-medium text-foreground/80">ten minste zes maanden</strong>, voor
+            zover u die logs zelf beheert. Draait de AI bij een leverancier? Dan bewaart die de logs
+            vaak zelf. Leg dan vast wat u wél zelf in handen heeft. Deze plicht geldt naar verwachting
+            vanaf 2 december 2027.
+          </>
+        }
+      >
         <p>{APPLIES_FROM_NOTE}</p>
-        <p className="mt-1">{UNDER_CONTROL_NOTE}</p>
-      </div>
+        <p>{UNDER_CONTROL_NOTE}</p>
+        <p>
+          Schrijft ander Unie- of nationaal recht — met name de privacyregels (AVG) — een kortere
+          bewaartermijn voor, dan gaat dat vóór (Art. 26 lid 6).
+        </p>
+      </RuleNote>
 
       <Card>
         <CardContent className="p-0">

@@ -18,6 +18,7 @@ import {
 } from "@/lib/meldingen/labels";
 import { PageHeader } from "@/components/dashboard/page-header";
 import { NotRelevantBanner } from "@/components/dashboard/relevance";
+import { RuleNote } from "@/components/dashboard/rule-note";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
@@ -126,12 +127,26 @@ export default async function MeldingenPage() {
         </div>
       )}
 
-      <div className="mb-4 rounded-lg border bg-secondary/30 px-4 py-3 text-sm text-muted-foreground">
-        Een ernstig incident (Art. 3(49)) meldt u <strong>onmiddellijk</strong> aan de
-        markttoezichthouder — en uiterlijk binnen <strong>2, 10 of 15 dagen</strong>,
-        afhankelijk van de aard (Art. 73). Als gebruiksverantwoordelijke informeert u
-        eerst de aanbieder (Art. 26(5)).
-      </div>
+      <RuleNote
+        summary={
+          <>
+            Gaat er iets <strong className="font-medium text-foreground/80">ernstig mis</strong> met
+            uw hoog-risico AI? Werkt u met AI van een leverancier? Informeer dan meteen die
+            leverancier (de aanbieder) — die meldt het incident meestal bij de toezichthouder. Bent u
+            zelf de maker, dan meldt u het zelf: binnen 2 tot 15 dagen, afhankelijk van de ernst. Deze
+            meldplicht geldt naar verwachting vanaf 2 december 2027.
+          </>
+        }
+      >
+        <p>
+          De meldplicht voor ernstige incidenten geldt voor{" "}
+          <strong>hoog-risico AI-systemen</strong>. Een ernstig incident (Art. 3(49)) meldt de
+          aanbieder <strong>onmiddellijk</strong> aan de markttoezichthouder — uiterlijk binnen{" "}
+          <strong>2, 10 of 15 dagen</strong>, afhankelijk van de aard (Art. 73). Als
+          gebruiksverantwoordelijke informeert u eerst de aanbieder; kunt u die niet bereiken, dan
+          meldt u zelf (Art. 26(5)). Deze verplichting geldt naar verwachting vanaf 2 december 2027.
+        </p>
+      </RuleNote>
 
       <Card>
         <CardContent className="p-0">

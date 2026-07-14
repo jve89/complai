@@ -12,6 +12,7 @@ import {
   STATUS_LABEL,
   STATUS_BADGE,
   PROVIDER_NOTE,
+  RISK_NOTE,
   INCIDENT_LINK_NOTE,
   APPLIES_FROM_NOTE,
   type ActionType,
@@ -19,6 +20,7 @@ import {
 } from "@/lib/corrigerend/labels";
 import { PageHeader } from "@/components/dashboard/page-header";
 import { NotRelevantBanner } from "@/components/dashboard/relevance";
+import { RuleNote } from "@/components/dashboard/rule-note";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
@@ -115,11 +117,24 @@ export default async function CorrigerendPage() {
         </div>
       )}
 
-      <div className="mb-4 rounded-lg border bg-secondary/30 px-4 py-3 text-sm text-muted-foreground">
+      <RuleNote
+        summary={
+          <>
+            Hebt u zelf een hoog-risico systeem{" "}
+            <strong className="font-medium text-foreground/80">op de markt gebracht</strong> en blijkt
+            het niet in orde? Dan herstelt u het meteen of haalt u het van de markt, en waarschuwt u
+            uw afnemers. Bent u alleen gebruiker van andermans AI? Dan grijpt u alleen in als het
+            gebruik een risico kan opleveren voor gezondheid, veiligheid of grondrechten — dan schort
+            u het op en informeert u uw leverancier én de toezichthouder. Naar verwachting verplicht
+            vanaf 2 december 2027.
+          </>
+        }
+      >
         <p>{PROVIDER_NOTE}</p>
-        <p className="mt-1">{INCIDENT_LINK_NOTE}</p>
-        <p className="mt-1">{APPLIES_FROM_NOTE}</p>
-      </div>
+        <p>{RISK_NOTE}</p>
+        <p>{INCIDENT_LINK_NOTE}</p>
+        <p>{APPLIES_FROM_NOTE}</p>
+      </RuleNote>
 
       <Card>
         <CardContent className="p-0">

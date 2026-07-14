@@ -16,6 +16,7 @@ import {
 } from "@/lib/klachten/labels";
 import { PageHeader } from "@/components/dashboard/page-header";
 import { NotRelevantBanner } from "@/components/dashboard/relevance";
+import { RuleNote } from "@/components/dashboard/rule-note";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
@@ -112,10 +113,21 @@ export default async function KlachtenPage() {
         </div>
       )}
 
-      <div className="mb-4 rounded-lg border bg-secondary/30 px-4 py-3 text-sm text-muted-foreground">
+      <RuleNote
+        summary={
+          <>
+            Iedereen mag vanaf 2 augustus 2026 een klacht over AI indienen bij de toezichthouder —
+            dat staat los van u. Een eigen klachtenregister is voor de meeste organisaties{" "}
+            <strong className="font-medium text-foreground/80">
+              goed bestuur, geen wettelijke plicht
+            </strong>
+            . Houd klachten hier bij zodat u ze netjes en aantoonbaar afhandelt.
+          </>
+        }
+      >
         <p>{ART_85_NOTE}</p>
-        <p className="mt-1">{SCOPE_NOTE}</p>
-      </div>
+        <p>{SCOPE_NOTE}</p>
+      </RuleNote>
 
       <Card>
         <CardContent className="p-0">

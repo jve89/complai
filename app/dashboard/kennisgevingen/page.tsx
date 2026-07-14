@@ -13,6 +13,7 @@ import {
   STATUS_LABEL,
   STATUS_BADGE,
   APPLIES_FROM_NOTE,
+  EXPLANATION_SCOPE_NOTE,
   type NoticeType,
   type NoticeStatus,
 } from "@/lib/kennisgevingen/labels";
@@ -29,6 +30,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { NotRelevantBanner } from "@/components/dashboard/relevance";
+import { RuleNote } from "@/components/dashboard/rule-note";
 import { NoticeDialog } from "@/components/dashboard/kennisgevingen/notice-dialog";
 import { DeleteNoticeButton } from "@/components/dashboard/kennisgevingen/delete-notice-button";
 
@@ -110,18 +112,35 @@ export default async function KennisgevingenPage() {
         </div>
       )}
 
-      <div className="mb-4 rounded-lg border bg-secondary/30 px-4 py-3 text-sm text-muted-foreground">
-        {APPLIES_FROM_NOTE}
-        {unlocked && highRiskCount === 0 && (
-          <span className="mt-1 block">
-            U heeft nog geen systemen als <strong>hoog risico</strong> geclassificeerd in uw{" "}
-            <Link href="/dashboard/register" className="font-medium text-primary hover:underline">
-              AI-register
-            </Link>
-            . Deze plichten gelden zodra u een hoog-risico Annex III-systeem inzet.
-          </span>
-        )}
-      </div>
+      <RuleNote
+        summary={
+          <>
+            Zet u <strong className="font-medium text-foreground/80">hoog-risico AI</strong> (Annex
+            III) in die mensen raakt? Informeer dan vooraf uw personeelsvertegenwoordiging en de
+            betrokken werknemers, en informeer de mensen over wie de AI meebeslist. Neemt de AI een
+            besluit met{" "}
+            <strong className="font-medium text-foreground/80">
+              rechtsgevolgen of een ander ingrijpend gevolg
+            </strong>{" "}
+            voor iemand? Dan legt u dat op verzoek uit. Deze plichten gaan naar verwachting in vanaf 2
+            december 2027 — leg nu alvast vast wie u informeert.
+            {unlocked && highRiskCount === 0 && (
+              <span className="mt-2 block">
+                U heeft nog geen systemen als{" "}
+                <strong className="font-medium text-foreground/80">hoog risico</strong> geclassificeerd
+                in uw{" "}
+                <Link href="/dashboard/register" className="font-medium text-primary hover:underline">
+                  AI-register
+                </Link>
+                . Deze plichten gelden zodra u een hoog-risico Annex III-systeem inzet.
+              </span>
+            )}
+          </>
+        }
+      >
+        <p>{APPLIES_FROM_NOTE}</p>
+        <p>{EXPLANATION_SCOPE_NOTE}</p>
+      </RuleNote>
 
       <Card>
         <CardContent className="p-0">

@@ -18,6 +18,7 @@ import {
 } from "@/lib/conformiteit/labels";
 import { PageHeader } from "@/components/dashboard/page-header";
 import { NotRelevantBanner } from "@/components/dashboard/relevance";
+import { RuleNote } from "@/components/dashboard/rule-note";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
@@ -110,11 +111,27 @@ export default async function ConformiteitPage() {
         </div>
       )}
 
-      <div className="mb-4 rounded-lg border bg-secondary/30 px-4 py-3 text-sm text-muted-foreground">
+      <RuleNote
+        summary={
+          <>
+            Bent u <strong className="font-medium text-foreground/80">alleen gebruiker</strong> van
+            andermans AI, zónder er iets wezenlijks aan te veranderen? Dan geldt de
+            conformiteitsbeoordeling niet voor u. Bent u zelf de maker van een hoog-risico systeem —
+            of zet u uw eigen naam of merk erop, of past u het ingrijpend aan? Dan wordt u aanbieder
+            en doorloopt u die beoordeling vóór verkoop, tot en met de CE-markering. Naar verwachting
+            verplicht vanaf 2 december 2027.
+          </>
+        }
+      >
         <p>{PROVIDER_NOTE}</p>
-        <p className="mt-1">{ROUTE_NOTE}</p>
-        <p className="mt-1">{APPLIES_FROM_NOTE}</p>
-      </div>
+        <p>
+          Let op: zet u uw eigen naam of merk op een systeem, past u het wezenlijk aan, of gebruikt u
+          het voor een ander doel waardoor het hoog-risico wordt? Dan wordt u zelf aanbieder (Art. 25)
+          en geldt de beoordeling (opnieuw) voor u (Art. 43 lid 4).
+        </p>
+        <p>{ROUTE_NOTE}</p>
+        <p>{APPLIES_FROM_NOTE}</p>
+      </RuleNote>
 
       <Card>
         <CardContent className="p-0">
