@@ -15,8 +15,13 @@ import {
 
 import { getActiveCompany, canAdminister } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { formatDate } from "@/lib/utils";
+import { cn, formatDate } from "@/lib/utils";
 import { TIER_LABEL, TIER_ORDER, tierRank } from "@/lib/plan";
+import {
+  surfaceRelevance,
+  surfaceState,
+  HREF_TO_SURFACE,
+} from "@/lib/compliance/relevance";
 import { computeGovernance } from "@/lib/governance/score";
 import { resolveStatus } from "@/lib/compliance/resolve";
 import type { ComplianceProfile, CompanyEvidence } from "@/lib/compliance/types";
@@ -27,6 +32,7 @@ import { getEvaluatedUpdates } from "@/lib/regulatory/updates-data";
 import { DASHBOARD_NAV } from "@/components/dashboard/nav-items";
 import { OnboardingChecklist } from "@/components/dashboard/onboarding-checklist";
 import { UpdatesCard } from "@/components/dashboard/updates-card";
+import { RelevanceReveal, LockBadge } from "@/components/dashboard/relevance";
 import { ScoreRing } from "@/components/score-ring";
 import { PageHeader } from "@/components/dashboard/page-header";
 import { PendingPublicationNote } from "@/components/pending-publication-note";
@@ -250,6 +256,54 @@ export default async function DashboardPage({
     { label: "Open verplichtingen", value: open.length, icon: ListChecks },
     { label: "Aankomende deadlines", value: deadlines.length, icon: CalendarClock },
   ];
+
+  // Scan-driven visibility for the "Snel naar" grid: partition by relevance state
+  // and fix the pre-existing leak (this grid never applied the adminOnly filter).
+  const rel = surfaceRelevance(profile, aiSystems);
+  const quickState = (href: string) => {
+    const key = HREF_TO_SURFACE[href];
+    return key ? surfaceState(rel[key], company.plan) : "shown";
+  };
+  const quickLinks = DASHBOARD_NAV.filter(
+    (n) => n.href !== "/dashboard" && (!n.adminOnly || isAdmin)
+  );
+  const relevantLinks = quickLinks.filter((n) => quickState(n.href) !== "irrelevant");
+  const irrelevantLinks = quickLinks.filter((n) => quickState(n.href) === "irrelevant");
+
+  const quickCard = (item: (typeof DASHBOARD_NAV)[number]) => {
+    const state = quickState(item.href);
+    const key = HREF_TO_SURFACE[item.href];
+    return (
+      <Link key={item.href} href={item.href} className="group">
+        <Card
+          className={cn(
+            "h-full transition-colors group-hover:border-brand-500/50",
+            state !== "shown" && "border-dashed"
+          )}
+        >
+          <CardContent className="flex items-start gap-4 py-5">
+            <div
+              className={cn(
+                "inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-secondary text-navy-900",
+                state === "irrelevant" && "opacity-60"
+              )}
+            >
+              <item.icon className="h-5 w-5" />
+            </div>
+            <div className="min-w-0">
+              <div className="flex flex-wrap items-center gap-2">
+                <p className="font-semibold">{item.label}</p>
+                {state === "locked" && key && <LockBadge tier={rel[key].requiredTier} />}
+              </div>
+              <p className="text-sm text-muted-foreground">
+                {state === "irrelevant" && key ? rel[key].reason : item.description}
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+      </Link>
+    );
+  };
 
   return (
     <>
@@ -512,22 +566,13 @@ export default async function DashboardPage({
       {/* Quick links */}
       <h2 className="mb-4 mt-10 text-lg font-semibold">Snel naar</h2>
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {DASHBOARD_NAV.filter((n) => n.href !== "/dashboard").map((item) => (
-          <Link key={item.href} href={item.href} className="group">
-            <Card className="h-full transition-colors group-hover:border-brand-500/50">
-              <CardContent className="flex items-start gap-4 py-5">
-                <div className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-secondary text-navy-900">
-                  <item.icon className="h-5 w-5" />
-                </div>
-                <div>
-                  <p className="font-semibold">{item.label}</p>
-                  <p className="text-sm text-muted-foreground">{item.description}</p>
-                </div>
-              </CardContent>
-            </Card>
-          </Link>
-        ))}
+        {relevantLinks.map((item) => quickCard(item))}
       </div>
+      <RelevanceReveal count={irrelevantLinks.length}>
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {irrelevantLinks.map((item) => quickCard(item))}
+        </div>
+      </RelevanceReveal>
     </>
   );
 }
