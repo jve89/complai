@@ -261,14 +261,23 @@ driving what each customer *sees*.
     carve-out (Annex III 5(b)), Art 5 de-escalation incl. the narrow Art 5(1)(h)
     RBI case, medical→Annex I/Art 6(1), life/health-only insurance (5(c)), and the
     verkoopcijfers/datamigratie/ticket-triage/kredietbeheer class of over-calls.
-    **Still open from the audit (scan engine, in priority order):**
-    - Emotion medical/safety sub-question (Art 5(1)(f)) so the "Verboden" banner
-      can't be a false positive — *Wave B, next.*
-    - Art 4 literacy emitted before scope-derived roles (ordering); research/
-      personal Art 2 exclusions are no-ops; Art 25 modification step never asked;
-      dead Annex I §B branch would over-emit if wired.
-    - Comprehension: raw "Annex III"/(5b) codes, missing area-4 examples,
-      decision-changing caveats buried at the bottom of the results page.
+    **Fix waves (each adversarially verified, grounded verbatim, test-locked):**
+    - **Wave A — done.** Register-classifier false positives (above).
+    - **Wave B — done.** Emotion medical/safety sub-question (Art 5(1)(f)) so the
+      "Verboden" banner can't be a false positive; engine rule was already correct,
+      the wizard just never collected the qualifier.
+    - **Wave C — done.** Scope correctness: Art 4 emitted after scope-derived roles
+      (#8); research/military/3rd-country-LE short-circuit to excluded, personal
+      (Art 2(10)) kept as a narrower caveat-only exemption so Art 5 still surfaces
+      (#4); Annex I §B no longer over-emits (Art 2(2), #5); Art 25 modification step
+      added + promotion gated on isHigh (#7).
+    - **Wave D — next.** Comprehension + doc drift: decision-changing caveats
+      surfaced (not buried at the bottom); the unanswerable third-party-conformity
+      boolean gets examples + "weet ik niet"; raw "Annex III"/(5b) codes and
+      missing area-4 examples relabelled; correctness-spec Art 50 date drift.
+    **Scan-engine backlog (pre-existing, low):** Annex I §B stays unreachable in the
+    live wizard by design (scope rule #4 — route to sectoral law, don't build §B);
+    ART_25_HANDOVER obligation text vs Art 25(2) party-direction is a wording nuance.
     **Register-classifier backlog (pre-existing gaps, not regressions):** Annex III
     5(d) emergency-call/dispatch triage (uncovered); disability-insurance ambiguity;
     LE public-authority phrasings. Deferred — the tool stays an advisory suggester.

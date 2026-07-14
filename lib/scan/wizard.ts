@@ -11,6 +11,7 @@ import {
   ENTITY_ROLES,
   EXCLUSIONS,
   GPAI_SYSTEMIC,
+  MODIFICATIONS,
   PROHIBITED_PRACTICES,
   READINESS_QUESTIONS,
   SCOPE_CRITERIA,
@@ -177,6 +178,18 @@ const CLASSIFICATION_STEPS: WizardStep[] = [
     help: "Dit is de Art. 6(3)-uitzondering. Laat deze inschatting altijd juridisch toetsen.",
     type: "boolean",
     visible: (a) => hasReal(a.annexIII_areas) && a.profiling !== true,
+  },
+  // Art. 25 — only relevant for a potentially high-risk system: modifying or
+  // rebranding one makes you its provider. Gated on a high-risk signal so the
+  // 90% low-risk case never sees it.
+  {
+    field: "modifications",
+    section: "Risiconiveau",
+    title: "Past u dit AI-systeem wezenlijk aan of brengt u het onder uw eigen naam op de markt?",
+    help: "Onder Art. 25 wordt u dan zélf 'aanbieder' van het hoog-risico systeem, met de bijbehorende plichten.",
+    type: "multi",
+    options: MODIFICATIONS,
+    visible: (a) => hasReal(a.annexI_A) || hasReal(a.annexIII_areas),
   },
   {
     field: "prohibited",

@@ -43,35 +43,66 @@ export function classify(answers: ScanAnswers): ClassificationResult {
   const isProvider = () => roles.has("provider");
   const isDeployer = () => roles.has("deployer");
 
-  // ── Section E — roles & Art. 25 ──────────────────────────────────────────
-  if (isProvider() || isDeployer()) emit("ART_4_LITERACY");
-  let pendingBecomeProvider = false;
-  if (hasAnyReal(answers.modifications)) {
-    if (isProvider()) emit("ART_25_HANDOVER");
-    else pendingBecomeProvider = true;
-  }
-
-  // ── Section S (scope) — evaluated early for flags; END handled below ──────
+  // ── Section S (scope) — derive scope-based roles FIRST, so the Art. 4 and
+  //    Art. 25 role checks below see provider/deployer status that comes ONLY
+  //    from scope (e.g. 'place_system' → provider, 'established_eu' → deployer).
+  //    Previously Art. 4 was emitted before this and silently dropped for such
+  //    entities (audit #8). ──────────────────────────────────────────────────
   const gpaiModelProvider = has(answers.scopeCriteria, "place_gpai_model");
   if (gpaiModelProvider) roles.add("provider");
   if (has(answers.scopeCriteria, "place_system")) roles.add("provider");
   if (has(answers.scopeCriteria, "established_eu")) roles.add("deployer");
   if (has(answers.scopeCriteria, "importer_eu")) roles.add("importer");
   const inScope = hasAnyReal(answers.scopeCriteria);
-
-  // ── Exclusions (Art. 2) ──────────────────────────────────────────────────
-  let fullyExcluded = false;
-  if (has(answers.exclusions, "military")) {
-    exclusions.push("military");
-    fullyExcluded = true;
-  }
-  if (has(answers.exclusions, "third_country_le")) {
-    exclusions.push("third_country_le");
-    fullyExcluded = true;
-  }
-  if (has(answers.exclusions, "research")) exclusions.push("research");
-  if (has(answers.exclusions, "personal")) exclusions.push("personal");
   const foss = has(answers.exclusions, "foss");
+
+  // ── Exclusions (Art. 2) — a full exclusion means the Regulation does not
+  //    apply at all, so we short-circuit with NO obligations. Previously
+  //    research/personal were pushed but had no effect (audit #4). ────────────
+  if (has(answers.exclusions, "military")) exclusions.push("military");
+  if (has(answers.exclusions, "third_country_le")) exclusions.push("third_country_le");
+  if (has(answers.exclusions, "research")) {
+    exclusions.push("research");
+    caveats.push(
+      "De uitzondering voor wetenschappelijk onderzoek & ontwikkeling (Art. 2(6)) geldt alleen als het systeem UITSLUITEND daarvoor wordt ontwikkeld of gebruikt. Zodra het in de praktijk (ook in real-world tests) wordt ingezet, gelden de regels wél."
+    );
+  }
+  // Full exclusions (Art. 2(3) military, 2(4) third-country LE, 2(6) sole-purpose
+  // R&D) — the Regulation does not apply at all, so short-circuit with NO obligations.
+  const fullyExcluded =
+    has(answers.exclusions, "military") ||
+    has(answers.exclusions, "third_country_le") ||
+    has(answers.exclusions, "research");
+  if (fullyExcluded) {
+    return {
+      inScope,
+      exclusions,
+      entityRoles: Array.from(roles),
+      riskTiers: ["excluded"],
+      systemFlags: { gpaiModelProvider, gpaiSystemic: false, profiling: Boolean(answers.profiling) },
+      emitted: [],
+      caveats,
+    };
+  }
+
+  // Art. 2(10) is NARROWER: personal, non-professional use by a natural person
+  // lifts only the DEPLOYER obligations — the Art. 5 prohibitions and any
+  // provider/GPAI duties still apply. So it is a caveat, NOT a full exclusion
+  // (would otherwise suppress the €35M Art. 5 tier — adversarial-verify finding A).
+  if (has(answers.exclusions, "personal")) {
+    exclusions.push("personal");
+    caveats.push(
+      "Art. 2(10): voor een natuurlijk persoon die AI puur persoonlijk en niet-professioneel gebruikt, gelden de gebruiksverantwoordelijke-plichten niet — maar de verboden praktijken (Art. 5) blijven gelden. Zodra het gebruik professioneel of zakelijk wordt, gelden alle regels."
+    );
+  }
+
+  // ── Section E — roles & Art. 25 (after scope-role derivation, audit #8) ────
+  if (isProvider() || isDeployer()) emit("ART_4_LITERACY");
+  let pendingBecomeProvider = false;
+  if (hasAnyReal(answers.modifications)) {
+    if (isProvider()) emit("ART_25_HANDOVER");
+    else pendingBecomeProvider = true;
+  }
 
   // ── Section R3 — prohibited practices (Art. 5), with qualifiers ──────────
   const q = answers.prohibitedQualifiers ?? {};
@@ -150,12 +181,13 @@ export function classify(answers: ScanAnswers): ClassificationResult {
   let isHigh = false;
   let isHighNotify = false;
   if (!isProhibited) {
-    // Annex I Section B — defers to sectoral law; high-risk only WITH 3rd-party conformity.
+    // Annex I Section B — Art. 2(2): only Art. 6(1), 102–109 and 112 apply, NOT
+    // the full Chapter III provider set. So route to sectoral law via a caveat
+    // and do NOT flip isHigh (audit #5; scope rule #4 — no §B sector logic here).
     if (hasAnyReal(answers.annexI_B)) {
       caveats.push(
         "Annex I (sectie B: transport/luchtvaart) valt grotendeels onder bestaande sectorale wetgeving. Controleer welke AI Act-bepalingen van toepassing zijn."
       );
-      if (answers.thirdPartyConformity) isHigh = true;
     }
     // Annex I Section A — high-risk WITH third-party conformity assessment.
     if (hasAnyReal(answers.annexI_A) && answers.thirdPartyConformity) isHigh = true;
@@ -179,7 +211,10 @@ export function classify(answers: ScanAnswers): ClassificationResult {
     }
   }
 
-  if (pendingBecomeProvider && (isHigh || isHighNotify)) roles.add("provider");
+  // Art. 25 promotes a modifier to provider of a HIGH-RISK system only. Not the
+  // high_notify (Art. 6(3) derogation) case — there the system is NOT high-risk,
+  // so there is nothing to become provider OF (adversarial-verify finding C).
+  if (pendingBecomeProvider && isHigh) roles.add("provider");
 
   // FOSS exemption is void for high-risk / prohibited / transparency systems.
   if (foss) {
@@ -280,8 +315,8 @@ export function classify(answers: ScanAnswers): ClassificationResult {
   }
 
   // ── Tier finalisation ────────────────────────────────────────────────────
-  if (fullyExcluded) tiers.add("excluded");
-  if (!inScope && !fullyExcluded) tiers.add("out_of_scope");
+  // (Full Art. 2 exclusions already returned early above with the "excluded" tier.)
+  if (!inScope) tiers.add("out_of_scope");
   if (tiers.size === 0) tiers.add("minimal");
 
   return {

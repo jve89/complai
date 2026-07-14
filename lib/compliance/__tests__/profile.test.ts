@@ -8,6 +8,7 @@
 //  4. (progress bar is a pure UI function — covered by scanProgress monotonicity).
 
 import { buildProfile } from "@/lib/compliance/profile";
+import { classify } from "@/lib/compliance/engine";
 import { evidenceFromAnswers } from "@/lib/compliance/evidence-from-answers";
 import { docUnlocked } from "@/lib/plan";
 import { scanProgress, visibleSteps } from "@/lib/scan/wizard";
@@ -237,6 +238,61 @@ function check(name: string, cond: boolean, detail = "") {
   );
   check("medical/safety sub-question shown when emotion_work_edu ticked", shown);
   check("medical/safety sub-question hidden otherwise", !hidden);
+}
+
+// ── Wave C — scope correctness (Art. 2 exclusions, Art. 4 ordering, Art. 25, §B) ──
+{
+  console.log("Wave C — scope correctness:");
+
+  // #8 — Art. 4 for an entity that is provider ONLY via scope (place_system).
+  const scopeProvider = classify(base({ roles: ["importer"], scopeCriteria: ["place_system"] }));
+  check("#8 scope-derived provider still gets Art. 4", scopeProvider.emitted.some((e) => e.code === "ART_4_LITERACY"));
+  check("#8 scope-derived provider role present", scopeProvider.entityRoles.includes("provider"));
+
+  // #4 — research (Art. 2(6)) and personal (Art. 2(10)) route out of scope, no obligations.
+  const research = classify(
+    base({ roles: ["deployer"], scopeCriteria: ["established_eu"], annexIII_areas: ["4"], exclusions: ["research"] })
+  );
+  check("#4 research → excluded tier", research.riskTiers.includes("excluded"), research.riskTiers.join(","));
+  check("#4 research → NO obligations (even with an Annex III area)", research.emitted.length === 0);
+  // Art. 2(10) personal use is NARROWER — it lifts only deployer obligations, so
+  // an Art. 5 prohibition still surfaces (adversarial-verify finding A).
+  const personalProhibited = classify(
+    base({ roles: ["deployer"], scopeCriteria: ["established_eu"], exclusions: ["personal"], prohibited: ["facial_scraping"] })
+  );
+  check("#4 personal does NOT suppress an Art. 5 prohibition", personalProhibited.emitted.some((e) => e.code === "ART_5_PROHIBITED"));
+  check("#4 personal is not a full exclusion", !personalProhibited.riskTiers.includes("excluded"));
+
+  // #5 — Annex I §B never flips to high-risk (Art. 2(2)); routes to sectoral law.
+  const sectionB = classify(
+    base({ roles: ["provider"], scopeCriteria: ["place_system"], annexI_B: ["aviation"], thirdPartyConformity: true })
+  );
+  check("#5 §B does NOT become high-risk", !sectionB.riskTiers.includes("high"));
+  check("#5 §B emits no Chapter III provider set", !sectionB.emitted.some((e) => e.code === "ART_16_PROVIDER"));
+  check("#5 §B adds the sectoral-law caveat", sectionB.caveats.some((c) => /sectorale wetgeving/i.test(c)));
+
+  // #7 — Art. 25: a deployer who modifies a high-risk system becomes provider.
+  const modifier = classify(
+    base({ roles: ["deployer"], scopeCriteria: ["established_eu"], annexIII_areas: ["4"], modifications: ["substantial"] })
+  );
+  check("#7 modifying deployer promoted to provider", modifier.entityRoles.includes("provider"));
+  check("#7 promoted modifier gets provider obligations", modifier.emitted.some((e) => e.code === "ART_16_PROVIDER"));
+  const providerModifier = classify(
+    base({ roles: ["provider"], scopeCriteria: ["place_system"], annexIII_areas: ["4"], modifications: ["substantial"] })
+  );
+  check("#7 provider who modifies emits Art. 25 handover", providerModifier.emitted.some((e) => e.code === "ART_25_HANDOVER"));
+  // Finding C — a modifier claiming the Art. 6(3) derogation (high_notify, NOT
+  // high-risk) must NOT be promoted to provider.
+  const derogationModifier = classify(
+    base({ roles: ["deployer"], scopeCriteria: ["established_eu"], annexIII_areas: ["4"], art6_3_carveout: true, modifications: ["substantial"] })
+  );
+  check("#7 high_notify (Art. 6(3)) modifier is NOT promoted to provider", !derogationModifier.entityRoles.includes("provider"));
+
+  // #7 visibility — the modification step shows only under a high-risk signal.
+  const modShown = visibleSteps(base({ annexIII_areas: ["4"] })).some((s) => s.field === "modifications");
+  const modHidden = visibleSteps(base({ annexIII_areas: ["none"] })).some((s) => s.field === "modifications");
+  check("#7 modification step shown under a high-risk signal", modShown);
+  check("#7 modification step hidden otherwise", !modHidden);
 }
 
 console.log("");
