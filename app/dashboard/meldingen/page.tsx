@@ -133,7 +133,7 @@ export default async function MeldingenPage() {
         eerst de aanbieder (Art. 26(5)).
       </div>
 
-      <Card className={cn(notRelevant && "opacity-60")}>
+      <Card>
         <CardContent className="p-0">
           {incidents.length === 0 ? (
             <div className="flex flex-col items-center gap-3 py-16 text-center">

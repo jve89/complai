@@ -3,13 +3,18 @@
 import { type ReactNode, useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Lock, Menu, ShieldCheck, X } from "lucide-react";
+import { ChevronDown, Lock, Menu, ShieldCheck, X } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import type { SurfaceState } from "@/lib/compliance/relevance";
 import { UPDATES_SEEN_KEY } from "@/lib/updates-seen";
 import { SiteLogo } from "@/components/site-logo";
-import { DASHBOARD_NAV, DEMO_NAV } from "@/components/dashboard/nav-items";
+import {
+  DASHBOARD_NAV,
+  DEMO_NAV,
+  navTree,
+  type NavItem,
+} from "@/components/dashboard/nav-items";
 
 const ADMIN_ITEM = {
   href: "/dashboard/admin",
@@ -49,6 +54,166 @@ function UpdatesBadge({ dates }: { dates: string[] }) {
 const navFor = (nav: "dashboard" | "demo") =>
   nav === "demo" ? DEMO_NAV : DASHBOARD_NAV;
 
+const idleCls = (dark: boolean) =>
+  dark ? "text-white/70 hover:bg-white/10 hover:text-white" : "text-foreground hover:bg-secondary";
+const activeCls = (dark: boolean) => (dark ? "bg-brand-500 text-white" : "bg-navy-900 text-white");
+
+/** A single nav link. Relevance drives only a small lock glyph (relevant but the
+ *  pakket is too low) — items are never dimmed or hidden. */
+function NavLink({
+  item,
+  dark,
+  active,
+  locked,
+  indent,
+  updateDates,
+  onNavigate,
+}: {
+  item: NavItem;
+  dark: boolean;
+  active: boolean;
+  locked: boolean;
+  indent?: boolean;
+  updateDates: string[];
+  onNavigate?: () => void;
+}) {
+  return (
+    <Link
+      href={item.href}
+      onClick={onNavigate}
+      className={cn(
+        "flex items-center gap-3 rounded-lg py-2.5 pr-3 text-sm font-medium transition-colors",
+        indent ? "pl-4" : "px-3",
+        active ? activeCls(dark) : idleCls(dark)
+      )}
+    >
+      <item.icon className="h-5 w-5 shrink-0" />
+      {item.label}
+      {locked && <Lock className={cn("ml-auto h-3.5 w-3.5 shrink-0", dark ? "text-white/50" : "text-muted-foreground")} />}
+      {slugIsUpdates(item.href) && <UpdatesBadge dates={updateDates} />}
+    </Link>
+  );
+}
+
+const slugIsUpdates = (href: string) => href === "/dashboard/updates" || href === "/demo/updates";
+
+/** The collapsible "Hoog-risico verplichtingen" section. Open by default when any
+ *  of its modules is relevant (or the current route is inside it); otherwise
+ *  collapsed with a short "geldt bij hoog-risico AI" note. */
+function NavGroupSection({
+  label,
+  icon: Icon,
+  items,
+  dark,
+  relevance,
+  pathname,
+  updateDates,
+  onNavigate,
+}: {
+  label: string;
+  icon: NavItem["icon"];
+  items: NavItem[];
+  dark: boolean;
+  relevance: Record<string, SurfaceState>;
+  pathname: string;
+  updateDates: string[];
+  onNavigate?: () => void;
+}) {
+  const anyRelevant = items.some((i) => relevance[i.href] !== "irrelevant");
+  const containsActive = items.some((i) => isActive(pathname, i.href));
+  const [open, setOpen] = useState(anyRelevant);
+  const isOpen = open || containsActive;
+
+  return (
+    <div>
+      <button
+        type="button"
+        onClick={() => setOpen((o) => !o)}
+        aria-expanded={isOpen}
+        className={cn(
+          "flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors",
+          idleCls(dark)
+        )}
+      >
+        <Icon className="h-5 w-5 shrink-0" />
+        {label}
+        <ChevronDown className={cn("ml-auto h-4 w-4 shrink-0 transition-transform", isOpen && "rotate-180")} />
+      </button>
+      {isOpen && (
+        <div className={cn("mt-1 space-y-1 border-l pl-2", dark ? "ml-5 border-white/10" : "ml-5 border-border")}>
+          {items.map((item) => (
+            <NavLink
+              key={item.href}
+              item={item}
+              dark={dark}
+              active={isActive(pathname, item.href)}
+              locked={relevance[item.href] === "locked"}
+              indent
+              updateDates={updateDates}
+              onNavigate={onNavigate}
+            />
+          ))}
+        </div>
+      )}
+      {!anyRelevant && (
+        <p className={cn("px-3 pb-1 pt-1 text-[11px]", dark ? "text-white/35" : "text-muted-foreground")}>
+          Van toepassing zodra u hoog-risico AI inzet.
+        </p>
+      )}
+    </div>
+  );
+}
+
+/** Shared renderer for the nav entries (top-level items + the collapsible group). */
+function NavEntries({
+  nav,
+  isAdmin,
+  dark,
+  relevance,
+  pathname,
+  updateDates,
+  onNavigate,
+}: {
+  nav: "dashboard" | "demo";
+  isAdmin: boolean;
+  dark: boolean;
+  relevance: Record<string, SurfaceState>;
+  pathname: string;
+  updateDates: string[];
+  onNavigate?: () => void;
+}) {
+  const entries = navTree(navFor(nav).filter((i) => !i.adminOnly || isAdmin));
+  return (
+    <>
+      {entries.map((entry) =>
+        entry.kind === "item" ? (
+          <NavLink
+            key={entry.item.href}
+            item={entry.item}
+            dark={dark}
+            active={isActive(pathname, entry.item.href)}
+            locked={relevance[entry.item.href] === "locked"}
+            updateDates={updateDates}
+            onNavigate={onNavigate}
+          />
+        ) : (
+          <NavGroupSection
+            key={entry.label}
+            label={entry.label}
+            icon={entry.icon}
+            items={entry.items}
+            dark={dark}
+            relevance={relevance}
+            pathname={pathname}
+            updateDates={updateDates}
+            onNavigate={onNavigate}
+          />
+        )
+      )}
+    </>
+  );
+}
+
 /** Desktop sidebar (fixed, hidden on mobile — see Topbar for mobile nav). */
 export function Sidebar({
   nav = "dashboard",
@@ -69,62 +234,27 @@ export function Sidebar({
   relevance?: Record<string, SurfaceState>;
 }) {
   const pathname = usePathname();
-  const [showAll, setShowAll] = useState(false);
-  const items = navFor(nav).filter((i) => !i.adminOnly || isAdmin);
-  const hasIrrelevant = items.some((i) => relevance[i.href] === "irrelevant");
 
   return (
     <aside className="fixed inset-y-0 left-0 z-30 hidden w-64 flex-col border-r border-white/10 bg-navy-900 text-white md:flex">
       <div className="flex h-16 items-center border-b border-white/10 px-6">
         <SiteLogo className="text-white" href={logoHref} />
       </div>
-      <nav className="flex-1 space-y-1 p-4">
-        {items.map((item) => {
-          const active = isActive(pathname, item.href);
-          const state = relevance[item.href];
-          const dimmed = state === "irrelevant" && !showAll;
-          return (
-            <Link
-              key={item.href}
-              href={item.href}
-              title={dimmed ? "Lijkt nu niet van toepassing op uw organisatie" : undefined}
-              className={cn(
-                "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors",
-                active
-                  ? "bg-brand-500 text-white"
-                  : "text-white/70 hover:bg-white/10 hover:text-white",
-                dimmed && "opacity-40"
-              )}
-            >
-              <item.icon className="h-5 w-5 shrink-0" />
-              {item.label}
-              {state === "locked" && <Lock className="ml-auto h-3.5 w-3.5 shrink-0 text-white/50" />}
-              {state === "irrelevant" && (
-                <span className="ml-auto text-[10px] font-semibold uppercase tracking-wide text-white/40">
-                  n.v.t.
-                </span>
-              )}
-              {item.href === "/dashboard/updates" && <UpdatesBadge dates={updateDates} />}
-            </Link>
-          );
-        })}
-        {hasIrrelevant && (
-          <button
-            type="button"
-            onClick={() => setShowAll((v) => !v)}
-            className="mt-1 w-full rounded-lg px-3 py-2 text-left text-xs font-medium text-white/50 transition-colors hover:bg-white/10 hover:text-white/80"
-          >
-            {showAll ? "Verberg wat niet van toepassing is" : "Toon ook wat nu niet van toepassing lijkt"}
-          </button>
-        )}
+      <nav className="flex-1 space-y-1 overflow-y-auto p-4">
+        <NavEntries
+          nav={nav}
+          isAdmin={isAdmin}
+          dark
+          relevance={relevance}
+          pathname={pathname}
+          updateDates={updateDates}
+        />
         {showAdmin && (
           <Link
             href={ADMIN_ITEM.href}
             className={cn(
               "mt-1 flex items-center gap-3 rounded-lg border-t border-white/10 px-3 py-2.5 pt-4 text-sm font-medium transition-colors",
-              isActive(pathname, ADMIN_ITEM.href)
-                ? "text-brand-300"
-                : "text-white/70 hover:bg-white/10 hover:text-white"
+              isActive(pathname, ADMIN_ITEM.href) ? "text-brand-300" : idleCls(true)
             )}
           >
             <ADMIN_ITEM.icon className="h-5 w-5 shrink-0" />
@@ -161,9 +291,7 @@ export function MobileNav({
 }) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
-  const [showAll, setShowAll] = useState(false);
-  const items = navFor(nav).filter((i) => !i.adminOnly || isAdmin);
-  const hasIrrelevant = items.some((i) => relevance[i.href] === "irrelevant");
+  const close = () => setOpen(false);
 
   return (
     <div className="md:hidden">
@@ -182,59 +310,27 @@ export function MobileNav({
           <button
             type="button"
             aria-label="Menu sluiten"
-            onClick={() => setOpen(false)}
+            onClick={close}
             className="fixed inset-x-0 bottom-0 top-16 z-30 bg-black/20"
           />
-          <div className="absolute inset-x-0 top-16 z-40 border-b bg-background shadow-lg">
+          <div className="absolute inset-x-0 top-16 z-40 max-h-[calc(100vh-4rem)] overflow-y-auto border-b bg-background shadow-lg">
             <nav className="flex flex-col gap-1 p-3">
-              {items.map((item) => {
-                const active = isActive(pathname, item.href);
-                const state = relevance[item.href];
-                const dimmed = state === "irrelevant" && !showAll;
-                return (
-                  <Link
-                    key={item.href}
-                    href={item.href}
-                    onClick={() => setOpen(false)}
-                    title={dimmed ? "Lijkt nu niet van toepassing op uw organisatie" : undefined}
-                    className={cn(
-                      "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium",
-                      active
-                        ? "bg-navy-900 text-white"
-                        : "text-foreground hover:bg-secondary",
-                      dimmed && "opacity-40"
-                    )}
-                  >
-                    <item.icon className="h-5 w-5" />
-                    {item.label}
-                    {state === "locked" && <Lock className="ml-auto h-3.5 w-3.5 shrink-0 text-muted-foreground" />}
-                    {state === "irrelevant" && (
-                      <span className="ml-auto text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
-                        n.v.t.
-                      </span>
-                    )}
-                    {item.href === "/dashboard/updates" && <UpdatesBadge dates={updateDates} />}
-                  </Link>
-                );
-              })}
-              {hasIrrelevant && (
-                <button
-                  type="button"
-                  onClick={() => setShowAll((v) => !v)}
-                  className="mt-1 rounded-lg px-3 py-2 text-left text-xs font-medium text-muted-foreground hover:bg-secondary"
-                >
-                  {showAll ? "Verberg wat niet van toepassing is" : "Toon ook wat nu niet van toepassing lijkt"}
-                </button>
-              )}
+              <NavEntries
+                nav={nav}
+                isAdmin={isAdmin}
+                dark={false}
+                relevance={relevance}
+                pathname={pathname}
+                updateDates={updateDates}
+                onNavigate={close}
+              />
               {showAdmin && (
                 <Link
                   href={ADMIN_ITEM.href}
-                  onClick={() => setOpen(false)}
+                  onClick={close}
                   className={cn(
                     "mt-1 flex items-center gap-3 rounded-lg border-t px-3 py-2.5 pt-4 text-sm font-medium",
-                    isActive(pathname, ADMIN_ITEM.href)
-                      ? "bg-navy-900 text-white"
-                      : "text-foreground hover:bg-secondary"
+                    isActive(pathname, ADMIN_ITEM.href) ? "bg-navy-900 text-white" : "text-foreground hover:bg-secondary"
                   )}
                 >
                   <ADMIN_ITEM.icon className="h-5 w-5" />
@@ -243,10 +339,7 @@ export function MobileNav({
               )}
             </nav>
             {actions && (
-              <div
-                className="flex flex-col gap-2 border-t p-3"
-                onClick={() => setOpen(false)}
-              >
+              <div className="flex flex-col gap-2 border-t p-3" onClick={close}>
                 {actions}
               </div>
             )}

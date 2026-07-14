@@ -10,6 +10,7 @@ import {
   Megaphone,
   MessageSquareWarning,
   Settings,
+  ShieldAlert,
   Siren,
   Users,
   Wrench,
@@ -126,3 +127,41 @@ export const DEMO_NAV: NavItem[] = DASHBOARD_NAV.filter(
       ? "/demo"
       : n.href.replace("/dashboard/", "/demo/"),
 }));
+
+// ── Collapsible grouping for the sidebar ────────────────────────────────────
+// The six high-risk duty modules fold into ONE collapsible section so the nav
+// stays short. The group carries relevance (expanded when high-risk, collapsed
+// otherwise) — the module PAGE explains per-module applicability, so nav items
+// themselves are never dimmed.
+export const HIGH_RISK_SLUGS = [
+  "meldingen",
+  "kennisgevingen",
+  "logbewaring",
+  "klachten",
+  "conformiteit",
+  "corrigerend",
+] as const;
+
+export type NavEntry =
+  | { kind: "item"; item: NavItem }
+  | { kind: "group"; label: string; icon: LucideIcon; items: NavItem[] };
+
+const slugOf = (href: string) => href.split("/").pop() ?? "";
+
+/** Fold the contiguous high-risk module items into one group, keeping every other
+ *  item top-level and in order. Works for both /dashboard and /demo hrefs. */
+export function navTree(items: NavItem[]): NavEntry[] {
+  const entries: NavEntry[] = [];
+  const groupItems: NavItem[] = [];
+  for (const item of items) {
+    if ((HIGH_RISK_SLUGS as readonly string[]).includes(slugOf(item.href))) {
+      if (groupItems.length === 0) {
+        entries.push({ kind: "group", label: "Hoog-risico verplichtingen", icon: ShieldAlert, items: groupItems });
+      }
+      groupItems.push(item);
+    } else {
+      entries.push({ kind: "item", item });
+    }
+  }
+  return entries;
+}

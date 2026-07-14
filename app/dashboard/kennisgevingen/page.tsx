@@ -123,7 +123,7 @@ export default async function KennisgevingenPage() {
         )}
       </div>
 
-      <Card className={cn(notRelevant && "opacity-60")}>
+      <Card>
         <CardContent className="p-0">
           {notices.length === 0 ? (
             <div className="flex flex-col items-center gap-3 py-16 text-center">

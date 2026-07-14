@@ -121,7 +121,7 @@ export default async function CorrigerendPage() {
         <p className="mt-1">{APPLIES_FROM_NOTE}</p>
       </div>
 
-      <Card className={cn(notRelevant && "opacity-60")}>
+      <Card>
         <CardContent className="p-0">
           {actions.length === 0 ? (
             <div className="flex flex-col items-center gap-3 py-16 text-center">
