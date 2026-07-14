@@ -97,9 +97,10 @@ function NavLink({
 
 const slugIsUpdates = (href: string) => href === "/dashboard/updates" || href === "/demo/updates";
 
-/** The collapsible "Hoog-risico verplichtingen" section. Open by default when any
- *  of its modules is relevant (or the current route is inside it); otherwise
- *  collapsed with a short "geldt bij hoog-risico AI" note. */
+/** The collapsible "Hoog-risico verplichtingen" section. Collapsed by default for a
+ *  cleaner menu; auto-expands only when the current route is inside it (so the active
+ *  item is never hidden). When no module is relevant it also shows a short
+ *  "geldt bij hoog-risico AI" note. */
 function NavGroupSection({
   label,
   icon: Icon,
@@ -121,7 +122,7 @@ function NavGroupSection({
 }) {
   const anyRelevant = items.some((i) => relevance[i.href] !== "irrelevant");
   const containsActive = items.some((i) => isActive(pathname, i.href));
-  const [open, setOpen] = useState(anyRelevant);
+  const [open, setOpen] = useState(false);
   const isOpen = open || containsActive;
 
   return (
