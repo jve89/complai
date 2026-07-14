@@ -285,15 +285,22 @@ driving what each customer *sees*.
     **Register-classifier backlog (pre-existing gaps, not regressions):** Annex III
     5(d) emergency-call/dispatch triage (uncovered); disability-insurance ambiguity;
     LE public-authority phrasings. Deferred — the tool stays an advisory suggester.
-- **Phase B — scan-driven visibility (after A).** A `relevance(profile) →
-  { applies, requiredTier }` layer on top of the `lib/plan.ts` pakket gate,
-  giving three states per surface: **not relevant → de-emphasized, NOT hidden**
-  (with a "toon ook wat nu niet van toepassing lijkt" reveal — a self-declared
-  scan must never silently hide a real duty), **relevant + tier too low →
-  locked** (upsell), **relevant + covered → shown**. Applied to nav, overview
-  cards, documents, obligations and the Wave 1–3 modules. Invariants: the
-  recommended pakket unlocks everything relevant-and-required; relevance
-  re-derives live from the AI-register.
+- **Phase B — scan-driven visibility — DONE.** A pure `lib/compliance/relevance.ts`
+  (`surfaceRelevance` + `surfaceState`) layer on top of the `lib/plan.ts` pakket
+  gate — relevance ⟂ tier, re-derived LIVE from the profile + AI-register, keeping
+  high vs high_notify separate and pairing role+risk per system (bypasses the
+  coarse `companySignals`). Three states per surface: **not relevant →
+  de-emphasized, NOT hidden** (reveal), **relevant + tier too low → locked**,
+  **relevant + covered → shown**. Shipped as 8 small PRs (each adversarially
+  verified / test-locked / browser-verified): PR0 layer + 21 invariant tests · PR2
+  nav · PR3 overview grid + primitives (fixed an admin-card leak) · PR4 documents ·
+  PR5 the four deployer modules · PR6 the two provider modules (biggest
+  false-positive win: a deployer no longer sees Art. 43/20) · PR7 e-learning
+  markers pre-unlock · PR8 the "wat geldt niet voor u" obligations reveal + a
+  **re-scan nudge** when the live register implies heavier duties than the last
+  scan (surface, don't auto-bump — CLAUDE.md rule #2/#3). Invariant held: the
+  recommended pakket unlocks every relevant-and-required duty for scan-derived
+  relevance; register-driven divergence is exactly what the PR8 nudge covers.
 
 ## Open items
 

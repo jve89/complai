@@ -21,6 +21,7 @@ import {
   surfaceRelevance,
   surfaceState,
   HREF_TO_SURFACE,
+  type SurfaceKey,
 } from "@/lib/compliance/relevance";
 import { computeGovernance } from "@/lib/governance/score";
 import { resolveStatus } from "@/lib/compliance/resolve";
@@ -260,6 +261,27 @@ export default async function DashboardPage({
   // Scan-driven visibility for the "Snel naar" grid: partition by relevance state
   // and fix the pre-existing leak (this grid never applied the adminOnly filter).
   const rel = surfaceRelevance(profile, aiSystems);
+
+  // PR8 — the six risk-triggered duty modules: what does NOT apply (reassurance
+  // reveal), and does the live register imply heavier duties than the last scan?
+  const DUTY_SURFACES: SurfaceKey[] = [
+    "meldingen",
+    "kennisgevingen",
+    "logbewaring",
+    "klachten",
+    "conformiteit",
+    "corrigerend",
+  ];
+  const notApplicableDuties = DUTY_SURFACES.filter((k) => !rel[k].applies).map((k) => rel[k].reason);
+  // A relevant duty whose tier sits ABOVE the scan's recommendation can only come
+  // from the AI-register (PR0 invariant: the scan alone never diverges) — so nudge
+  // a re-scan rather than silently bumping the advice (surface, don't resolve up).
+  const liveExceedsScan =
+    Boolean(profile) &&
+    DUTY_SURFACES.some(
+      (k) => rel[k].applies && tierRank(rel[k].requiredTier) > tierRank(profile?.recommendedTier ?? "gratis")
+    );
+
   const quickState = (href: string) => {
     const key = HREF_TO_SURFACE[href];
     return key ? surfaceState(rel[key], company.plan) : "shown";
@@ -330,6 +352,23 @@ export default async function DashboardPage({
           </Button>
         </div>
       </div>
+
+      {isAdmin && liveExceedsScan && (
+        <div className="mb-6 flex flex-col gap-3 rounded-lg border border-amber-300 bg-amber-50 p-4 text-amber-900 sm:flex-row sm:items-center sm:justify-between">
+          <div className="text-sm">
+            <p className="font-semibold">
+              Uw AI-register wijst op zwaardere verplichtingen dan uw laatste scan.
+            </p>
+            <p className="text-amber-900/80">
+              U heeft AI-systemen geregistreerd die op een hoger pakket duiden dan uw scan
+              adviseerde. Werk uw risicoscan bij zodat uw advies en dashboard weer kloppen.
+            </p>
+          </div>
+          <Button asChild size="sm" className="shrink-0">
+            <Link href="/scan">Scan bijwerken</Link>
+          </Button>
+        </div>
+      )}
 
       {checkoutBanner}
       {checklist}
@@ -487,6 +526,21 @@ export default async function DashboardPage({
                   ))
                 )}
               </div>
+              {profile && notApplicableDuties.length > 0 && (
+                <RelevanceReveal
+                  count={notApplicableDuties.length}
+                  label="Toon wat nu niet voor u geldt"
+                >
+                  <ul className="space-y-2 text-sm text-muted-foreground">
+                    {notApplicableDuties.map((reason, i) => (
+                      <li key={i} className="flex items-start gap-2">
+                        <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-muted-foreground/40" />
+                        <span>{reason}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </RelevanceReveal>
+              )}
             </AccordionContent>
           </AccordionItem>
 
