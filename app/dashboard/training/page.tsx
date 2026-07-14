@@ -72,6 +72,22 @@ export default async function TrainingPage() {
     (profile?.training?.recommended ?? []).map((t) => [t.pathSlug, t])
   );
 
+  // AI-literacy (Art. 4) is required for ALL staff, and its core modules sit inside
+  // every role path — managers and beheerders do the core seven plus role-specific
+  // modules (see PATH_MODULES). So a role path is "Verplicht" if the scan requires it
+  // directly OR it embeds every module of a required path; that way the baseline
+  // requirement marks each role's own path, not just Medewerker.
+  const requirementForPath = (pathId: string): TrainingRequirement | undefined => {
+    const direct = requiredPaths.get(pathId);
+    if (direct) return direct;
+    const pathModuleIds = new Set(modulesForPath(pathId).map((m) => m.id));
+    for (const [, req] of requiredPaths) {
+      const ids = modulesForPath(req.pathSlug).map((m) => m.id);
+      if (ids.length > 0 && ids.every((id) => pathModuleIds.has(id))) return req;
+    }
+    return undefined;
+  };
+
   // Module-level relevance (Art. 4 "context"): which modules the company's own
   // scan + AI-register make especially pertinent. Grounded in concrete signals,
   // so the "voor u"-markers are honest rather than decorative.
@@ -147,7 +163,7 @@ export default async function TrainingPage() {
       <div className="mb-8 grid gap-4 sm:grid-cols-3">
         {PATHS.map((path) => {
           const active = path.id === learner.role;
-          const req = requiredPaths.get(path.id);
+          const req = requirementForPath(path.id);
           const rec = recommendedPaths.get(path.id);
           return (
             <Card
