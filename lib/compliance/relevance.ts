@@ -57,6 +57,18 @@ export interface RegisterSignal {
 
 export type SurfaceState = "shown" | "locked" | "irrelevant";
 
+/** Dashboard hrefs that map to a relevance surface. Nav/overview items whose href
+ *  is absent here are always shown (they apply to everyone at some tier). */
+export const HREF_TO_SURFACE: Record<string, SurfaceKey> = {
+  "/dashboard/register": "register",
+  "/dashboard/meldingen": "meldingen",
+  "/dashboard/kennisgevingen": "kennisgevingen",
+  "/dashboard/logbewaring": "logbewaring",
+  "/dashboard/klachten": "klachten",
+  "/dashboard/conformiteit": "conformiteit",
+  "/dashboard/corrigerend": "corrigerend",
+};
+
 /**
  * Per-surface relevance for a company, derived LIVE from the scan profile PLUS
  * the current AI-register rows. Pure & deterministic. A null profile (no scan

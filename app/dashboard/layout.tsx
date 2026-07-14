@@ -3,6 +3,12 @@ import { Globe } from "lucide-react";
 import { getActiveCompany, canAdminister } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { companySignals } from "@/lib/compliance/signals";
+import {
+  surfaceRelevance,
+  surfaceState,
+  HREF_TO_SURFACE,
+  type SurfaceState,
+} from "@/lib/compliance/relevance";
 import { getEvaluatedUpdates } from "@/lib/regulatory/updates-data";
 import type { ComplianceProfile } from "@/lib/compliance/types";
 import { logout } from "@/app/(auth)/actions";
@@ -24,13 +30,21 @@ export default async function DashboardLayout({
   // ISO dates of updates relevant to this company — feed the sidebar "new" badge.
   const systems = await prisma.aiSystem.findMany({
     where: { companyId: company.id },
-    select: { riskLevel: true },
+    select: { riskLevel: true, role: true },
   });
   const profile = (company.profileJson as unknown as ComplianceProfile | null) ?? null;
   const sig = companySignals(profile, systems.map((s) => s.riskLevel));
   const updateDates = (await getEvaluatedUpdates(sig))
     .filter((u) => u.relevant)
     .map((u) => u.date);
+
+  // Scan-driven visibility (Phase B): per-nav-item relevance state, keyed by href.
+  // Serializable strings only (icons/functions can't cross the client boundary).
+  const rel = surfaceRelevance(profile, systems);
+  const navRelevance: Record<string, SurfaceState> = {};
+  for (const [href, key] of Object.entries(HREF_TO_SURFACE)) {
+    navRelevance[href] = surfaceState(rel[key], company.plan);
+  }
 
   const websiteBtn = (
     <Button asChild variant="outline" size="sm" className="w-full justify-start md:w-auto md:justify-center">
@@ -53,7 +67,7 @@ export default async function DashboardLayout({
 
   return (
     <div className="min-h-screen bg-secondary/30">
-      <Sidebar showAdmin={showAdmin} isAdmin={isAdmin} updateDates={updateDates} />
+      <Sidebar showAdmin={showAdmin} isAdmin={isAdmin} updateDates={updateDates} relevance={navRelevance} />
 
       <div className="md:pl-64">
         <header className="sticky top-0 z-20 border-b bg-background/95 backdrop-blur">
@@ -84,6 +98,7 @@ export default async function DashboardLayout({
                 showAdmin={showAdmin}
                 isAdmin={isAdmin}
                 updateDates={updateDates}
+                relevance={navRelevance}
                 actions={
                   <>
                     {websiteBtn}

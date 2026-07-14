@@ -3,9 +3,10 @@
 import { type ReactNode, useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Menu, ShieldCheck, X } from "lucide-react";
+import { Lock, Menu, ShieldCheck, X } from "lucide-react";
 
 import { cn } from "@/lib/utils";
+import type { SurfaceState } from "@/lib/compliance/relevance";
 import { UPDATES_SEEN_KEY } from "@/lib/updates-seen";
 import { SiteLogo } from "@/components/site-logo";
 import { DASHBOARD_NAV, DEMO_NAV } from "@/components/dashboard/nav-items";
@@ -55,6 +56,7 @@ export function Sidebar({
   showAdmin = false,
   isAdmin = true,
   updateDates = [],
+  relevance = {},
 }: {
   nav?: "dashboard" | "demo";
   logoHref?: string;
@@ -63,9 +65,13 @@ export function Sidebar({
   isAdmin?: boolean;
   /** ISO dates of updates relevant to this company — drives the "new" badge. */
   updateDates?: string[];
+  /** Scan-driven visibility state per nav href (absent = always shown). */
+  relevance?: Record<string, SurfaceState>;
 }) {
   const pathname = usePathname();
+  const [showAll, setShowAll] = useState(false);
   const items = navFor(nav).filter((i) => !i.adminOnly || isAdmin);
+  const hasIrrelevant = items.some((i) => relevance[i.href] === "irrelevant");
 
   return (
     <aside className="fixed inset-y-0 left-0 z-30 hidden w-64 flex-col border-r border-white/10 bg-navy-900 text-white md:flex">
@@ -75,23 +81,42 @@ export function Sidebar({
       <nav className="flex-1 space-y-1 p-4">
         {items.map((item) => {
           const active = isActive(pathname, item.href);
+          const state = relevance[item.href];
+          const dimmed = state === "irrelevant" && !showAll;
           return (
             <Link
               key={item.href}
               href={item.href}
+              title={dimmed ? "Lijkt nu niet van toepassing op uw organisatie" : undefined}
               className={cn(
                 "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors",
                 active
                   ? "bg-brand-500 text-white"
-                  : "text-white/70 hover:bg-white/10 hover:text-white"
+                  : "text-white/70 hover:bg-white/10 hover:text-white",
+                dimmed && "opacity-40"
               )}
             >
               <item.icon className="h-5 w-5 shrink-0" />
               {item.label}
+              {state === "locked" && <Lock className="ml-auto h-3.5 w-3.5 shrink-0 text-white/50" />}
+              {state === "irrelevant" && (
+                <span className="ml-auto text-[10px] font-semibold uppercase tracking-wide text-white/40">
+                  n.v.t.
+                </span>
+              )}
               {item.href === "/dashboard/updates" && <UpdatesBadge dates={updateDates} />}
             </Link>
           );
         })}
+        {hasIrrelevant && (
+          <button
+            type="button"
+            onClick={() => setShowAll((v) => !v)}
+            className="mt-1 w-full rounded-lg px-3 py-2 text-left text-xs font-medium text-white/50 transition-colors hover:bg-white/10 hover:text-white/80"
+          >
+            {showAll ? "Verberg wat niet van toepassing is" : "Toon ook wat nu niet van toepassing lijkt"}
+          </button>
+        )}
         {showAdmin && (
           <Link
             href={ADMIN_ITEM.href}
@@ -122,6 +147,7 @@ export function MobileNav({
   showAdmin = false,
   isAdmin = true,
   updateDates = [],
+  relevance = {},
 }: {
   nav?: "dashboard" | "demo";
   actions?: ReactNode;
@@ -130,10 +156,14 @@ export function MobileNav({
   isAdmin?: boolean;
   /** ISO dates of updates relevant to this company — drives the "new" badge. */
   updateDates?: string[];
+  /** Scan-driven visibility state per nav href (absent = always shown). */
+  relevance?: Record<string, SurfaceState>;
 }) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
+  const [showAll, setShowAll] = useState(false);
   const items = navFor(nav).filter((i) => !i.adminOnly || isAdmin);
+  const hasIrrelevant = items.some((i) => relevance[i.href] === "irrelevant");
 
   return (
     <div className="md:hidden">
@@ -159,24 +189,43 @@ export function MobileNav({
             <nav className="flex flex-col gap-1 p-3">
               {items.map((item) => {
                 const active = isActive(pathname, item.href);
+                const state = relevance[item.href];
+                const dimmed = state === "irrelevant" && !showAll;
                 return (
                   <Link
                     key={item.href}
                     href={item.href}
                     onClick={() => setOpen(false)}
+                    title={dimmed ? "Lijkt nu niet van toepassing op uw organisatie" : undefined}
                     className={cn(
                       "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium",
                       active
                         ? "bg-navy-900 text-white"
-                        : "text-foreground hover:bg-secondary"
+                        : "text-foreground hover:bg-secondary",
+                      dimmed && "opacity-40"
                     )}
                   >
                     <item.icon className="h-5 w-5" />
                     {item.label}
+                    {state === "locked" && <Lock className="ml-auto h-3.5 w-3.5 shrink-0 text-muted-foreground" />}
+                    {state === "irrelevant" && (
+                      <span className="ml-auto text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
+                        n.v.t.
+                      </span>
+                    )}
                     {item.href === "/dashboard/updates" && <UpdatesBadge dates={updateDates} />}
                   </Link>
                 );
               })}
+              {hasIrrelevant && (
+                <button
+                  type="button"
+                  onClick={() => setShowAll((v) => !v)}
+                  className="mt-1 rounded-lg px-3 py-2 text-left text-xs font-medium text-muted-foreground hover:bg-secondary"
+                >
+                  {showAll ? "Verberg wat niet van toepassing is" : "Toon ook wat nu niet van toepassing lijkt"}
+                </button>
+              )}
               {showAdmin && (
                 <Link
                   href={ADMIN_ITEM.href}
