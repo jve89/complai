@@ -51,15 +51,15 @@ function check(name: string, cond: boolean, detail = "") {
   check("minimal headline", nee.headline === "minimal", nee.headline);
   check("score > 0 (never flat zero)", nee.score > 0, `score=${nee.score}`);
   check("training 'ja' beats 'nee'", ja.score > nee.score, `ja=${ja.score} > nee=${nee.score}`);
-  check("recommended tier is free", nee.recommendedTier === "gratis", nee.recommendedTier);
+  check("recommended tier floors at Basis (Scan is not a package)", nee.recommendedTier === "starter", nee.recommendedTier);
 }
 
-// ── Row 2 — chatbot deployer → advisory only → FREE (Bug 3) ──────────────────
+// ── Row 2 — chatbot deployer → advisory only → floored to Basis ──────────────
 {
   const p = profileOf(base({ roles: ["deployer"], scopeCriteria: ["established_eu"], transparency: ["chatbot"] }));
   console.log("Row 2 — chatbot deployer:");
   check("limited_risk headline", p.headline === "limited_risk", p.headline);
-  check("recommended tier is FREE (not starter)", p.recommendedTier === "gratis", p.recommendedTier);
+  check("recommended tier floors at Basis (no required docs, but Scan is not a package)", p.recommendedTier === "starter", p.recommendedTier);
 }
 
 // ── Row 3 — HR high-risk deployer → groei ────────────────────────────────────
@@ -134,13 +134,13 @@ function check(name: string, cond: boolean, detail = "") {
   check("NOT prohibited (default is caveat, not a hard stop)", p.headline !== "prohibited", p.headline);
 }
 
-// ── Row 9 — out of scope → 100, free ─────────────────────────────────────────
+// ── Row 9 — out of scope → 100, floored to Basis ─────────────────────────────
 {
   const p = profileOf(base({ roles: ["deployer"], scopeCriteria: ["none"] }));
   console.log("Row 9 — out of scope:");
   check("out_of_scope headline", p.headline === "out_of_scope", p.headline);
   check("score is 100", p.score === 100, `score=${p.score}`);
-  check("tier gratis", p.recommendedTier === "gratis", p.recommendedTier);
+  check("tier floors at Basis (Scan is not a package)", p.recommendedTier === "starter", p.recommendedTier);
 }
 
 // ── Row 10 — GPAI model provider → schaal ────────────────────────────────────

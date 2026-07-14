@@ -28,17 +28,22 @@ const EMPTY_EVIDENCE: CompanyEvidence = {
 
 /**
  * The recommended pakket = the LOWEST tier that unlocks every REQUIRED document,
- * derived from DOC_MIN_TIER so advice and gating can never contradict. Required
- * AI-literacy training is free (not a document), so an advisory-only company
- * (limited risk, no required docs) stays on the free tier.
+ * derived from DOC_MIN_TIER so advice and gating can never contradict — floored at
+ * the entry package (starter/Basis). The free "Scan" tier is the one-off risicoscan
+ * itself, not a package, so it is NEVER recommended: a company with no required
+ * documents (minimal / advisory-only) is pointed at Basis as the sensible entry
+ * point. This only affects the package suggestion; the risk classification,
+ * obligations and score are computed independently.
  */
 function recommendTier(requiredDocs: DocRequirement[], size?: string): TierId {
-  let rank = 0; // gratis
+  let rank = 0; // gratis — the doc-derived floor
   for (const doc of requiredDocs) {
     rank = Math.max(rank, tierRank(minTierFor(doc.slug)));
   }
   // 250+ employees bump one tier for admin/seat needs.
   if (size === "250+") rank += 1;
+  // Never recommend the free "Scan" tier: floor at the entry package (Basis).
+  rank = Math.max(rank, tierRank("starter"));
   return TIER_ORDER[Math.min(rank, TIER_ORDER.length - 1)];
 }
 
