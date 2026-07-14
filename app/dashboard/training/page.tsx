@@ -81,7 +81,7 @@ export default async function TrainingPage() {
     const direct = requiredPaths.get(pathId);
     if (direct) return direct;
     const pathModuleIds = new Set(modulesForPath(pathId).map((m) => m.id));
-    for (const [, req] of requiredPaths) {
+    for (const req of Array.from(requiredPaths.values())) {
       const ids = modulesForPath(req.pathSlug).map((m) => m.id);
       if (ids.length > 0 && ids.every((id) => pathModuleIds.has(id))) return req;
     }
