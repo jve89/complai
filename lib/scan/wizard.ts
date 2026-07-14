@@ -48,6 +48,8 @@ export interface WizardStep {
   field: keyof ScanAnswers;
   /** For `tri` readiness steps: which nested `answers.readiness` key to read/write. */
   readinessKey?: keyof NonNullable<ScanAnswers["readiness"]>;
+  /** For a `boolean` qualifier step: which nested `answers.prohibitedQualifiers` key to read/write. */
+  qualifierKey?: keyof NonNullable<ScanAnswers["prohibitedQualifiers"]>;
   section: string;
   title: string;
   help?: string;
@@ -184,6 +186,18 @@ const CLASSIFICATION_STEPS: WizardStep[] = [
     type: "multi",
     options: PROHIBITED_PRACTICES,
   },
+  // Art. 5(1)(f) carries a medical/safety exception. Only asked when the user
+  // ticked emotion-at-work/education, so a legitimate medical/safety use can
+  // de-escalate instead of hitting the hard "Verboden" verdict (audit #1).
+  {
+    field: "prohibitedQualifiers",
+    qualifierKey: "emotionMedicalSafetyException",
+    section: "Verboden praktijken",
+    title: "Gebeurt die emotieherkenning uitsluitend om medische of veiligheidsredenen?",
+    help: "Alleen dán geldt de wettelijke uitzondering op het verbod (Art. 5(1)(f)) — bijvoorbeeld vermoeidheidsdetectie voor de veiligheid van een bestuurder. Het meten van betrokkenheid, prestaties of stemming valt hier niet onder. Laat dit altijd juridisch toetsen.",
+    type: "boolean",
+    visible: (a) => (a.prohibited ?? []).includes("emotion_work_edu"),
+  },
   {
     field: "transparency",
     section: "Transparantie",
@@ -274,7 +288,12 @@ export function scanProgress(step: WizardStep): number {
   const sectionSteps = STEPS.filter((s) => s.section === step.section);
   const within = Math.max(
     0,
-    sectionSteps.findIndex((s) => s.field === step.field && s.readinessKey === step.readinessKey)
+    sectionSteps.findIndex(
+      (s) =>
+        s.field === step.field &&
+        s.readinessKey === step.readinessKey &&
+        s.qualifierKey === step.qualifierKey
+    )
   );
   const intra = (within + 1) / (sectionSteps.length + 1);
   return ((sectionIdx + intra) / SECTION_ORDER.length) * 100;
@@ -288,7 +307,9 @@ export function formatAnswer(step: WizardStep, answers: ScanAnswers): string {
     return typeof v === "string" && v.trim() ? v : "—";
   }
   if (step.type === "boolean") {
-    const v = a[step.field];
+    const v = step.qualifierKey
+      ? (answers.prohibitedQualifiers ?? {})[step.qualifierKey]
+      : a[step.field];
     return v === true ? "Ja" : v === false ? "Nee" : "—";
   }
   if (step.type === "tri" && step.readinessKey) {

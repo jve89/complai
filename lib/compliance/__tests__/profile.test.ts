@@ -203,6 +203,42 @@ function check(name: string, cond: boolean, detail = "") {
   check("scanProgress is monotonic across a branched flow", monotonic);
 }
 
+// ── Wave B — emotion at work/education (Art. 5(1)(f)) medical/safety exception ──
+{
+  const noQual = profileOf(
+    base({ roles: ["deployer"], scopeCriteria: ["established_eu"], prohibited: ["emotion_work_edu"] })
+  );
+  const withQual = profileOf(
+    base({
+      roles: ["deployer"],
+      scopeCriteria: ["established_eu"],
+      prohibited: ["emotion_work_edu"],
+      prohibitedQualifiers: { emotionMedicalSafetyException: true },
+    })
+  );
+  console.log("Wave B — emotion recognition at work/education (Art. 5(1)(f)):");
+  check("without the exception → prohibited headline", noQual.headline === "prohibited", noQual.headline);
+  check(
+    "without the exception → ART_5_PROHIBITED obligation",
+    noQual.obligations.some((o) => o.code === "ART_5_PROHIBITED")
+  );
+  check("WITH medical/safety exception → NOT prohibited", withQual.headline !== "prohibited", withQual.headline);
+  check(
+    "WITH exception → no ART_5_PROHIBITED",
+    !withQual.obligations.some((o) => o.code === "ART_5_PROHIBITED")
+  );
+
+  // The sub-question is only shown when emotion_work_edu is actually ticked.
+  const shown = visibleSteps(base({ prohibited: ["emotion_work_edu"] })).some(
+    (s) => s.qualifierKey === "emotionMedicalSafetyException"
+  );
+  const hidden = visibleSteps(base({ prohibited: ["none"] })).some(
+    (s) => s.qualifierKey === "emotionMedicalSafetyException"
+  );
+  check("medical/safety sub-question shown when emotion_work_edu ticked", shown);
+  check("medical/safety sub-question hidden otherwise", !hidden);
+}
+
 console.log("");
 if (failures === 0) {
   console.log("✓ All scan-v2 regression checks passed.");

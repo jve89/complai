@@ -29,7 +29,9 @@ function stepAnswered(s: WizardStep, ans: ScanAnswers): boolean {
   if (s.optional || s.type === "review") return true;
   const cur = s.readinessKey
     ? (ans.readiness ?? {})[s.readinessKey]
-    : (ans as unknown as Record<string, unknown>)[s.field];
+    : s.qualifierKey
+      ? (ans.prohibitedQualifiers ?? {})[s.qualifierKey]
+      : (ans as unknown as Record<string, unknown>)[s.field];
   if (s.type === "multi") return Array.isArray(cur) && cur.length > 0;
   if (s.type === "boolean") return cur === true || cur === false;
   return cur !== undefined && cur !== "";
@@ -62,7 +64,9 @@ export function ScanWizard({ initialAnswers }: { initialAnswers?: ScanAnswers })
   const isLast = index >= total - 1;
   const current = step.readinessKey
     ? (answers.readiness ?? {})[step.readinessKey]
-    : (answers as unknown as Record<string, unknown>)[step.field];
+    : step.qualifierKey
+      ? (answers.prohibitedQualifiers ?? {})[step.qualifierKey]
+      : (answers as unknown as Record<string, unknown>)[step.field];
   const progress = isLast ? 100 : scanProgress(step);
 
   function update(field: string, value: unknown) {
@@ -70,7 +74,13 @@ export function ScanWizard({ initialAnswers }: { initialAnswers?: ScanAnswers })
   }
 
   function selectSingle(value: string) {
-    if (step.type === "boolean") update(step.field, value === "true");
+    if (step.type === "boolean" && step.qualifierKey) {
+      const key = step.qualifierKey;
+      setAnswers((a) => ({
+        ...a,
+        prohibitedQualifiers: { ...(a.prohibitedQualifiers ?? {}), [key]: value === "true" },
+      }));
+    } else if (step.type === "boolean") update(step.field, value === "true");
     else if (step.type === "tri" && step.readinessKey) {
       const key = step.readinessKey;
       setAnswers((a) => ({ ...a, readiness: { ...(a.readiness ?? {}), [key]: value } }));
@@ -197,7 +207,7 @@ export function ScanWizard({ initialAnswers }: { initialAnswers?: ScanAnswers })
         <div className="mt-6 divide-y divide-border overflow-hidden rounded-xl border bg-card">
           {items.map((s) => (
             <div
-              key={`${s.section}-${s.field}-${s.readinessKey ?? ""}`}
+              key={`${s.section}-${s.field}-${s.readinessKey ?? ""}-${s.qualifierKey ?? ""}`}
               className="flex items-start justify-between gap-4 px-5 py-3.5"
             >
               <div className="min-w-0">
@@ -273,7 +283,7 @@ export function ScanWizard({ initialAnswers }: { initialAnswers?: ScanAnswers })
       </div>
 
       <div
-        key={`${step.section}-${step.field}-${step.readinessKey ?? ""}`}
+        key={`${step.section}-${step.field}-${step.readinessKey ?? ""}-${step.qualifierKey ?? ""}`}
         className="animate-fade-up"
       >
         <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">{step.title}</h1>
