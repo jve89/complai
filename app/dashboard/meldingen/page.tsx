@@ -86,7 +86,7 @@ export default async function MeldingenPage() {
     <>
       <PageHeader
         title="Meldingen"
-        description="Registreer ernstige incidenten en meld ze op tijd aan de toezichthouder (Art. 73)."
+        description="Registreer ernstige incidenten en meld ze op tijd aan de toezichthouder."
       >
         {isAdmin &&
           (unlocked ? (

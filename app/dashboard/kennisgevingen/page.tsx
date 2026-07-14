@@ -70,7 +70,7 @@ export default async function KennisgevingenPage() {
     <>
       <PageHeader
         title="Kennisgevingen"
-        description="Informeer werknemers en betrokkenen over hoog-risico AI, en geef uitleg bij AI-besluiten (Art. 26, 86)."
+        description="Informeer werknemers en betrokkenen over hoog-risico AI, en geef uitleg bij AI-besluiten."
       >
         {isAdmin &&
           (unlocked ? (

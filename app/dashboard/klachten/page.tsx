@@ -65,7 +65,7 @@ export default async function KlachtenPage() {
     <>
       <PageHeader
         title="Klachten"
-        description="Registreer en behandel klachten over de inzet van uw AI-systemen (Art. 85 / 27 lid 1(f))."
+        description="Registreer en behandel klachten over de inzet van uw AI-systemen."
       >
         {unlocked && complaints.length > 0 && (
           <Button asChild variant="outline">

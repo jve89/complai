@@ -120,7 +120,7 @@ export default async function TrainingPage() {
     <>
       <PageHeader
         title="E-learning"
-        description="Borg AI-geletterdheid (Art. 4) met rolgerichte leerpaden en certificaten."
+        description="Borg AI-geletterdheid met rolgerichte leerpaden en certificaten."
       />
 
       {/* Modules discuss the Digital-Omnibus dates; flag their pending status. */}

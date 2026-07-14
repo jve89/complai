@@ -68,7 +68,7 @@ export default async function CorrigerendPage() {
     <>
       <PageHeader
         title="Corrigerende maatregelen"
-        description="Leg corrigerende maatregelen vast bij non-conforme hoog-risico systemen (Art. 20)."
+        description="Leg corrigerende maatregelen vast bij non-conforme hoog-risico systemen."
       >
         {unlocked && actions.length > 0 && (
           <Button asChild variant="outline">

@@ -104,8 +104,8 @@ export function surfaceRelevance(
   // The AI-register is the foundational feature: relevant to anyone using AI, and
   // to a company that hasn't scanned yet. Only a scanned company that the scan put
   // OUTSIDE the Regulation's reach de-emphasizes it. NB: `profile.inScope` is the
-  // raw market/territorial nexus and stays true even for a fully-EXCLUDED company
-  // (Art. 2), so we key off the tier outcome instead.
+  // raw market/territorial nexus and stays true even for a fully-EXCLUDED company,
+  // so we key off the tier outcome instead.
   const outOfReach = tiers.has("excluded") || tiers.has("out_of_scope");
   const registerApplies = !profile || !outOfReach;
 
@@ -121,43 +121,43 @@ export function surfaceRelevance(
       applies: anyHighRiskDuty,
       requiredTier: INCIDENTS_MIN_TIER,
       reason: anyHighRiskDuty
-        ? "U zet hoog-risico AI in; ernstige incidenten moet u melden (Art. 73 / 26(5))."
-        : "Alleen bij hoog-risico AI geldt de meldplicht voor ernstige incidenten (Art. 73).",
+        ? "U zet hoog-risico AI in; ernstige incidenten moet u melden."
+        : "Alleen bij hoog-risico AI geldt de meldplicht voor ernstige incidenten.",
     },
     kennisgevingen: {
       applies: deployerHighRisk,
       requiredTier: NOTICES_MIN_TIER,
       reason: deployerHighRisk
-        ? "Als gebruiksverantwoordelijke van hoog-risico AI heeft u kennisgevingsplichten (Art. 26/86)."
-        : "Kennisgevingsplichten gelden voor gebruiksverantwoordelijken van hoog-risico AI (Art. 26/86).",
+        ? "Als gebruiksverantwoordelijke van hoog-risico AI heeft u kennisgevingsplichten."
+        : "Kennisgevingsplichten gelden voor gebruiksverantwoordelijken van hoog-risico AI.",
     },
     logbewaring: {
       applies: deployerHighRisk,
       requiredTier: LOG_RETENTION_MIN_TIER,
       reason: deployerHighRisk
-        ? "Voor hoog-risico AI moet u logs bewaren (Art. 26(6))."
-        : "De logbewaarplicht (Art. 26(6)) geldt bij hoog-risico AI als gebruiksverantwoordelijke.",
+        ? "Voor hoog-risico AI moet u logs bewaren."
+        : "De logbewaarplicht geldt bij hoog-risico AI als gebruiksverantwoordelijke.",
     },
     klachten: {
       applies: deployerHighRisk,
       requiredTier: COMPLAINTS_MIN_TIER,
       reason: deployerHighRisk
-        ? "Bij hoog-risico AI moeten betrokkenen een klacht kunnen indienen (Art. 85/27)."
-        : "De klachtafhandeling (Art. 85/27) hoort bij hoog-risico AI als gebruiksverantwoordelijke.",
+        ? "Bij hoog-risico AI moeten betrokkenen een klacht kunnen indienen."
+        : "De klachtafhandeling hoort bij hoog-risico AI als gebruiksverantwoordelijke.",
     },
     conformiteit: {
       applies: providerHighRisk,
       requiredTier: CONFORMITY_MIN_TIER,
       reason: providerHighRisk
-        ? "Als aanbieder van hoog-risico AI voert u een conformiteitsbeoordeling uit (Art. 43)."
-        : "De conformiteitsbeoordeling (Art. 43) geldt alleen voor aanbieders van hoog-risico AI.",
+        ? "Als aanbieder van hoog-risico AI voert u een conformiteitsbeoordeling uit."
+        : "De conformiteitsbeoordeling geldt alleen voor aanbieders van hoog-risico AI.",
     },
     corrigerend: {
       applies: providerHighRisk,
       requiredTier: CORRECTIVE_MIN_TIER,
       reason: providerHighRisk
-        ? "Als aanbieder houdt u corrigerende maatregelen bij (Art. 20)."
-        : "Het register van corrigerende maatregelen (Art. 20) geldt voor aanbieders van hoog-risico AI.",
+        ? "Als aanbieder houdt u corrigerende maatregelen bij."
+        : "Het register van corrigerende maatregelen geldt voor aanbieders van hoog-risico AI.",
     },
   };
 }

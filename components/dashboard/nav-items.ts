@@ -42,37 +42,37 @@ export const DASHBOARD_NAV: NavItem[] = [
   {
     href: "/dashboard/meldingen",
     label: "Meldingen",
-    description: "Ernstige incidenten melden (Art. 73)",
+    description: "Ernstige incidenten melden",
     icon: Siren,
   },
   {
     href: "/dashboard/kennisgevingen",
     label: "Kennisgevingen",
-    description: "Informeren & uitleg bij AI-besluiten (Art. 26, 86)",
+    description: "Informeren & uitleg bij AI-besluiten",
     icon: Megaphone,
   },
   {
     href: "/dashboard/logbewaring",
     label: "Logbewaring",
-    description: "Bewaartermijn van AI-logs vastleggen (Art. 26 lid 6)",
+    description: "Bewaartermijn van AI-logs vastleggen",
     icon: Archive,
   },
   {
     href: "/dashboard/klachten",
     label: "Klachten",
-    description: "Klachten over AI-besluiten registreren (Art. 85)",
+    description: "Klachten over AI-besluiten registreren",
     icon: MessageSquareWarning,
   },
   {
     href: "/dashboard/conformiteit",
     label: "Conformiteit",
-    description: "Conformiteitsbeoordeling per hoog-risico systeem (Art. 43)",
+    description: "Conformiteitsbeoordeling per hoog-risico systeem",
     icon: ClipboardCheck,
   },
   {
     href: "/dashboard/corrigerend",
     label: "Corrigerende maatregelen",
-    description: "Maatregelen bij non-conformiteit (Art. 20)",
+    description: "Maatregelen bij non-conformiteit",
     icon: Wrench,
   },
   {

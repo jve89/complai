@@ -68,7 +68,7 @@ export default async function LogbewaringPage() {
     <>
       <PageHeader
         title="Logbewaring"
-        description="Leg vast hoe u de logs van uw hoog-risico AI-systemen bewaart (Art. 26 lid 6)."
+        description="Leg vast hoe u de logs van uw hoog-risico AI-systemen bewaart."
       >
         {unlocked && systems.length > 0 && (
           <Button asChild variant="outline">

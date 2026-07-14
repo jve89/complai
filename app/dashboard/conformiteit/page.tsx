@@ -73,7 +73,7 @@ export default async function ConformiteitPage() {
     <>
       <PageHeader
         title="Conformiteit"
-        description="Volg de conformiteitsbeoordeling per hoog-risico systeem tot aan CE-markering (Art. 43)."
+        description="Volg de conformiteitsbeoordeling per hoog-risico systeem tot aan CE-markering."
       >
         {unlocked && systems.length > 0 && (
           <Button asChild variant="outline">
