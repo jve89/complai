@@ -251,6 +251,27 @@ driving what each customer *sees*.
   grounded, no over-calling — guardrail #2), currency (Digital Omnibus dates),
   and comprehension (plain Dutch, branch length, result-screen clarity).
   Report-first, then fix one classification rule at a time (CLAUDE.md rules).
+  - **Phase A — done (audit + first fixes).** Multi-agent audit found the scan
+    engine fundamentally sound (the four correctness-spec bugs stay fixed; nothing
+    a blocker). First fix landed: the adjacent **AI-register keyword classifier**
+    (`lib/register/classify.ts`) was riddled with substring false positives that
+    leaked into `companySignals` product-wide. Rewritten to match on *context*
+    (positive lookaheads) not bare fragments, grounded verbatim, with a 65-case
+    regression test (`lib/register/__tests__/classify.test.ts`). Fixes: fraud
+    carve-out (Annex III 5(b)), Art 5 de-escalation incl. the narrow Art 5(1)(h)
+    RBI case, medical→Annex I/Art 6(1), life/health-only insurance (5(c)), and the
+    verkoopcijfers/datamigratie/ticket-triage/kredietbeheer class of over-calls.
+    **Still open from the audit (scan engine, in priority order):**
+    - Emotion medical/safety sub-question (Art 5(1)(f)) so the "Verboden" banner
+      can't be a false positive — *Wave B, next.*
+    - Art 4 literacy emitted before scope-derived roles (ordering); research/
+      personal Art 2 exclusions are no-ops; Art 25 modification step never asked;
+      dead Annex I §B branch would over-emit if wired.
+    - Comprehension: raw "Annex III"/(5b) codes, missing area-4 examples,
+      decision-changing caveats buried at the bottom of the results page.
+    **Register-classifier backlog (pre-existing gaps, not regressions):** Annex III
+    5(d) emergency-call/dispatch triage (uncovered); disability-insurance ambiguity;
+    LE public-authority phrasings. Deferred — the tool stays an advisory suggester.
 - **Phase B — scan-driven visibility (after A).** A `relevance(profile) →
   { applies, requiredTier }` layer on top of the `lib/plan.ts` pakket gate,
   giving three states per surface: **not relevant → de-emphasized, NOT hidden**
