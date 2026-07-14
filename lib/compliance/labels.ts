@@ -10,6 +10,7 @@ export const DOC_LABELS: Record<string, string> = {
   risk_assessment: "Risicobeoordeling",
   tech_doc: "Technische documentatie (Annex IV)",
   qms: "Kwaliteitsmanagementsysteem (Art. 17)",
+  postmarket_plan: "Post-market monitoringplan (Art. 72)",
   doc_conformity: "EU-conformiteitsverklaring",
   assessment_record: "Beoordelingsdossier (Art. 6(4))",
   gpai_docs: "GPAI-documentatie",

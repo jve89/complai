@@ -212,7 +212,12 @@ pakket that unlocks a customer's required items — these must keep that promise
       plicht; als u alleen gebruiksverantwoordelijke bent geldt Art. 17 niet voor u")
       and the Art 63(1) MICRO-enterprise-only simplification (pending Commission
       guidelines; Art 63(2) preserves all other duties). Applies 2 Dec 2027.)*
-- [ ] **Post-market monitoring plan** — Art 72 (part of the Annex IV tech doc).
+- [x] **Post-market monitoring plan** — Art 72 (part of the Annex IV tech doc).
+      *(Shipped as a LIGHT `postmarket_plan` document type (schaal). Scaffolds the
+      Art 72(1)–(2) plan content; provider-gated and explicitly distinguished from
+      the deployer's Art 26(5) kwartaalcheck; notes it is Annex IV point 9 of the
+      tech doc (Art 11 mkb-simplification) and that the Commission template is due
+      2 Feb 2026 — so framed as prep. Applies 2 Dec 2027.)*
 - [ ] **Conformity-assessment tracker** — Art 43, Art 47, Art 48 (steps + status;
       complements the existing EU-conformiteitsverklaring doc).
 - [ ] **Corrective-action log** — Art 20 (ties to the incident register).

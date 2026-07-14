@@ -1,5 +1,6 @@
 import Link from "next/link";
 import {
+  Activity,
   BadgeCheck,
   BookMarked,
   ClipboardCheck,
@@ -41,6 +42,7 @@ const ICONS: Record<string, LucideIcon> = {
   transparency: FileCheck2,
   tech_doc: FileCog,
   qms: Workflow,
+  postmarket_plan: Activity,
   doc_conformity: BadgeCheck,
   assessment_record: ClipboardCheck,
   gpai_docs: Cpu,

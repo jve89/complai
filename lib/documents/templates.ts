@@ -11,6 +11,7 @@ export type DocumentType =
   | "transparency"
   | "tech_doc"
   | "qms"
+  | "postmarket_plan"
   | "doc_conformity"
   | "assessment_record"
   | "gpai_docs";
@@ -90,6 +91,13 @@ export const DOCUMENT_META: DocumentMeta[] = [
     name: "Kwaliteitsmanagementsysteem (Art. 17)",
     description:
       "Gedocumenteerd kwaliteitsmanagementsysteem voor aanbieders van hoog-risico AI (Artikel 17).",
+    highRiskFocused: true,
+  },
+  {
+    type: "postmarket_plan",
+    name: "Post-market monitoringplan (Art. 72)",
+    description:
+      "Plan waarmee de aanbieder de prestaties van een hoog-risico systeem na marktintroductie monitort (Artikel 72, Annex IV).",
     highRiskFocused: true,
   },
   {
@@ -975,6 +983,107 @@ function buildQms(company: Company, systems: AiSystem[]): DocumentContent {
   };
 }
 
+/** Post-market monitoring plan (Art 72) — a fill-in scaffold for the PROVIDER's
+ *  post-market monitoring system + plan. This is the provider's Art 72 duty, NOT
+ *  the deployer's ongoing Art 26(5) monitoring (which lives in the kwartaalcheck) —
+ *  the doc says so up front. The plan is Annex IV point 9 of the technical
+ *  documentation (Art 11); the Commission adopts a mandatory template by 2 Feb 2026,
+ *  so the copy frames this as preparation to align with that final model. */
+function buildPostmarketPlan(company: Company, systems: AiSystem[]): DocumentContent {
+  const ctx = docContext(company);
+  const high = highRiskSystems(systems);
+  return {
+    title: "Post-market monitoringplan (Artikel 72)",
+    subtitle: company.name,
+    intro: `Dit sjabloon helpt aanbieders van hoog-risico AI-systemen een post-market monitoringplan vast te leggen conform Artikel 72 van de EU AI Act. ${
+      ctx.isProvider
+        ? "Als aanbieder zet u een monitoringsysteem op, documenteert u het plan en houdt u het actueel."
+        : "Let op: het post-market monitoringsysteem en -plan (Artikel 72) is een verplichting voor de aanbieder (maker). Bent u uitsluitend gebruiksverantwoordelijke, dan geldt Artikel 72 niet voor u — uw eigen monitoringplicht staat in Artikel 26 lid 5 (zie uw kwartaalcheck)."
+    } De inhoud vult u zelf in — die is specifiek voor uw systemen.`,
+    sections: [
+      {
+        heading: "Voor wie geldt dit? (Artikel 72)",
+        paragraphs: [
+          "Artikel 72 verplicht alleen de aanbieder van een hoog-risico AI-systeem tot een post-market monitoringsysteem en -plan. Dit staat los van de doorlopende monitoringplicht van de gebruiksverantwoordelijke (Artikel 26 lid 5).",
+          "Het plan is onderdeel van uw technische documentatie (Annex IV, punt 9 — Artikel 11). Het mkb mag de onderdelen van die technische documentatie vereenvoudigd aanleveren (Artikel 11 lid 1).",
+          "De Europese Commissie stelt uiterlijk 2 februari 2026 een verplicht sjabloon en een lijst met elementen voor het plan vast (Artikel 72 lid 3). Gebruik dit sjabloon als voorbereiding en stem het af op het definitieve model zodra dat er is.",
+        ],
+        table: high.length ? systemsTable(high) : undefined,
+      },
+      {
+        heading: "1. Reikwijdte en evenredigheid (Art. 72 lid 1)",
+        fields: [
+          field(
+            "Welke hoog-risico systemen vallen onder dit plan, en hoe is het monitoringsysteem evenredig aan de aard en risico's ervan?",
+            3
+          ),
+        ],
+      },
+      {
+        heading: "2. Gegevensverzameling (Art. 72 lid 2)",
+        fields: [
+          field(
+            "Welke prestatiegegevens verzamelt u — van gebruiksverantwoordelijken en uit andere bronnen — gedurende de hele levensduur van het systeem?",
+            4
+          ),
+        ],
+      },
+      {
+        heading: "3. Analyse en continue naleving (Art. 72 lid 2)",
+        fields: [
+          field(
+            "Hoe analyseert u die gegevens om de voortdurende naleving van Hoofdstuk III, Sectie 2 te beoordelen?",
+            3
+          ),
+        ],
+      },
+      {
+        heading: "4. Interactie met andere AI-systemen (Art. 72 lid 2)",
+        fields: [field("Waar relevant: hoe monitort u de interactie met andere AI-systemen?", 2)],
+      },
+      {
+        heading: "5. Indicatoren, drempels en frequentie",
+        fields: [field("Welke indicatoren en drempelwaarden volgt u, en met welke frequentie?", 3)],
+      },
+      {
+        heading: "6. Opvolging: corrigerende maatregelen en meldingen (Art. 20 / 73)",
+        fields: [
+          field(
+            "Hoe leiden monitoringsignalen tot corrigerende maatregelen (Artikel 20) en, waar nodig, tot melding van ernstige incidenten (Artikel 73)?",
+            3
+          ),
+        ],
+      },
+      {
+        heading: "7. Verantwoordelijkheden en actualisering",
+        fields: [
+          field("Wie is verantwoordelijk voor de monitoring, en hoe vaak wordt het plan herzien en bijgewerkt?", 2),
+        ],
+      },
+      {
+        heading: "Plaats in de technische documentatie (Annex IV punt 9)",
+        paragraphs: [
+          "Dit plan vormt punt 9 van uw technische documentatie (Annex IV) en beschrijft het systeem waarmee u de prestaties van het AI-systeem in de post-market fase evalueert (Artikel 72 lid 3).",
+        ],
+      },
+      {
+        heading: "Uitzonderingen (Art. 72 lid 4)",
+        paragraphs: [
+          "Voor producten onder de Uniewetgeving in Annex I (Sectie A) en voor Annex III punt 5-systemen van financiële instellingen mag u de elementen integreren in een al bestaand sectoraal monitoringplan, mits een gelijkwaardig beschermingsniveau wordt bereikt (Artikel 72 lid 4).",
+        ],
+      },
+      {
+        heading: "Wettelijke grondslag",
+        paragraphs: [
+          "Artikel 72 van Verordening (EU) 2024/1689 (de AI Act): aanbieders van hoog-risico AI-systemen zetten een post-market monitoringsysteem op, gebaseerd op een gedocumenteerd monitoringplan dat deel uitmaakt van de technische documentatie (Annex IV).",
+          "Deze verplichting voor Annex III hoog-risico systemen is van toepassing vanaf 2 december 2027 (voor AI in gereguleerde producten, Annex I: 2 augustus 2028) — uitgestelde datum onder de Digital Omnibus, onder voorbehoud; wetgeving kan nog wijzigen.",
+          "Dit is een bewerkbaar concept-sjabloon en geen juridisch advies.",
+        ],
+      },
+    ],
+  };
+}
+
 const BUILDERS: Record<
   DocumentType,
   (company: Company, systems: AiSystem[]) => DocumentContent
@@ -986,6 +1095,7 @@ const BUILDERS: Record<
   transparency: buildTransparency,
   tech_doc: buildTechDoc,
   qms: buildQms,
+  postmarket_plan: buildPostmarketPlan,
   doc_conformity: buildDocConformity,
   assessment_record: buildAssessmentRecord,
   gpai_docs: (company) => buildGpaiDocs(company),
