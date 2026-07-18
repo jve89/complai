@@ -2,6 +2,7 @@ import Link from "next/link";
 import { ArrowRight, CheckCircle2, Circle } from "lucide-react";
 
 import { dismissOnboarding } from "@/app/dashboard/actions";
+import { AutoDismissOnboarding } from "@/components/dashboard/auto-dismiss-onboarding";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
@@ -29,6 +30,10 @@ export function OnboardingChecklist({
   planDone: boolean;
   planLabel: string;
 }) {
+  // All steps done → self-dismiss (persist once, client-side) and render nothing,
+  // so completion never triggers a write during the dashboard's GET render.
+  if (scanDone && planDone) return <AutoDismissOnboarding />;
+
   const steps: Step[] = [
     {
       title: "Account aangemaakt",

@@ -18,17 +18,10 @@ import { getActiveCompany, canAdminister } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { cn, formatDate } from "@/lib/utils";
 import { TIER_LABEL, TIER_ORDER, tierRank } from "@/lib/plan";
-import {
-  surfaceRelevance,
-  surfaceState,
-  HREF_TO_SURFACE,
-  type SurfaceKey,
-} from "@/lib/compliance/relevance";
-import { computeGovernance } from "@/lib/governance/score";
-import { resolveStatus } from "@/lib/compliance/resolve";
+import { HREF_TO_SURFACE } from "@/lib/compliance/relevance";
 import type { ComplianceProfile } from "@/lib/compliance/types";
-import { evidenceFromData } from "@/lib/compliance/evidence";
 import { readProfile } from "@/lib/compliance/read-profile";
+import { buildDashboardView } from "@/lib/dashboard/view-model";
 import { onboardingState } from "@/lib/onboarding";
 import { companySignals } from "@/lib/compliance/signals";
 import { daysSince } from "@/lib/regulatory/updates";
@@ -97,16 +90,10 @@ export default async function DashboardPage({
   const { scanDone, packageDone: planDone } = onboardingState(company);
   const planLabel = TIER_LABEL[TIER_ORDER[tierRank(company.plan)]];
   // Onboarding (scan + pakket) is beheerder work, so only admins see the checklist.
-  let showChecklist = isAdmin && !demo && !company.onboardingDismissedAt;
-  if (showChecklist && scanDone && planDone) {
-    // All steps done → persist, so the checklist never returns (even after a
-    // later opzegging drops the plan back to gratis).
-    await prisma.company.update({
-      where: { id: company.id },
-      data: { onboardingDismissedAt: new Date() },
-    });
-    showChecklist = false;
-  }
+  // When all steps are done the checklist auto-dismisses itself via a client effect
+  // (see OnboardingChecklist / AutoDismissOnboarding) rather than writing to the DB
+  // during this GET render — so it still never returns, without a render-time mutation.
+  const showChecklist = isAdmin && !demo && !company.onboardingDismissedAt;
 
   const checkoutBanner =
     searchParams.checkout === "success" ? (
@@ -154,100 +141,40 @@ export default async function DashboardPage({
     );
   }
 
-  // Live evidence from the CURRENT dashboard state, via the shared
-  // evidenceFromData() (reusing rows we already fetched) — so obligations reflect
-  // real activity, and there is ONE evidence shape that can't drift from buildEvidence().
-  const evidence = evidenceFromData({
+  // All the derivation (evidence overlay, obligations, scores, governance,
+  // relevance, quick-links) lives in one pure, testable place.
+  const {
+    required,
+    openCount,
+    outOfReach,
+    gereedheidScore,
+    systemsCount,
+    trainedCount,
+    employeesTotal,
+    deadlines,
+    governance,
+    voortgang,
+    rel,
+    notApplicableDuties,
+    liveExceedsScan,
+    relevantLinks,
+    irrelevantLinks,
+    quickState,
+  } = buildDashboardView({
+    company,
+    profile,
+    isAdmin,
+    aiSystems,
     documents,
-    systemsRegistered: aiSystems.length,
     employees,
+    items,
+    incidents,
+    complaints,
+    now: new Date(),
   });
-  // Activity can only ADD progress — never downgrade what the scan established
-  // (protects self-reported readiness and manual/process obligations).
-  const rank: Record<string, number> = { compliant: 2, done: 2, in_progress: 1, open: 0 };
-  const liveStatus = (code: string, frozen: string): string => {
-    const resolved = resolveStatus(code, evidence);
-    return (rank[resolved] ?? 0) >= (rank[frozen] ?? 0) ? resolved : frozen;
-  };
 
-  const obligationsFrozen =
-    profile?.obligations ??
-    items.map((i) => ({
-      code: i.code ?? i.id,
-      title: i.title,
-      article: i.article,
-      status: i.status as string,
-      required: i.required ?? true,
-    }));
-  // Obligations list reflects live activity (additive overlay).
-  const obligations = obligationsFrozen.map((o) => ({
-    ...o,
-    status: liveStatus(o.code, o.status),
-  }));
-
-  const required = obligations.filter((o) => o.required);
-  const open = required.filter((o) => o.status !== "done" && o.status !== "compliant");
-
-  // Out-of-scope / excluded: the AI Act doesn't apply, so a gereedheidsscore is
-  // meaningless — show a neutral state instead of a triumphant 100%.
-  const outOfReach = profile?.headline === "out_of_scope" || profile?.headline === "excluded";
-
-  // Gereedheid = the frozen scan snapshot; it does NOT move with dashboard
-  // activity (only a re-scan changes it). The Voortgang dial below is the live one.
-  const gereedheidScore =
-    profile?.score ??
-    (() => {
-      const req = obligationsFrozen.filter((o) => o.required);
-      return req.length
-        ? Math.round(
-            (req.filter((o) => o.status === "compliant" || o.status === "done").length /
-              req.length) *
-              100
-          )
-        : 0;
-    })();
-
-  const trained = employees.filter((e) => e.trainingCompleted).length;
-
-  // Live-status the compliance items too, so deadlines drop off once done and the
-  // governance/Voortgang score moves with activity. ComplianceStatus has no
-  // "done" — resolveStatus's "done" maps to "compliant".
-  const liveItemStatus = (
-    code: string,
-    frozen: "compliant" | "open" | "in_progress"
-  ): "compliant" | "open" | "in_progress" => {
-    const resolved = resolveStatus(code, evidence);
-    // Map ObligationStatus → ComplianceStatus vocabulary (done→compliant,
-    // not_applicable→open which ranks 0, so it never upgrades anything).
-    const norm: "compliant" | "open" | "in_progress" =
-      resolved === "done"
-        ? "compliant"
-        : resolved === "in_progress"
-          ? "in_progress"
-          : "open";
-    return (rank[norm] ?? 0) >= (rank[frozen] ?? 0) ? norm : frozen;
-  };
-  const liveItems = items.map((i) => ({
-    ...i,
-    status: liveItemStatus(i.code ?? i.id, i.status),
-  }));
-  const deadlines = liveItems
-    .filter((i) => i.deadline && i.status !== "compliant")
-    .slice(0, 4);
-
-  // Ongoing-health view (was the separate Governance tab): quarterly checks and
-  // drift signals, folded into the home dashboard. Also drives the Voortgang dial.
-  const governance = computeGovernance(
-    { aiSystems, documents, employees, complianceItems: liveItems, profile, incidents, complaints },
-    new Date()
-  );
-  const voortgangScore = governance.score;
-  const voortgangVariant =
-    voortgangScore >= 75 ? "success" : voortgangScore >= 45 ? "warning" : "danger";
-  const voortgangLabel =
-    voortgangScore >= 75 ? "Goed op weg" : voortgangScore >= 45 ? "Halverwege" : "Net begonnen";
-
-  // "Keep you current": recent AI Act changes that are relevant to this company.
+  // "Keep you current": recent AI Act changes relevant to this company (async, so
+  // it stays in the page rather than the pure view-model).
   const relevantUpdates = (
     await getEvaluatedUpdates(companySignals(profile, aiSystems.map((s) => s.riskLevel)))
   )
@@ -255,45 +182,11 @@ export default async function DashboardPage({
     .slice(0, 3);
 
   const stats = [
-    { label: "AI-systemen", value: aiSystems.length, icon: Database },
-    { label: "Getrainde medewerkers", value: `${trained}/${employees.length}`, icon: GraduationCap },
-    { label: "Open verplichtingen", value: open.length, icon: ListChecks },
+    { label: "AI-systemen", value: systemsCount, icon: Database },
+    { label: "Getrainde medewerkers", value: `${trainedCount}/${employeesTotal}`, icon: GraduationCap },
+    { label: "Open verplichtingen", value: openCount, icon: ListChecks },
     { label: "Aankomende deadlines", value: deadlines.length, icon: CalendarClock },
   ];
-
-  // Scan-driven visibility for the "Snel naar" grid: partition by relevance state
-  // and fix the pre-existing leak (this grid never applied the adminOnly filter).
-  const rel = surfaceRelevance(profile, aiSystems);
-
-  // PR8 — the six risk-triggered duty modules: what does NOT apply (reassurance
-  // reveal), and does the live register imply heavier duties than the last scan?
-  const DUTY_SURFACES: SurfaceKey[] = [
-    "meldingen",
-    "kennisgevingen",
-    "logbewaring",
-    "klachten",
-    "conformiteit",
-    "corrigerend",
-  ];
-  const notApplicableDuties = DUTY_SURFACES.filter((k) => !rel[k].applies).map((k) => rel[k].reason);
-  // A relevant duty whose tier sits ABOVE the scan's recommendation can only come
-  // from the AI-register (PR0 invariant: the scan alone never diverges) — so nudge
-  // a re-scan rather than silently bumping the advice (surface, don't resolve up).
-  const liveExceedsScan =
-    Boolean(profile) &&
-    DUTY_SURFACES.some(
-      (k) => rel[k].applies && tierRank(rel[k].requiredTier) > tierRank(profile?.recommendedTier ?? "gratis")
-    );
-
-  const quickState = (href: string) => {
-    const key = HREF_TO_SURFACE[href];
-    return key ? surfaceState(rel[key], company.plan) : "shown";
-  };
-  const quickLinks = DASHBOARD_NAV.filter(
-    (n) => n.href !== "/dashboard" && (!n.adminOnly || isAdmin)
-  );
-  const relevantLinks = quickLinks.filter((n) => quickState(n.href) !== "irrelevant");
-  const irrelevantLinks = quickLinks.filter((n) => quickState(n.href) === "irrelevant");
 
   const quickCard = (item: (typeof DASHBOARD_NAV)[number]) => {
     const state = quickState(item.href);
@@ -385,8 +278,8 @@ export default async function DashboardPage({
             <CardTitle className="text-base">Voortgang</CardTitle>
           </CardHeader>
           <CardContent className="flex flex-col items-center gap-3 text-center">
-            <ScoreRing score={voortgangScore} label="voortgang" />
-            <Badge variant={voortgangVariant}>{voortgangLabel}</Badge>
+            <ScoreRing score={voortgang.score} label="voortgang" />
+            <Badge variant={voortgang.variant}>{voortgang.label}</Badge>
             <p className="max-w-xs text-xs text-muted-foreground">
               Beweegt mee met wat u doet: AI-systemen registreren, documenten
               genereren en medewerkers trainen.
@@ -500,8 +393,8 @@ export default async function DashboardPage({
                 <ListChecks className="h-5 w-5 shrink-0 text-muted-foreground" />
                 <span className="text-base font-semibold">Uw verplichtingen</span>
                 {required.length > 0 &&
-                  (open.length > 0 ? (
-                    <Badge variant="warning">{open.length} open</Badge>
+                  (openCount > 0 ? (
+                    <Badge variant="warning">{openCount} open</Badge>
                   ) : (
                     <Badge variant="secondary" className="font-normal">
                       Op orde
