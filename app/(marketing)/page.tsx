@@ -395,8 +395,8 @@ export default function LandingPage() {
             </p>
           </div>
 
-          <div className="mx-auto max-w-4xl overflow-hidden rounded-xl border bg-card">
-            <table className="w-full text-left">
+          <div className="mx-auto max-w-4xl overflow-x-auto rounded-xl border bg-card">
+            <table className="w-full min-w-[42rem] text-left">
               <thead>
                 <tr className="border-b bg-muted/40 text-sm">
                   <th className="p-4 font-medium">&nbsp;</th>
