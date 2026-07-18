@@ -85,8 +85,9 @@ async function main() {
     data: {
       companyId: company.id,
       userId: ADMIN_ID,
-      // Answer keys match the question ids in lib/scan/questions.ts so the
-      // scoring engine reproduces this result (score ≈ 50, "gemiddeld").
+      // Legacy sample scan for local-dev demo data — a fixed score, no profile.
+      // The live classifier lives in lib/compliance and stores its result on
+      // company.profileJson (see lib/demo.ts for the public demo company).
       score: 50,
       answers: {
         size: "11-50",
