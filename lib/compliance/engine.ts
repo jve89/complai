@@ -31,6 +31,9 @@ const has = (arr: string[] | undefined, v: string) => Array.isArray(arr) && arr.
 const hasAnyReal = (arr: string[] | undefined) =>
   Array.isArray(arr) && arr.some((v) => v && v !== "none");
 
+// Canonical carve-out outcomes (biometric 1:1 verification, credit/insurance
+// 5(b)/5(c), emotion-at-work, …) are recorded once in lib/compliance/carveouts.ts;
+// the parity test enforces this engine and the register classifier agree with them.
 export function classify(answers: ScanAnswers): ClassificationResult {
   const roles = new Set<EntityRole>(answers.roles ?? []);
   const tiers = new Set<RiskTier>();

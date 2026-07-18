@@ -19,6 +19,10 @@ export interface ClassificationSuggestion {
  * off such a fragment now requires a second qualifying term (positive lookaheads)
  * to avoid false-positive high-risk calls — the worst failure mode for a
  * compliance product (CLAUDE.md rule #2).
+ *
+ * Canonical carve-out outcomes live in lib/compliance/carveouts.ts; the parity
+ * test (classifier-parity.test.ts) enforces that this classifier and the
+ * structured engine both agree with them, so the two can't drift.
  */
 const RULES: { level: RiskLevel; patterns: RegExp; reason: string }[] = [
   // ── Unacceptable risk (Art. 5 — verboden praktijken) ──────────────────────
