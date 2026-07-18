@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import type Stripe from "stripe";
 import { Prisma } from "@prisma/client";
 
-import { stripe, tierForPriceId } from "@/lib/stripe";
+import { stripe } from "@/lib/stripe";
 import { env } from "@/lib/env";
 import { prisma } from "@/lib/prisma";
 import {
@@ -13,7 +13,6 @@ import {
 import {
   sendPurchaseConfirmation,
   sendPaymentFailed,
-  sendTrialEnding,
   sendCancelRequested,
   sendSubscriptionEnded,
 } from "@/lib/email/send";
@@ -99,7 +98,6 @@ export async function POST(req: Request) {
             await sendPurchaseConfirmation({
               companyId: sync.companyId,
               planLabel: tierLabel(sync.tier),
-              trialing: sync.status === "trialing",
               renewsAt: sync.renewsAt ? formatDate(sync.renewsAt) : null,
               baseUrl,
             });
@@ -130,22 +128,6 @@ export async function POST(req: Request) {
           await sendCancelRequested({
             companyId: sync.companyId,
             accessUntil: until ? formatDate(until) : null,
-            baseUrl,
-          });
-        }
-        break;
-      }
-      case "customer.subscription.trial_will_end": {
-        // Fires ±3 days before the trial converts — but also for subscriptions
-        // already cancelled at period end, where nothing will be charged.
-        const sub = event.data.object as Stripe.Subscription;
-        if (sub.cancel_at_period_end) break;
-        const company = await companyForCustomer(sub.customer);
-        if (company) {
-          await sendTrialEnding({
-            companyId: company.id,
-            planLabel: tierLabel(tierForPriceId(sub.items.data[0]?.price?.id ?? "")),
-            endsAt: sub.trial_end ? formatDate(new Date(sub.trial_end * 1000)) : null,
             baseUrl,
           });
         }

@@ -7,7 +7,6 @@ import {
   scanResultEmail,
   purchaseEmail,
   paymentFailedEmail,
-  trialEndingEmail,
   cancelRequestedEmail,
   subscriptionEndedEmail,
   regulatoryUpdateEmail,
@@ -74,7 +73,6 @@ export async function sendScanResult(opts: {
 export async function sendPurchaseConfirmation(opts: {
   companyId: string;
   planLabel: string | null;
-  trialing: boolean;
   renewsAt?: string | null;
   baseUrl: string;
 }) {
@@ -83,15 +81,6 @@ export async function sendPurchaseConfirmation(opts: {
 
 export async function sendPaymentFailed(opts: { companyId: string; baseUrl: string }) {
   await deliver(await companyRecipient(opts.companyId), paymentFailedEmail(opts));
-}
-
-export async function sendTrialEnding(opts: {
-  companyId: string;
-  planLabel: string | null;
-  endsAt?: string | null;
-  baseUrl: string;
-}) {
-  await deliver(await companyRecipient(opts.companyId), trialEndingEmail(opts));
 }
 
 export async function sendCancelRequested(opts: {

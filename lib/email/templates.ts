@@ -117,7 +117,6 @@ export function scanResultEmail(opts: {
 
 export function purchaseEmail(opts: {
   planLabel: string | null;
-  trialing: boolean;
   renewsAt?: string | null;
   baseUrl: string;
 }): EmailContent {
@@ -156,30 +155,6 @@ export function paymentFailedEmail(opts: { baseUrl: string }): EmailContent {
         label: "Betaalgegevens bijwerken",
         url: `${opts.baseUrl}/dashboard/settings`,
       },
-    }),
-  };
-}
-
-export function trialEndingEmail(opts: {
-  planLabel: string | null;
-  endsAt?: string | null;
-  baseUrl: string;
-}): EmailContent {
-  const pakket = opts.planLabel
-    ? `van pakket <strong>${escapeHtml(opts.planLabel)}</strong>`
-    : "";
-  return {
-    subject: "Uw gratis proefmaand loopt bijna af",
-    html: layout({
-      preview: "Over enkele dagen start uw betaalde abonnement.",
-      title: "Uw proefmaand loopt bijna af",
-      paragraphs: [
-        `Uw gratis proefmaand ${pakket} loopt ${
-          opts.endsAt ? `op <strong>${escapeHtml(opts.endsAt)}</strong>` : "binnenkort"
-        } af. Daarna start automatisch uw betaalde abonnement.`,
-        "Wilt u doorgaan? Dan hoeft u niets te doen. Liever wijzigen of opzeggen? Dat regelt u in een paar klikken via Instellingen → Abonnement.",
-      ],
-      cta: { label: "Abonnement beheren", url: `${opts.baseUrl}/dashboard/settings` },
     }),
   };
 }
