@@ -6,7 +6,7 @@ import { getActiveCompany, canAdminister } from "@/lib/auth";
 import { cn, formatDate } from "@/lib/utils";
 import { noticesUnlocked, TIER_LABEL, NOTICES_MIN_TIER } from "@/lib/plan";
 import { surfaceRelevance } from "@/lib/compliance/relevance";
-import type { ComplianceProfile } from "@/lib/compliance/types";
+import { readProfile } from "@/lib/compliance/read-profile";
 import {
   NOTICE_TYPE_SHORT,
   NOTICE_TYPE_ARTICLE,
@@ -58,7 +58,7 @@ export default async function KennisgevingenPage() {
   const highRiskCount = systems.filter((s) => s.riskLevel === "high").length;
 
   // Scan-driven visibility (Phase B): does this module apply to the company?
-  const profile = (company.profileJson as unknown as ComplianceProfile | null) ?? null;
+  const profile = readProfile(company.profileJson);
   const rel = surfaceRelevance(profile, systems).kennisgevingen;
   const notRelevant = !rel.applies;
 

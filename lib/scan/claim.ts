@@ -2,7 +2,7 @@ import type { Prisma } from "@prisma/client";
 
 import { prisma } from "@/lib/prisma";
 import { materializeComplianceItems } from "@/lib/compliance/materialize";
-import type { ComplianceProfile } from "@/lib/compliance/types";
+import { readProfile } from "@/lib/compliance/read-profile";
 import { TOOL_META, type ScanAnswers } from "@/lib/compliance/questions";
 
 /**
@@ -57,7 +57,8 @@ export async function applyScanToCompany(
   if (!scan || !scan.profile) return false;
   if (scan.companyId && scan.companyId !== companyId) return false;
 
-  const profile = scan.profile as unknown as ComplianceProfile;
+  const profile = readProfile(scan.profile);
+  if (!profile) return false;
   const answers = scan.answers as unknown as ScanAnswers | null;
 
   await prisma.company.update({

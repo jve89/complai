@@ -27,6 +27,7 @@ import {
 import { computeGovernance } from "@/lib/governance/score";
 import { resolveStatus } from "@/lib/compliance/resolve";
 import type { ComplianceProfile, CompanyEvidence } from "@/lib/compliance/types";
+import { readProfile } from "@/lib/compliance/read-profile";
 import { onboardingState } from "@/lib/onboarding";
 import { companySignals } from "@/lib/compliance/signals";
 import { daysSince } from "@/lib/regulatory/updates";
@@ -73,7 +74,7 @@ export default async function DashboardPage({
 }) {
   const { company, demo, user } = await getActiveCompany();
   const isAdmin = canAdminister(user);
-  const profile = (company.profileJson as unknown as ComplianceProfile | null) ?? null;
+  const profile = readProfile(company.profileJson);
 
   const [aiSystems, documents, employees, items, incidents, complaints] = await Promise.all([
     prisma.aiSystem.findMany({ where: { companyId: company.id } }),

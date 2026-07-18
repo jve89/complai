@@ -17,6 +17,7 @@ import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/auth";
 import { onboardingState } from "@/lib/onboarding";
 import type { ComplianceProfile, EntityRole, ObligationItem } from "@/lib/compliance/types";
+import { readProfile } from "@/lib/compliance/read-profile";
 import { ScoreRing } from "@/components/score-ring";
 import { PendingPublicationNote } from "@/components/pending-publication-note";
 import { Badge } from "@/components/ui/badge";
@@ -142,7 +143,8 @@ export default async function ScanResultsPage({
   // Position-aware CTA: where is this viewer in the 3-step onboarding?
   const onboarding = onboardingState(user?.company ?? null);
 
-  const profile = result.profile as unknown as ComplianceProfile;
+  const profile = readProfile(result.profile);
+  if (!profile) notFound();
   const headline = HEADLINE[profile.headline] ?? HEADLINE.minimal;
   // Out-of-scope / excluded means the AI Act doesn't apply — a gereedheidsscore is
   // meaningless there, so we show a neutral "controleer dit" state instead of a

@@ -2,7 +2,7 @@ import { renderToBuffer } from "@react-pdf/renderer";
 
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/auth";
-import type { ComplianceProfile } from "@/lib/compliance/types";
+import { readProfile } from "@/lib/compliance/read-profile";
 import { ScanReportPdf } from "@/components/pdf/scan-report-pdf";
 
 export const runtime = "nodejs";
@@ -29,7 +29,8 @@ export async function GET(
     }
   }
 
-  const profile = result.profile as unknown as ComplianceProfile;
+  const profile = readProfile(result.profile);
+  if (!profile) return new Response("Rapport niet gevonden", { status: 404 });
   const date = new Intl.DateTimeFormat("nl-NL", { dateStyle: "long" }).format(
     result.createdAt
   );

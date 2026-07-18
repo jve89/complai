@@ -6,7 +6,7 @@ import { getActiveCompany, canAdminister } from "@/lib/auth";
 import { cn, formatDate } from "@/lib/utils";
 import { correctiveUnlocked, TIER_LABEL, CORRECTIVE_MIN_TIER } from "@/lib/plan";
 import { surfaceRelevance } from "@/lib/compliance/relevance";
-import type { ComplianceProfile } from "@/lib/compliance/types";
+import { readProfile } from "@/lib/compliance/read-profile";
 import {
   ACTION_LABEL,
   STATUS_LABEL,
@@ -56,7 +56,7 @@ export default async function CorrigerendPage() {
   ]);
 
   // Scan-driven visibility (Phase B): does this provider module apply?
-  const profile = (company.profileJson as unknown as ComplianceProfile | null) ?? null;
+  const profile = readProfile(company.profileJson);
   const rel = surfaceRelevance(profile, systems).corrigerend;
   const notRelevant = !rel.applies;
 

@@ -24,7 +24,7 @@ import { cn, formatDate } from "@/lib/utils";
 import { DOCUMENT_META, type DocumentType } from "@/lib/documents/templates";
 import { docLabel } from "@/lib/compliance/labels";
 import { docUnlocked, minTierFor, tierRank, TIER_LABEL, TIER_ORDER } from "@/lib/plan";
-import type { ComplianceProfile } from "@/lib/compliance/types";
+import { readProfile } from "@/lib/compliance/read-profile";
 import { PageHeader } from "@/components/dashboard/page-header";
 import { RelevanceReveal } from "@/components/dashboard/relevance";
 import { GenerateButton } from "@/components/dashboard/documents/generate-button";
@@ -204,7 +204,7 @@ export default async function DocumentsPage() {
   });
   const versionsFor = (slug: string) => documents.filter((d) => d.type === slug);
 
-  const profile = (company.profileJson as unknown as ComplianceProfile | null) ?? null;
+  const profile = readProfile(company.profileJson);
   const plan = company.plan;
   const isTopPlan = tierRank(plan) >= tierRank("schaal");
 

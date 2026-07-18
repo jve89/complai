@@ -6,7 +6,7 @@ import { getActiveCompany, canAdminister } from "@/lib/auth";
 import { cn, formatDate } from "@/lib/utils";
 import { complaintsUnlocked, TIER_LABEL, COMPLAINTS_MIN_TIER } from "@/lib/plan";
 import { surfaceRelevance } from "@/lib/compliance/relevance";
-import type { ComplianceProfile } from "@/lib/compliance/types";
+import { readProfile } from "@/lib/compliance/read-profile";
 import {
   STATUS_LABEL,
   STATUS_BADGE,
@@ -52,7 +52,7 @@ export default async function KlachtenPage() {
   ]);
 
   // Scan-driven visibility (Phase B): does this module apply to the company?
-  const profile = (company.profileJson as unknown as ComplianceProfile | null) ?? null;
+  const profile = readProfile(company.profileJson);
   const rel = surfaceRelevance(profile, systems).klachten;
   const notRelevant = !rel.applies;
 

@@ -6,7 +6,7 @@ import { formatDate } from "@/lib/utils";
 import { companySignals } from "@/lib/compliance/signals";
 import { daysSince, CATEGORY_LABEL } from "@/lib/regulatory/updates";
 import { getEvaluatedUpdates } from "@/lib/regulatory/updates-data";
-import type { ComplianceProfile } from "@/lib/compliance/types";
+import { readProfile } from "@/lib/compliance/read-profile";
 import { PageHeader } from "@/components/dashboard/page-header";
 import { MarkUpdatesSeen } from "@/components/dashboard/mark-updates-seen";
 import { RecertPrompt } from "@/components/dashboard/recert-prompt";
@@ -21,7 +21,7 @@ export default async function UpdatesPage() {
     where: { companyId: company.id },
     select: { riskLevel: true },
   });
-  const profile = (company.profileJson as unknown as ComplianceProfile | null) ?? null;
+  const profile = readProfile(company.profileJson);
   const sig = companySignals(profile, systems.map((s) => s.riskLevel));
   const now = new Date();
   const updates = await getEvaluatedUpdates(sig);

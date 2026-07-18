@@ -61,6 +61,11 @@ export interface AdvisoryUpsell {
   reason: string; // Dutch, "aanbevolen, niet verplicht" rationale
 }
 
+/** Bumped when the ComplianceProfile shape changes. readProfile() treats a stored
+ *  profile whose version differs as "needs a re-scan" rather than trusting a stale
+ *  shape (see lib/compliance/read-profile.ts). */
+export const PROFILE_VERSION = 1;
+
 export interface ComplianceProfile {
   version: number; // schema version, for recompute migrations
   computedAt: string; // ISO

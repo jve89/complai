@@ -10,7 +10,7 @@ import {
   type SurfaceState,
 } from "@/lib/compliance/relevance";
 import { getEvaluatedUpdates } from "@/lib/regulatory/updates-data";
-import type { ComplianceProfile } from "@/lib/compliance/types";
+import { readProfile } from "@/lib/compliance/read-profile";
 import { logout } from "@/app/(auth)/actions";
 import { stopImpersonation } from "@/app/dashboard/admin/actions";
 import { Sidebar, MobileNav } from "@/components/dashboard/sidebar";
@@ -32,7 +32,7 @@ export default async function DashboardLayout({
     where: { companyId: company.id },
     select: { riskLevel: true, role: true },
   });
-  const profile = (company.profileJson as unknown as ComplianceProfile | null) ?? null;
+  const profile = readProfile(company.profileJson);
   const sig = companySignals(profile, systems.map((s) => s.riskLevel));
   const updateDates = (await getEvaluatedUpdates(sig))
     .filter((u) => u.relevant)

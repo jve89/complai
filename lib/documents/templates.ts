@@ -2,6 +2,7 @@ import type { Company, AiSystem } from "@prisma/client";
 
 import { RISK_LABEL, ROLE_LABEL } from "@/lib/register/labels";
 import type { ComplianceProfile } from "@/lib/compliance/types";
+import { readProfile } from "@/lib/compliance/read-profile";
 
 export type DocumentType =
   | "ai_policy"
@@ -186,7 +187,7 @@ interface DocContext {
 }
 
 function docContext(company: Company): DocContext {
-  const profile = (company.profileJson as unknown as ComplianceProfile | null) ?? null;
+  const profile = readProfile(company.profileJson);
   const roles = company.entityRoles ?? [];
   const isProvider = roles.includes("provider");
   const isDeployer = roles.includes("deployer");

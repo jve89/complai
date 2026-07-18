@@ -5,7 +5,7 @@ import { prisma } from "@/lib/prisma";
 import { companySignals } from "@/lib/compliance/signals";
 import { evaluateUpdates, updatesToNotify } from "@/lib/regulatory/updates";
 import { getPublishedUpdates } from "@/lib/regulatory/updates-data";
-import type { ComplianceProfile } from "@/lib/compliance/types";
+import { readProfile } from "@/lib/compliance/read-profile";
 import { sendRegulatoryDigest } from "@/lib/email/send";
 
 export const dynamic = "force-dynamic";
@@ -47,7 +47,7 @@ export async function GET(req: Request) {
   let notified = 0;
   for (const c of companies) {
     try {
-      const profile = (c.profileJson as unknown as ComplianceProfile | null) ?? null;
+      const profile = readProfile(c.profileJson);
       const sig = companySignals(
         profile,
         c.aiSystems.map((s) => s.riskLevel)

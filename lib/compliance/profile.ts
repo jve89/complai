@@ -5,6 +5,7 @@ import { classify } from "@/lib/compliance/engine";
 import { OBLIGATION_CATALOG, makeObligation } from "@/lib/compliance/obligations";
 import { resolveStatus } from "@/lib/compliance/resolve";
 import { TIER_ORDER, minTierFor, tierRank } from "@/lib/plan";
+import { PROFILE_VERSION } from "@/lib/compliance/types";
 import type { ScanAnswers } from "@/lib/compliance/questions";
 import type {
   AdvisoryUpsell,
@@ -15,8 +16,6 @@ import type {
   TierId,
   TrainingRequirement,
 } from "@/lib/compliance/types";
-
-export const PROFILE_VERSION = 1;
 
 const EMPTY_EVIDENCE: CompanyEvidence = {
   documentSlugs: [],

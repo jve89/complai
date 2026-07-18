@@ -13,7 +13,8 @@ import {
   moduleCountForPath,
   askCount,
 } from "@/lib/training/content";
-import type { ComplianceProfile, TrainingRequirement } from "@/lib/compliance/types";
+import type { TrainingRequirement } from "@/lib/compliance/types";
+import { readProfile } from "@/lib/compliance/read-profile";
 import { companySignals } from "@/lib/compliance/signals";
 import { PageHeader } from "@/components/dashboard/page-header";
 import { PendingPublicationNote } from "@/components/pending-publication-note";
@@ -64,7 +65,7 @@ export default async function TrainingPage() {
   const learnerPath = getPath(learner.role)?.label ?? "Medewerker";
 
   // Which learning paths this company's scan makes required vs recommended.
-  const profile = (company.profileJson as unknown as ComplianceProfile | null) ?? null;
+  const profile = readProfile(company.profileJson);
   const requiredPaths = new Map<string, TrainingRequirement>(
     (profile?.training?.required ?? []).map((t) => [t.pathSlug, t])
   );

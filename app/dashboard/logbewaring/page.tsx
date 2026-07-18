@@ -6,7 +6,7 @@ import { getActiveCompany, canAdminister } from "@/lib/auth";
 import { cn, formatDate } from "@/lib/utils";
 import { logRetentionUnlocked, TIER_LABEL, LOG_RETENTION_MIN_TIER } from "@/lib/plan";
 import { surfaceRelevance } from "@/lib/compliance/relevance";
-import type { ComplianceProfile } from "@/lib/compliance/types";
+import { readProfile } from "@/lib/compliance/read-profile";
 import {
   logStatus,
   LOG_STATUS_LABEL,
@@ -61,7 +61,7 @@ export default async function LogbewaringPage() {
     where: { companyId: company.id },
     select: { role: true, riskLevel: true },
   });
-  const profile = (company.profileJson as unknown as ComplianceProfile | null) ?? null;
+  const profile = readProfile(company.profileJson);
   const rel = surfaceRelevance(profile, relSystems).logbewaring;
   const notRelevant = !rel.applies;
 
