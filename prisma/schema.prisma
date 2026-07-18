@@ -171,24 +171,39 @@ model AiSystem {
   @@map("ai_systems")
 }
 
+// Art 3(49) serious-incident sub-points — drives the Art 73 reporting deadline,
+// so it's a DB enum (not a loose string) to keep a typo out of the deadline logic.
+enum IncidentCategory {
+  health // Art 3(49)(a)
+  critical_infra // Art 3(49)(b)
+  fundamental_rights // Art 3(49)(c)
+  property_env // Art 3(49)(d)
+}
+
+enum IncidentStatus {
+  open
+  reported
+  closed
+}
+
 /// Serious-incident register (Art 73). A company logs a serious incident; the
 /// category (Art 3(49) a–d) + death/widespread flags drive the reporting
 /// deadline (Art 73(2)–(4)). Status tracks open → reported → closed.
 model Incident {
-  id            String    @id @default(cuid())
-  companyId     String    @map("company_id")
+  id            String           @id @default(cuid())
+  companyId     String           @map("company_id")
   title         String
   description   String?
-  category      String    @default("health") // Art 3(49): health | critical_infra | fundamental_rights | property_env
-  involvesDeath Boolean   @default(false) @map("involves_death") // Art 73(4) → 10 dagen
-  widespread    Boolean   @default(false) // Art 73(3) wijdverspreide inbreuk → 2 dagen
-  awareAt       DateTime  @map("aware_at") // datum bekend geworden — start van de meldtermijn
-  occurredAt    DateTime? @map("occurred_at")
-  status        String    @default("open") // open | reported | closed
-  reportedAt    DateTime? @map("reported_at")
+  category      IncidentCategory @default(health) // Art 3(49) sub-point; drives the Art 73 deadline
+  involvesDeath Boolean          @default(false) @map("involves_death") // Art 73(4) → 10 dagen
+  widespread    Boolean          @default(false) // Art 73(3) wijdverspreide inbreuk → 2 dagen
+  awareAt       DateTime         @map("aware_at") // datum bekend geworden — start van de meldtermijn
+  occurredAt    DateTime?        @map("occurred_at")
+  status        IncidentStatus   @default(open) // open | reported | closed
+  reportedAt    DateTime?        @map("reported_at")
   reference     String? // kenmerk/ontvangstbevestiging van de toezichthouder
-  createdAt     DateTime  @default(now()) @map("created_at")
-  updatedAt     DateTime  @updatedAt @map("updated_at")
+  createdAt     DateTime         @default(now()) @map("created_at")
+  updatedAt     DateTime         @updatedAt @map("updated_at")
 
   company Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
 
