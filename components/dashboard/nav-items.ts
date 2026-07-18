@@ -156,7 +156,7 @@ export function navTree(items: NavItem[]): NavEntry[] {
   for (const item of items) {
     if ((HIGH_RISK_SLUGS as readonly string[]).includes(slugOf(item.href))) {
       if (groupItems.length === 0) {
-        entries.push({ kind: "group", label: "Hoog-risico verplichtingen", icon: ShieldAlert, items: groupItems });
+        entries.push({ kind: "group", label: "Hoog-risico", icon: ShieldAlert, items: groupItems });
       }
       groupItems.push(item);
     } else {

@@ -97,7 +97,7 @@ function NavLink({
 
 const slugIsUpdates = (href: string) => href === "/dashboard/updates" || href === "/demo/updates";
 
-/** The collapsible "Hoog-risico verplichtingen" section. Collapsed by default for a
+/** The collapsible "Hoog-risico" duty-modules section. Collapsed by default for a
  *  cleaner menu; auto-expands only when the current route is inside it (so the active
  *  item is never hidden). When no module is relevant it also shows a short
  *  "geldt bij hoog-risico AI" note. */
@@ -156,7 +156,7 @@ function NavGroupSection({
           ))}
         </div>
       )}
-      {!anyRelevant && (
+      {isOpen && !anyRelevant && (
         <p className={cn("px-3 pb-1 pt-1 text-[11px]", dark ? "text-white/35" : "text-muted-foreground")}>
           Van toepassing zodra u hoog-risico AI inzet.
         </p>
