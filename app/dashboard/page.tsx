@@ -26,7 +26,8 @@ import {
 } from "@/lib/compliance/relevance";
 import { computeGovernance } from "@/lib/governance/score";
 import { resolveStatus } from "@/lib/compliance/resolve";
-import type { ComplianceProfile, CompanyEvidence } from "@/lib/compliance/types";
+import type { ComplianceProfile } from "@/lib/compliance/types";
+import { evidenceFromData } from "@/lib/compliance/evidence";
 import { readProfile } from "@/lib/compliance/read-profile";
 import { onboardingState } from "@/lib/onboarding";
 import { companySignals } from "@/lib/compliance/signals";
@@ -153,18 +154,14 @@ export default async function DashboardPage({
     );
   }
 
-  // Live evidence from the CURRENT dashboard state (mirrors buildEvidence, reusing
-  // data we already fetched) — so obligations reflect real activity, not just the
-  // scan snapshot.
-  const evidence: CompanyEvidence = {
-    documentSlugs: Array.from(new Set(documents.map((d) => d.type))),
+  // Live evidence from the CURRENT dashboard state, via the shared
+  // evidenceFromData() (reusing rows we already fetched) — so obligations reflect
+  // real activity, and there is ONE evidence shape that can't drift from buildEvidence().
+  const evidence = evidenceFromData({
+    documents,
     systemsRegistered: aiSystems.length,
-    employeesTotal: employees.length,
-    employeesTrained: employees.filter((e) => e.trainingCompleted).length,
-    completedTrainingPaths: Array.from(
-      new Set(employees.filter((e) => e.trainingCompleted).map((e) => e.role))
-    ),
-  };
+    employees,
+  });
   // Activity can only ADD progress — never downgrade what the scan established
   // (protects self-reported readiness and manual/process obligations).
   const rank: Record<string, number> = { compliant: 2, done: 2, in_progress: 1, open: 0 };
