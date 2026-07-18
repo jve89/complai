@@ -57,18 +57,26 @@ async function createCheckout(
     };
   }
 
+  // Resolve a customer that's valid for the CURRENT Stripe key. This self-heals a
+  // stale test-mode id after go-live (and clears its dead subscription linkage).
+  const { customerId, recreated } = await ensureStripeCustomer(company, user.email);
+
   // Never stack a second subscription: an existing subscriber changes plans via
   // the billing portal (which swaps the price on the one subscription and
-  // prorates), so checkout is for NEW subscriptions only.
-  if (company.stripeSubscriptionId && ACTIVE_STATUSES.has(company.planStatus ?? "")) {
+  // prorates), so checkout is for NEW subscriptions only. Skip this when we just
+  // recreated the customer — its prior subscription lived under a different key
+  // and no longer exists, so `company.stripeSubscriptionId` is stale.
+  if (
+    !recreated &&
+    company.stripeSubscriptionId &&
+    ACTIVE_STATUSES.has(company.planStatus ?? "")
+  ) {
     return {
       alreadySubscribed: true,
       message:
         "U heeft al een actief abonnement. Wijzig uw pakket via Instellingen → Abonnement.",
     };
   }
-
-  const customerId = await ensureStripeCustomer(company, user.email);
 
   const session = await stripe.checkout.sessions.create({
     mode: "subscription",
@@ -91,12 +99,22 @@ export async function POST(req: Request) {
     planId?: string;
     interval?: "month" | "year";
   };
-  const result = await createCheckout(
-    planId,
-    interval === "year" ? "year" : "month",
-    baseUrlFrom(req)
-  );
-  return NextResponse.json(result);
+  try {
+    const result = await createCheckout(
+      planId,
+      interval === "year" ? "year" : "month",
+      baseUrlFrom(req)
+    );
+    return NextResponse.json(result);
+  } catch (err) {
+    // Never leak a raw 500 to the pricing table (it shows a blank "er ging iets
+    // mis"). Log the real Stripe error server-side; return a friendly message.
+    console.error("[checkout] unexpected error creating session", err);
+    return NextResponse.json({
+      configured: false,
+      message: "Afrekenen is tijdelijk niet beschikbaar. Probeer het zo opnieuw.",
+    });
+  }
 }
 
 /**
@@ -109,7 +127,13 @@ export async function GET(req: Request) {
   const interval = url.searchParams.get("interval") === "year" ? "year" : "month";
   const appUrl = baseUrlFrom(req);
 
-  const result = await createCheckout(planId, interval, appUrl);
+  let result: CheckoutResult;
+  try {
+    result = await createCheckout(planId, interval, appUrl);
+  } catch (err) {
+    console.error("[checkout] unexpected error creating session (GET)", err);
+    return NextResponse.redirect(`${appUrl}/dashboard?checkout=unavailable`, 303);
+  }
   if ("url" in result) return NextResponse.redirect(result.url, 303);
   if ("needsAccount" in result) {
     return NextResponse.redirect(

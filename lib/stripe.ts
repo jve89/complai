@@ -16,6 +16,17 @@ export const stripe = isStripeConfigured
 
 export { isStripeConfigured };
 
+/** True when a Stripe error means the referenced object doesn't exist for the
+ * current key — e.g. a test-mode `cus_…`/`sub_…` used with a live key after
+ * switching prod to live mode ("No such customer: … exists in test mode"). */
+export function isStripeResourceMissing(err: unknown): boolean {
+  return (
+    typeof err === "object" &&
+    err !== null &&
+    (err as { code?: string }).code === "resource_missing"
+  );
+}
+
 /** Plan catalogue. priceId values are placeholders until live Stripe keys exist. */
 export type PlanId = "free" | "starter" | "professional" | "corporate";
 

@@ -4,7 +4,7 @@ import type Stripe from "stripe";
 import type { Company } from "@prisma/client";
 
 import { prisma } from "@/lib/prisma";
-import { stripe, tierForPriceId } from "@/lib/stripe";
+import { stripe, tierForPriceId, isStripeResourceMissing } from "@/lib/stripe";
 import { env } from "@/lib/env";
 
 /** Statuses that keep a subscription's documents unlocked (grace during dunning). */
@@ -13,7 +13,7 @@ const GRANTING_STATUSES = new Set(["active", "trialing", "past_due"]);
 /** ComplAI staff companies are exempt from Stripe plan reconciliation, so a
  * manually-set staff pakket (e.g. Audit-klaar for ourselves) is never
  * overwritten by a webhook. */
-async function isStaffCompany(companyId: string): Promise<boolean> {
+export async function isStaffCompany(companyId: string): Promise<boolean> {
   const staff = await prisma.user.findFirst({
     where: {
       companyId,
@@ -29,24 +29,66 @@ async function isStaffCompany(companyId: string): Promise<boolean> {
   return Boolean(staff);
 }
 
-/** Find-or-create the Stripe customer for a company and persist its id. */
+/**
+ * Find-or-create the Stripe customer for a company and persist its id.
+ *
+ * Self-heals a stored customer that no longer exists for the current key — e.g. a
+ * test-mode `cus_…` left behind after switching prod to live keys, which Stripe
+ * rejects ("No such customer … exists in test mode"). In that case we create a
+ * fresh customer AND drop the now-dead subscription linkage (a dead customer's
+ * subscription is dead too). `recreated` lets checkout skip the "already
+ * subscribed" guard for a company whose old subscription just vanished.
+ */
 export async function ensureStripeCustomer(
   company: Pick<Company, "id" | "name" | "stripeCustomerId">,
   email?: string | null
-): Promise<string> {
+): Promise<{ customerId: string; recreated: boolean }> {
   if (!stripe) throw new Error("Stripe is niet geconfigureerd.");
-  if (company.stripeCustomerId) return company.stripeCustomerId;
 
-  const customer = await stripe.customers.create({
-    email: email ?? undefined,
-    name: company.name,
-    metadata: { companyId: company.id },
-  });
+  if (company.stripeCustomerId) {
+    try {
+      const existing = await stripe.customers.retrieve(company.stripeCustomerId);
+      if (!existing.deleted) return { customerId: company.stripeCustomerId, recreated: false };
+      // Customer was deleted in Stripe → fall through and recreate.
+    } catch (err) {
+      // Only a "missing for this key" error means we should recreate; a transient
+      // or auth error must surface, not silently mint a duplicate customer.
+      if (!isStripeResourceMissing(err)) throw err;
+    }
+  }
+
+  // Only relevant when replacing a stale stored id (recreate). Staff pakketten
+  // are exempt from reconciliation, so we never downgrade them here.
+  const staff = company.stripeCustomerId ? await isStaffCompany(company.id) : false;
+
+  const customer = await stripe.customers.create(
+    {
+      email: email ?? undefined,
+      name: company.name,
+      metadata: { companyId: company.id },
+    },
+    // Collapse concurrent creates for the same company (e.g. two checkout tabs
+    // during the go-live window) onto ONE customer, so we never orphan a
+    // customer that then bills invisibly. Keyed on the stale id too, so a genuine
+    // later recreate (id changed) isn't served this cached response.
+    { idempotencyKey: `cust-create-${company.id}-${company.stripeCustomerId ?? "new"}` }
+  );
   await prisma.company.update({
     where: { id: company.id },
-    data: { stripeCustomerId: customer.id },
+    data: {
+      stripeCustomerId: customer.id,
+      // Replacing a dead customer: its subscription/state is dead too, so drop
+      // the linkage AND the paid tier that subscription granted — otherwise the
+      // company keeps paid document access with no live payment. Staff are exempt.
+      // (A brand-new company has nothing here, so this is a no-op for signups.)
+      stripeSubscriptionId: null,
+      planStatus: null,
+      planRenewsAt: null,
+      ...(company.stripeCustomerId && !staff ? { plan: "gratis" } : {}),
+    },
   });
-  return customer.id;
+  // recreated = we replaced a stale stored id (not a first-time signup).
+  return { customerId: customer.id, recreated: Boolean(company.stripeCustomerId) };
 }
 
 function periodEnd(sub: Stripe.Subscription): Date | null {

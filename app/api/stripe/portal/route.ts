@@ -1,9 +1,10 @@
 import { NextResponse } from "next/server";
 import type Stripe from "stripe";
 
-import { stripe } from "@/lib/stripe";
+import { stripe, isStripeResourceMissing } from "@/lib/stripe";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser, canAdminister } from "@/lib/auth";
+import { isStaffCompany } from "@/lib/billing";
 import { baseUrlFrom } from "@/lib/request-url";
 
 export const runtime = "nodejs";
@@ -76,11 +77,48 @@ export async function POST(req: Request) {
     };
   }
 
-  const session = await stripe.billingPortal.sessions.create({
-    customer: company.stripeCustomerId,
-    return_url: returnUrl,
-    ...(flowData ? { flow_data: flowData } : {}),
-  });
-
-  return NextResponse.json({ url: session.url });
+  try {
+    const session = await stripe.billingPortal.sessions.create({
+      customer: company.stripeCustomerId,
+      return_url: returnUrl,
+      ...(flowData ? { flow_data: flowData } : {}),
+    });
+    return NextResponse.json({ url: session.url });
+  } catch (err) {
+    // A stored customer/subscription that doesn't exist for the current key —
+    // e.g. a test-mode id left after the switch to live. Drop the dead linkage
+    // so the UI stops offering a portal that can't open, and point them at a plan.
+    if (isStripeResourceMissing(err)) {
+      const param = (err as { param?: string }).param;
+      const customerMissing = param === "customer";
+      // A confirmed-dead customer means no live billing relationship → also drop
+      // the paid tier it granted (unless staff, who are exempt), matching the
+      // checkout self-heal. Only checked when the customer itself is gone.
+      const staff = customerMissing ? await isStaffCompany(company.id) : false;
+      await prisma.company.update({
+        where: { id: company.id },
+        data: {
+          // Only drop the customer id when the CUSTOMER is the missing object (a
+          // test-mode id after go-live). A missing subscription leaves a valid
+          // customer — and its payment history — intact; checkout self-heals the
+          // customer id later if it too turns out to be stale.
+          ...(customerMissing ? { stripeCustomerId: null } : {}),
+          stripeSubscriptionId: null,
+          planStatus: null,
+          planRenewsAt: null,
+          ...(customerMissing && !staff ? { plan: "gratis" } : {}),
+        },
+      });
+      return NextResponse.json({
+        configured: false,
+        message:
+          "Er is nog geen actief abonnement aan deze organisatie gekoppeld. Kies eerst een plan.",
+      });
+    }
+    console.error("[portal] unexpected error opening billing portal", err);
+    return NextResponse.json({
+      configured: false,
+      message: "Het facturatieportaal is tijdelijk niet beschikbaar. Probeer het zo opnieuw.",
+    });
+  }
 }
