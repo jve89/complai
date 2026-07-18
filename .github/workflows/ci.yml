@@ -1,0 +1,29 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+      # `npm ci` runs the postinstall `prisma generate`, so the client exists for tsc.
+      # No DB or secrets are needed: tests are pure functions and tsc does not connect.
+      - run: npm ci
+      - name: Type-check
+        run: npx tsc --noEmit
+      - name: Unit tests (full suite)
+        run: npm test
+      - name: RLS coverage guard
+        run: npm run check:rls
+      - name: Validate training content
+        run: npm run validate:training
+      - name: Validate regulatory updates
+        run: npm run validate:updates
