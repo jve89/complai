@@ -16,7 +16,7 @@ import { sendScanResult } from "@/lib/email/send";
 import { currentBaseUrl } from "@/lib/request-url";
 import { rateLimitByIp } from "@/lib/rate-limit";
 import { headlineLabel } from "@/lib/compliance/labels";
-import type { ScanAnswers } from "@/lib/compliance/questions";
+import { parseScanAnswers } from "@/lib/scan/answers-schema";
 
 /**
  * Persists a completed scan: computes the compliance profile, stores it on the
@@ -24,13 +24,17 @@ import type { ScanAnswers } from "@/lib/compliance/questions";
  * company and materialises one compliance item per obligation (so the dashboard
  * and governance reflect the scan).
  */
-export async function submitScan(
-  answers: ScanAnswers
-): Promise<{ id: string }> {
+export async function submitScan(input: unknown): Promise<{ id: string }> {
   // Generous throttle so no real user is affected, but anonymous DB spam can't
   // run away. The wizard catches this and shows a retry message.
   const rl = await rateLimitByIp("scan", 20, 3600);
   if (!rl.ok) throw new Error(rl.error);
+
+  // Validate the untrusted, client-posted answers before anything touches the DB.
+  const answers = parseScanAnswers(input);
+  if (!answers) {
+    throw new Error("Ongeldige scangegevens. Vernieuw de pagina en probeer het opnieuw.");
+  }
 
   const user = await getCurrentUser().catch(() => null);
   // The risicoscan rewrites company-wide readiness + obligations, so only a

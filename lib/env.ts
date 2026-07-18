@@ -41,3 +41,27 @@ export const isResendConfigured = Boolean(env.resendApiKey);
 export const isSupabaseConfigured = Boolean(
   env.supabaseUrl && env.supabaseAnonKey
 );
+
+/**
+ * Fail-fast in production: throw at server startup if a critical env var is
+ * missing, so a misconfigured deploy errors loudly instead of silently
+ * degrading — a blank Supabase URL/key disables auth entirely (middleware passes
+ * through, getActiveCompany falls back to the demo company), and a missing
+ * DATABASE_URL breaks every query. Called from instrumentation.ts.
+ *
+ * Stripe/Resend are deliberately NOT required: they degrade to a documented stub
+ * until billing and email go live, which is a valid pre-launch state.
+ */
+export function assertProductionEnv(): void {
+  if (process.env.NODE_ENV !== "production") return;
+  const missing: string[] = [];
+  if (!env.databaseUrl) missing.push("DATABASE_URL");
+  if (!env.supabaseUrl) missing.push("NEXT_PUBLIC_SUPABASE_URL");
+  if (!env.supabaseAnonKey) missing.push("NEXT_PUBLIC_SUPABASE_ANON_KEY");
+  if (missing.length > 0) {
+    throw new Error(
+      `Missing required production environment variables: ${missing.join(", ")}. ` +
+        `Set them in the deployment environment before serving traffic.`
+    );
+  }
+}
