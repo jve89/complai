@@ -110,8 +110,6 @@ export default async function SettingsPage() {
                 canceling={canceling}
                 renewsAt={accessOrRenewAt}
                 isSuperAdmin={Boolean(user?.superAdmin)}
-                companyId={company.id}
-                currentTier={TIER_ORDER[tierRank(company.plan)]}
               />
             </CardContent>
           </Card>
