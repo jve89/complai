@@ -84,9 +84,13 @@ model Company {
 /// Processed Stripe webhook events — insert-or-skip gives idempotency, so a
 /// redelivered event never repeats emails or writes.
 model StripeEvent {
-  id        String   @id // Stripe event id (evt_…)
+  id        String    @id // Stripe event id (evt_…)
   type      String
-  createdAt DateTime @default(now()) @map("created_at")
+  createdAt DateTime  @default(now()) @map("created_at")
+  // Set once the handler finishes. A row with processedAt = null was CLAIMED but
+  // the handler crashed before completing (timeout/OOM), so a retry re-processes
+  // it instead of skipping it as a duplicate.
+  processedAt DateTime? @map("processed_at")
 
   @@map("stripe_events")
 }

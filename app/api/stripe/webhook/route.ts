@@ -66,23 +66,32 @@ export async function POST(req: Request) {
   // only a fallback (a webhook POST has no user-facing origin).
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL?.replace(/\/+$/, "") || baseUrlFrom(req);
 
-  // Idempotency: Stripe redelivers events (timeouts, retries after a 500).
-  // Insert-or-skip on the event id makes redelivery a no-op — no duplicate
-  // emails, no repeated writes.
-  try {
-    await prisma.stripeEvent.create({
-      data: { id: event.id, type: event.type },
-    });
-  } catch (err) {
-    // Only a genuine duplicate (unique-violation on the event id) is a safe
-    // no-op. Any OTHER error (transient DB failure, missing table) must NOT be
-    // swallowed as "duplicate" — return 500 so Stripe retries and the event
-    // isn't lost forever.
-    if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === "P2002") {
-      return NextResponse.json({ received: true, duplicate: true });
+  // Idempotency with crash-recovery. A row is CLAIMED (processedAt = null) before
+  // the work and marked done after it succeeds. So:
+  //  - processedAt set  → fully processed before → skip (true duplicate).
+  //  - row absent       → first delivery → claim it, then process.
+  //  - row, processedAt null → a prior handler CRASHED after claiming (timeout/
+  //    OOM, not a thrown error) → re-process (the handler writes are idempotent).
+  // This closes the window where a claim survived but the work was lost forever.
+  const existing = await prisma.stripeEvent.findUnique({
+    where: { id: event.id },
+    select: { processedAt: true },
+  });
+  if (existing?.processedAt) {
+    return NextResponse.json({ received: true, duplicate: true });
+  }
+  if (!existing) {
+    try {
+      await prisma.stripeEvent.create({ data: { id: event.id, type: event.type } });
+    } catch (err) {
+      // A concurrent delivery claimed it first — let that handler finish rather
+      // than double-process. Any other error → 500 so Stripe retries.
+      if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === "P2002") {
+        return NextResponse.json({ received: true, duplicate: true });
+      }
+      console.error("[stripe] idempotency-claim mislukt:", err);
+      return NextResponse.json({ error: "idempotency claim failed" }, { status: 500 });
     }
-    console.error("[stripe] idempotency-insert mislukt (geen duplicaat):", err);
-    return NextResponse.json({ error: "idempotency insert failed" }, { status: 500 });
   }
 
   try {
@@ -163,15 +172,17 @@ export async function POST(req: Request) {
       default:
         break;
     }
+    // Work done → mark the claim complete so redeliveries are skipped.
+    await prisma.stripeEvent.update({
+      where: { id: event.id },
+      data: { processedAt: new Date() },
+    });
   } catch (err) {
     const message = err instanceof Error ? err.message : "onbekend";
     console.error(`[stripe] fout bij verwerken ${event.type}: ${message}`);
-    // Release the idempotency claim so Stripe's retry is NOT skipped as a
-    // duplicate — otherwise a failed handler would never re-run.
-    await prisma.stripeEvent
-      .delete({ where: { id: event.id } })
-      .catch(() => undefined);
-    // 500 so Stripe retries the event.
+    // Leave the claim with processedAt = null (do NOT delete it) so Stripe's
+    // retry re-processes this event instead of skipping it as a duplicate.
+    // 500 so Stripe retries.
     return NextResponse.json({ error: "Verwerking mislukt." }, { status: 500 });
   }
 
