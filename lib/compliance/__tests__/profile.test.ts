@@ -102,6 +102,20 @@ function check(name: string, cond: boolean, detail = "") {
   check("caveat explains the 6(3) override", r.caveats.some((c) => /6\(3\)/.test(c) && /geldt hier niet/i.test(c)));
 }
 
+// ── Row 3c — Annex I Section B product (Art. 2(2)): route to sectoral law via a
+//    caveat, NOT high-risk (R1: correctness-spec test case 6 — drone/vehicle SME) ──
+{
+  const vehicle = base({ roles: ["deployer"], scopeCriteria: ["established_eu"], annexI_B: ["motor_vehicles"] });
+  const drone = base({ roles: ["deployer"], scopeCriteria: ["established_eu"], annexI_B: ["unmanned_aircraft"] });
+  const p = profileOf(vehicle);
+  const rVehicle = classify(vehicle);
+  const rDrone = classify(drone);
+  console.log("Row 3a3 — Annex I Section B (Art. 2(2)) products:");
+  check("§B is NOT flipped to high_risk (Chapter III N/A directly)", p.headline !== "high_risk", p.headline);
+  check("§B vehicle → sectoral-law caveat", rVehicle.caveats.some((c) => /sectie B|sectorale/i.test(c)));
+  check("§B drone → sectoral-law caveat (test case 6 reachable)", rDrone.caveats.some((c) => /sectie B|sectorale/i.test(c)));
+}
+
 // ── Row 3b — Annex III area + valid Art. 6(3) carve-out → high_notify, NOT high_risk ──
 {
   const p = profileOf(base({ roles: ["deployer"], scopeCriteria: ["established_eu"], annexIII_areas: ["4"], art6_3_carveout: true }));
