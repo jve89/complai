@@ -12,7 +12,7 @@ import { classify } from "@/lib/compliance/engine";
 import { evidenceFromAnswers } from "@/lib/compliance/evidence-from-answers";
 import { docUnlocked } from "@/lib/plan";
 import { scanProgress, visibleSteps } from "@/lib/scan/wizard";
-import type { ScanAnswers } from "@/lib/compliance/questions";
+import { mapTools, USE_CASES, type ScanAnswers } from "@/lib/compliance/questions";
 
 function base(over: Partial<ScanAnswers> = {}): ScanAnswers {
   return {
@@ -69,6 +69,22 @@ function check(name: string, cond: boolean, detail = "") {
   check("high_risk headline", p.headline === "high_risk", p.headline);
   check("tier groei", p.recommendedTier === "groei", p.recommendedTier);
   check("score reflects risk_assessment done", p.score > 35, `score=${p.score}`);
+}
+
+// ── Row 3a — Annex III(5) pre-fill: credit → 5(b), life/health insurance → 5(c),
+//    general insurance → NOT high-risk (R2: no over-call for non-life/health) ──
+{
+  const credit = mapTools(base({ useCases: ["krediet"] }));
+  const lifeHealth = mapTools(base({ useCases: ["verzekering_lz"] }));
+  console.log("Row 3a — Annex III(5) credit vs insurance pre-fill:");
+  check("credit → area 5 + subarea 5b", (credit.annexIII_areas ?? []).includes("5") && (credit.annexIII_subareas ?? []).includes("5b"));
+  check("life/health insurance → 5c (not 5b)",
+    (lifeHealth.annexIII_subareas ?? []).includes("5c") && !(lifeHealth.annexIII_subareas ?? []).includes("5b"));
+  // No use-case bundles general (car/home/travel) insurance into Annex III area 5.
+  const generalInsuranceUseCase = USE_CASES.some(
+    (u) => /verzekering/i.test(u.label) && u.value !== "verzekering_lz"
+  );
+  check("no use-case pre-checks area 5 for general insurance", !generalInsuranceUseCase);
 }
 
 // ── Row 3b — Annex III area + valid Art. 6(3) carve-out → high_notify, NOT high_risk ──

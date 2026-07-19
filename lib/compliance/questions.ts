@@ -123,7 +123,8 @@ export const USE_CASES: Option[] = [
   { value: "data_analyse", label: "Data-analyse of voorspellingen" },
   { value: "werving", label: "Sollicitanten beoordelen of rangschikken", help: "Bv. cv-screening of geautomatiseerde voorselectie." },
   { value: "personeel", label: "Beslissingen over medewerkers", help: "Bv. beoordeling, promotie of roostering." },
-  { value: "krediet", label: "Krediet- of verzekeringsaanvragen beoordelen" },
+  { value: "krediet", label: "Kredietaanvragen of kredietscore beoordelen", help: "Kredietwaardigheid van natuurlijke personen (Annex III 5(b))." },
+  { value: "verzekering_lz", label: "Levens- of zorgverzekering: risico of premie bepalen", help: "Alleen levens- en zorgverzekering vallen onder Annex III 5(c) — overige verzekeringen (auto, woning, reis) niet." },
   { value: "biometrie", label: "Gezichts-, stem- of emotieherkenning" },
   { value: "geen", label: "Algemeen gebruik / geen van deze" },
 ];
@@ -392,10 +393,16 @@ export function mapTools(answers: ScanAnswers): Partial<ScanAnswers> {
   const areas: string[] = [];
   const subareas: string[] = [];
   if (uses.includes("werving") || uses.includes("personeel")) areas.push("4");
-  if (uses.includes("krediet")) {
-    areas.push("5");
-    subareas.push("5b");
-  }
+  // Annex III(5): 5(b) = creditworthiness / credit score of natural persons;
+  // 5(c) = risk assessment & pricing for LIFE AND HEALTH insurance ONLY
+  // (ai-act-full-text.md L7213-7217). General insurance (car/home/travel) is not
+  // an Annex III use case, so it is deliberately NOT mapped to area 5 — pre-checking
+  // it high-risk would be a false positive (guardrail #2).
+  const wantsCredit = uses.includes("krediet");
+  const wantsLifeHealthInsurance = uses.includes("verzekering_lz");
+  if (wantsCredit || wantsLifeHealthInsurance) areas.push("5");
+  if (wantsCredit) subareas.push("5b");
+  if (wantsLifeHealthInsurance) subareas.push("5c");
   // Annex III 1(a): only 1:many biometric identification is high-risk area 1;
   // 1:1 verification is carved out. The dedicated `biometricUse` question refines
   // this — pre-fill area 1 unless verification-only is already indicated.
