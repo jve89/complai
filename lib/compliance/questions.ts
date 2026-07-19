@@ -150,6 +150,7 @@ export const ANNEX_I_B: Option[] = [
   { value: "rail", label: "Spoorwegsysteem" },
   { value: "motor_vehicles", label: "Motorvoertuigen" },
   { value: "civil_aviation", label: "Burgerluchtvaart" },
+  { value: "unmanned_aircraft", label: "Drones / onbemande luchtvaartuigen" },
   { value: "none", label: "Geen van bovenstaande" },
 ];
 

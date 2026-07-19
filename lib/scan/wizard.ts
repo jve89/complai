@@ -5,6 +5,7 @@
 
 import {
   ANNEX_I_A,
+  ANNEX_I_B,
   ANNEX_III_AREAS,
   ANNEX_III_SUBAREAS,
   BIOMETRIC_USE,
@@ -138,6 +139,14 @@ const CLASSIFICATION_STEPS: WizardStep[] = [
     type: "single",
     options: THIRD_PARTY_CONFORMITY,
     visible: (a) => hasReal(a.annexI_A),
+  },
+  {
+    field: "annexI_B",
+    section: "Producten",
+    title: "Zit uw AI in een voertuig, luchtvaartuig, vaartuig of spoorsysteem?",
+    help: "Bv. auto's, twee-/driewielers, landbouwvoertuigen, drones of luchtvaart, zeeschepen of spoor. Deze producten vallen grotendeels onder eigen sectorale EU-wetgeving (AI Act Art. 2(2)) — buiten de scope van deze scan.",
+    type: "multi",
+    options: ANNEX_I_B,
   },
   {
     field: "annexIII_areas",
