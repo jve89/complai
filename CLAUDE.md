@@ -42,8 +42,8 @@ Tailwind + shadcn/ui · Supabase auth · Prisma 6 → Postgres · @react-pdf/ren
 
 ## Conventions
 
-- **All UI copy in Dutch (NL).** Marketing copy currently mirrors a source site —
-  flagged for an original-copy rewrite before launch (avoid plagiarism).
+- **All UI copy in Dutch (NL).** Marketing copy has been reworked to be original
+  (the earlier source-mirroring rewrite is done); the site is indexable.
 - Colors: **indigo `#6366f1` / violet `#8b5cf6` brand on a light theme.** Tailwind
   tokens: `brand` (indigo), `violet`, and `navy` — note `navy` is now a deep
   indigo ink `#1e1b4b` for dark surfaces (sidebar/footer/auth), not slate-navy.
