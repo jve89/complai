@@ -11,16 +11,19 @@ import { TOOL_META, type ScanAnswers } from "@/lib/compliance/questions";
  * limited risk by default — the user confirms/refines). So a company that ticked
  * ChatGPT + Gemini + Claude sees them waiting in their register after signup.
  */
+type Db = Prisma.TransactionClient | typeof prisma;
+
 export async function syncAiSystemsFromTools(
   companyId: string,
-  answers: ScanAnswers
+  answers: ScanAnswers,
+  db: Db = prisma
 ): Promise<void> {
   const wanted = (answers.tools ?? [])
     .map((slug) => TOOL_META[slug])
     .filter(Boolean);
   if (!wanted.length) return;
 
-  const existing = await prisma.aiSystem.findMany({
+  const existing = await db.aiSystem.findMany({
     where: { companyId },
     select: { name: true },
   });
@@ -28,7 +31,7 @@ export async function syncAiSystemsFromTools(
   const toCreate = wanted.filter((w) => !seen.has(w.name.toLowerCase()));
   if (!toCreate.length) return;
 
-  await prisma.aiSystem.createMany({
+  await db.aiSystem.createMany({
     data: toCreate.map((w) => ({
       companyId,
       name: w.name,
@@ -61,25 +64,31 @@ export async function applyScanToCompany(
   if (!profile) return false;
   const answers = scan.answers as unknown as ScanAnswers | null;
 
-  await prisma.company.update({
-    where: { id: companyId },
-    data: {
-      size: answers?.size ?? undefined,
-      sector: answers?.sector ?? undefined,
-      // `plan` = purchased plan (gates documents); recommendation lives in
-      // profileJson.recommendedTier. Don't overwrite the active plan here.
-      entityRoles: profile.entityRoles,
-      riskTiers: profile.riskTiers,
-      profileJson: profile as unknown as Prisma.InputJsonValue,
-    },
-  });
+  // All four writes are one unit: the company's derived profile, the scan link,
+  // the materialised obligations, and the pre-loaded register must not diverge
+  // (a partial failure previously left profileJson claiming one risk profile
+  // while compliance_items was empty). Wrap them in a single transaction.
+  await prisma.$transaction(async (tx) => {
+    await tx.company.update({
+      where: { id: companyId },
+      data: {
+        size: answers?.size ?? undefined,
+        sector: answers?.sector ?? undefined,
+        // `plan` = purchased plan (gates documents); recommendation lives in
+        // profileJson.recommendedTier. Don't overwrite the active plan here.
+        entityRoles: profile.entityRoles,
+        riskTiers: profile.riskTiers,
+        profileJson: profile as unknown as Prisma.InputJsonValue,
+      },
+    });
 
-  await prisma.scanResult.update({
-    where: { id: scanId },
-    data: { companyId, userId: userId ?? undefined },
-  });
+    await tx.scanResult.update({
+      where: { id: scanId },
+      data: { companyId, userId: userId ?? undefined },
+    });
 
-  await materializeComplianceItems(companyId, profile);
-  if (answers) await syncAiSystemsFromTools(companyId, answers);
+    await materializeComplianceItems(companyId, profile, tx);
+    if (answers) await syncAiSystemsFromTools(companyId, answers, tx);
+  });
   return true;
 }

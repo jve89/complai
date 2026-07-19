@@ -2,10 +2,14 @@
 // table, so the dashboard and governance (which already read that table) reflect
 // the scan. The profile is the single source of truth — we replace all items.
 
-import type { ComplianceStatus } from "@prisma/client";
+import type { ComplianceStatus, Prisma } from "@prisma/client";
 
 import { prisma } from "@/lib/prisma";
 import type { ComplianceProfile, ObligationStatus } from "@/lib/compliance/types";
+
+/** Accepts the base client or a transaction client, so callers can make the
+ * replace atomic within a larger $transaction (see applyScanToCompany). */
+type Db = Prisma.TransactionClient | typeof prisma;
 
 function toComplianceStatus(status: ObligationStatus): ComplianceStatus {
   switch (status) {
@@ -21,12 +25,13 @@ function toComplianceStatus(status: ObligationStatus): ComplianceStatus {
 
 export async function materializeComplianceItems(
   companyId: string,
-  profile: ComplianceProfile
+  profile: ComplianceProfile,
+  db: Db = prisma
 ): Promise<void> {
-  await prisma.complianceItem.deleteMany({ where: { companyId } });
+  await db.complianceItem.deleteMany({ where: { companyId } });
   if (profile.obligations.length === 0) return;
 
-  await prisma.complianceItem.createMany({
+  await db.complianceItem.createMany({
     data: profile.obligations.map((o) => ({
       companyId,
       code: o.code,

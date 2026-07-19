@@ -14,19 +14,19 @@ const GRANTING_STATUSES = new Set(["active", "trialing", "past_due"]);
  * manually-set staff pakket (e.g. Audit-klaar for ourselves) is never
  * overwritten by a webhook. */
 export async function isStaffCompany(companyId: string): Promise<boolean> {
-  const staff = await prisma.user.findFirst({
-    where: {
-      companyId,
-      OR: [
-        { superAdmin: true },
-        ...(env.superAdminEmails.length
-          ? [{ email: { in: env.superAdminEmails } }]
-          : []),
-      ],
-    },
-    select: { id: true },
+  // superAdmin flag is authoritative; the env allowlist is the bootstrap path and
+  // is NOT persisted as superAdmin=true, so match it too — case-INSENSITIVELY,
+  // because User.email is stored verbatim from the form while env.superAdminEmails
+  // is force-lowercased. A DB `email: { in: [...] }` is case-sensitive in Postgres
+  // and would miss e.g. "Johan@Gmail.com", wrongly downgrading a staff pakket.
+  const allow = new Set(env.superAdminEmails); // already lowercased in lib/env
+  const users = await prisma.user.findMany({
+    where: { companyId },
+    select: { superAdmin: true, email: true },
   });
-  return Boolean(staff);
+  return users.some(
+    (u) => u.superAdmin || allow.has(u.email.trim().toLowerCase())
+  );
 }
 
 /**

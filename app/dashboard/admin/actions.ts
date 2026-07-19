@@ -159,9 +159,15 @@ export async function deleteUser(formData: FormData): Promise<void> {
   console.error(
     `[admin-audit] ${me.email} verwijdert gebruiker ${target.email} (${userId})`
   );
+  // DB rows first, atomically; only then the irreversible external auth deletion.
+  // If auth deletion fails after commit, the worst state is "auth exists, DB
+  // gone" (self-heals on next login) instead of an orphaned User row that shows
+  // in the roster but can never authenticate.
+  await prisma.$transaction([
+    prisma.employee.deleteMany({ where: { userId } }),
+    prisma.user.delete({ where: { id: userId } }),
+  ]);
   await deleteAuthUsers([userId]);
-  await prisma.employee.deleteMany({ where: { userId } });
-  await prisma.user.delete({ where: { id: userId } });
 
   revalidatePath("/dashboard/admin");
 }
@@ -186,9 +192,14 @@ export async function deleteCompany(formData: FormData): Promise<void> {
   console.error(
     `[admin-audit] ${me.email} verwijdert organisatie ${company.name} (${companyId}) met ${company.users.length} gebruiker(s)`
   );
+  // DB deletes atomically (company.delete cascades its child data), then the
+  // irreversible external auth deletion — so a mid-sequence failure can't leave
+  // a company whose members' logins are gone but whose data still exists.
+  await prisma.$transaction([
+    prisma.user.deleteMany({ where: { companyId } }),
+    prisma.company.delete({ where: { id: companyId } }),
+  ]);
   await deleteAuthUsers(company.users.map((u) => u.id));
-  await prisma.user.deleteMany({ where: { companyId } });
-  await prisma.company.delete({ where: { id: companyId } });
 
   revalidatePath("/dashboard/admin");
 }
