@@ -39,7 +39,8 @@ export async function updateLogRetention(input: LogRetentionInput): Promise<Acti
     return { ok: false, error: parsed.error.issues[0]?.message ?? "Ongeldige invoer." };
   }
   const { id, logLocation, logRetentionMonths, logRetentionOwner, logReviewedAt } = parsed.data;
-  const { company, user } = await getActiveCompany();
+  const { company, user, demo } = await getActiveCompany();
+  if (demo) return { ok: false, error: "In de demo kunt u geen wijzigingen opslaan." };
   if (!canAdminister(user)) return { ok: false, error: NOT_ADMIN };
 
   if (!logRetentionUnlocked(company.plan)) {

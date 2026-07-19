@@ -36,7 +36,8 @@ export async function upsertConformityAssessment(
     return { ok: false, error: parsed.error.issues[0]?.message ?? "Ongeldige invoer." };
   }
   const { aiSystemId, route, steps, notes, reviewedAt } = parsed.data;
-  const { company, user } = await getActiveCompany();
+  const { company, user, demo } = await getActiveCompany();
+  if (demo) return { ok: false, error: "In de demo kunt u geen wijzigingen opslaan." };
   if (!canAdminister(user)) return { ok: false, error: NOT_ADMIN };
 
   if (!conformityUnlocked(company.plan)) {

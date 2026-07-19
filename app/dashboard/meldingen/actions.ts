@@ -45,7 +45,8 @@ export async function upsertIncident(input: IncidentInput): Promise<ActionResult
     return { ok: false, error: parsed.error.issues[0]?.message ?? "Ongeldige invoer." };
   }
   const { id, occurredAt, reportedAt, ...rest } = parsed.data;
-  const { company, user } = await getActiveCompany();
+  const { company, user, demo } = await getActiveCompany();
+  if (demo) return { ok: false, error: "In de demo kunt u geen wijzigingen opslaan." };
   if (!canAdminister(user)) return { ok: false, error: NOT_ADMIN };
 
   if (!incidentsUnlocked(company.plan)) {
@@ -82,7 +83,8 @@ export async function upsertIncident(input: IncidentInput): Promise<ActionResult
 }
 
 export async function deleteIncident(id: string): Promise<ActionResult> {
-  const { company, user } = await getActiveCompany();
+  const { company, user, demo } = await getActiveCompany();
+  if (demo) return { ok: false, error: "In de demo kunt u geen wijzigingen opslaan." };
   if (!canAdminister(user)) return { ok: false, error: NOT_ADMIN };
   try {
     await prisma.incident.deleteMany({ where: { id, companyId: company.id } });

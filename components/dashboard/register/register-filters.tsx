@@ -29,7 +29,7 @@ export function RegisterFilters() {
   return (
     <div className="flex flex-wrap items-center gap-2">
       <Select value={risk} onValueChange={(v) => update("risk", v)}>
-        <SelectTrigger className="w-[170px]">
+        <SelectTrigger className="w-[170px]" aria-label="Filter op risiconiveau">
           <SelectValue placeholder="Risiconiveau" />
         </SelectTrigger>
         <SelectContent>
@@ -43,7 +43,7 @@ export function RegisterFilters() {
       </Select>
 
       <Select value={status} onValueChange={(v) => update("status", v)}>
-        <SelectTrigger className="w-[160px]">
+        <SelectTrigger className="w-[160px]" aria-label="Filter op status">
           <SelectValue placeholder="Status" />
         </SelectTrigger>
         <SelectContent>

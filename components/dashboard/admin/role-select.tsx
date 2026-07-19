@@ -45,6 +45,7 @@ export function RoleSelect({
   return (
     <div className="flex items-center gap-2">
       <select
+        aria-label={`Rol voor ${name}`}
         value={current}
         onChange={(e) => change(e.target.value)}
         disabled={isPending}

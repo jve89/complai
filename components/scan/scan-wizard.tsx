@@ -177,6 +177,7 @@ export function ScanWizard({ initialAnswers }: { initialAnswers?: ScanAnswers })
       <button
         key={opt.value}
         type="button"
+        aria-pressed={selected}
         onClick={() =>
           step.type === "multi" ? toggleMulti(opt.value) : selectSingle(opt.value)
         }
@@ -235,6 +236,7 @@ export function ScanWizard({ initialAnswers }: { initialAnswers?: ScanAnswers })
         <div className="mt-6">
           <input
             type="text"
+            aria-labelledby="scan-step-title"
             value={(current as string) ?? ""}
             onChange={(e) => update(step.field, e.target.value)}
             onKeyDown={(e) => {
@@ -286,12 +288,14 @@ export function ScanWizard({ initialAnswers }: { initialAnswers?: ScanAnswers })
         key={`${step.section}-${step.field}-${step.readinessKey ?? ""}-${step.qualifierKey ?? ""}`}
         className="animate-fade-up"
       >
-        <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">{step.title}</h1>
+        <h1 id="scan-step-title" className="text-2xl font-bold tracking-tight sm:text-3xl">{step.title}</h1>
         {step.help && <p className="mt-2 text-muted-foreground">{step.help}</p>}
 
         {renderBody()}
 
-        {error && <p className="mt-4 text-sm text-destructive">{error}</p>}
+        <div aria-live="polite">
+          {error && <p className="mt-4 text-sm text-destructive">{error}</p>}
+        </div>
 
         <div className="mt-8 flex items-center justify-between">
           <Button variant="ghost" onClick={back} disabled={index === 0 || isPending}>

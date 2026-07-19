@@ -1,4 +1,5 @@
 import "server-only";
+import { cache } from "react";
 
 import type { RegulatoryUpdate as RegulatoryUpdateRow } from "@prisma/client";
 
@@ -37,14 +38,15 @@ export function mapUpdateRow(row: RegulatoryUpdateRow): RegulatoryUpdate {
 }
 
 /** Published updates only (draft rows are hidden from customers + the public
- *  page). Newest first. */
-export async function getPublishedUpdates(): Promise<RegulatoryUpdate[]> {
+ *  page). Newest first. Request-memoized (cache) so the dashboard layout AND
+ *  page — which both evaluate updates in one render — hit the table once. */
+export const getPublishedUpdates = cache(async (): Promise<RegulatoryUpdate[]> => {
   const rows = await prisma.regulatoryUpdate.findMany({
     where: { status: "published" },
     orderBy: { date: "desc" },
   });
   return rows.map(mapUpdateRow);
-}
+});
 
 /** Published updates, evaluated for relevance to this company. */
 export async function getEvaluatedUpdates(

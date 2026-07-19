@@ -111,7 +111,7 @@ export function ConformityDialog({
           <div className="space-y-2">
             <Label>Route (Art. 43)</Label>
             <Select value={route} onValueChange={(v) => setRoute(v as ConformityRoute)}>
-              <SelectTrigger>
+              <SelectTrigger aria-label="Route (Art. 43)">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -135,7 +135,7 @@ export function ConformityDialog({
                     value={steps[s.key] ?? "todo"}
                     onValueChange={(v) => setStep(s.key, v as StepStatus)}
                   >
-                    <SelectTrigger className="w-36">
+                    <SelectTrigger className="w-36" aria-label={`Status: ${s.label}`}>
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>

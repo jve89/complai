@@ -116,7 +116,7 @@ export function ProfileForm({ company }: { company: Company }) {
         <div className="space-y-1.5">
           <Label>Bedrijfsgrootte</Label>
           <Select value={form.size} onValueChange={(v) => set("size", v)}>
-            <SelectTrigger>
+            <SelectTrigger aria-label="Bedrijfsgrootte">
               <SelectValue placeholder="Selecteer…" />
             </SelectTrigger>
             <SelectContent>

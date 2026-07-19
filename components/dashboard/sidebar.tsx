@@ -89,7 +89,12 @@ function NavLink({
     >
       <item.icon className="h-5 w-5 shrink-0" />
       {item.label}
-      {locked && <Lock className={cn("ml-auto h-3.5 w-3.5 shrink-0", dark ? "text-white/50" : "text-muted-foreground")} />}
+      {locked && (
+        <>
+          <Lock className={cn("ml-auto h-3.5 w-3.5 shrink-0", dark ? "text-white/50" : "text-muted-foreground")} />
+          <span className="sr-only">(vergrendeld — hoger pakket vereist)</span>
+        </>
+      )}
       {slugIsUpdates(item.href) && <UpdatesBadge dates={updateDates} />}
     </Link>
   );
@@ -157,7 +162,7 @@ function NavGroupSection({
         </div>
       )}
       {isOpen && !anyRelevant && (
-        <p className={cn("px-3 pb-1 pt-1 text-[11px]", dark ? "text-white/35" : "text-muted-foreground")}>
+        <p className={cn("px-3 pb-1 pt-1 text-[11px]", dark ? "text-white/70" : "text-muted-foreground")}>
           Van toepassing zodra u hoog-risico AI inzet.
         </p>
       )}
@@ -263,7 +268,7 @@ export function Sidebar({
           </Link>
         )}
       </nav>
-      <div className="border-t border-white/10 p-4 text-xs text-white/40">
+      <div className="border-t border-white/10 p-4 text-xs text-white/70">
         EU AI Act compliance
       </div>
     </aside>

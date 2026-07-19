@@ -127,7 +127,7 @@ export function ComplaintDialog({
             <div className="space-y-2">
               <Label>Betreft AI-systeem (optioneel)</Label>
               <Select value={form.aiSystemId} onValueChange={(v) => set("aiSystemId", v)}>
-                <SelectTrigger>
+                <SelectTrigger aria-label="Betreft AI-systeem (optioneel)">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -155,7 +155,7 @@ export function ComplaintDialog({
             <div className="space-y-2">
               <Label>Binnengekomen via (optioneel)</Label>
               <Select value={form.channel} onValueChange={(v) => set("channel", v)}>
-                <SelectTrigger>
+                <SelectTrigger aria-label="Binnengekomen via (optioneel)">
                   <SelectValue placeholder="Kies een kanaal" />
                 </SelectTrigger>
                 <SelectContent>
@@ -184,7 +184,7 @@ export function ComplaintDialog({
             <div className="space-y-2">
               <Label>Status</Label>
               <Select value={form.status} onValueChange={(v) => set("status", v as ComplaintStatus)}>
-                <SelectTrigger>
+                <SelectTrigger aria-label="Status">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>

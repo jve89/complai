@@ -36,7 +36,8 @@ export async function upsertNotice(input: NoticeFormInput): Promise<ActionResult
     return { ok: false, error: parsed.error.issues[0]?.message ?? "Ongeldige invoer." };
   }
   const { id, aiSystemId: rawSystemId, issuedAt, ...rest } = parsed.data;
-  const { company, user } = await getActiveCompany();
+  const { company, user, demo } = await getActiveCompany();
+  if (demo) return { ok: false, error: "In de demo kunt u geen wijzigingen opslaan." };
   if (!canAdminister(user)) return { ok: false, error: NOT_ADMIN };
 
   if (!noticesUnlocked(company.plan)) {
@@ -83,7 +84,8 @@ export async function upsertNotice(input: NoticeFormInput): Promise<ActionResult
 }
 
 export async function deleteNotice(id: string): Promise<ActionResult> {
-  const { company, user } = await getActiveCompany();
+  const { company, user, demo } = await getActiveCompany();
+  if (demo) return { ok: false, error: "In de demo kunt u geen wijzigingen opslaan." };
   if (!canAdminister(user)) return { ok: false, error: NOT_ADMIN };
   try {
     await prisma.notice.deleteMany({ where: { id, companyId: company.id } });

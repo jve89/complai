@@ -65,6 +65,7 @@ const NameCombobox = forwardRef<
   const [active, setActive] = useState(0);
   const wrapRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const listboxId = "name-combobox-listbox";
 
   useImperativeHandle(ref, () => ({
     open: () => {
@@ -121,13 +122,23 @@ const NameCombobox = forwardRef<
         placeholder="bijv. ChatGPT — of typ zelf een naam"
         autoComplete="off"
         required
+        role="combobox"
+        aria-expanded={open && results.length > 0}
+        aria-autocomplete="list"
+        aria-controls={listboxId}
       />
       {open && results.length > 0 && (
-        <div className="absolute z-50 mt-1 max-h-56 w-full overflow-auto rounded-lg border bg-card py-1 shadow-md">
+        <div
+          id={listboxId}
+          role="listbox"
+          className="absolute z-50 mt-1 max-h-56 w-full overflow-auto rounded-lg border bg-card py-1 shadow-md"
+        >
           {results.map((s, i) => (
             <button
               key={s.id}
               type="button"
+              role="option"
+              aria-selected={i === active}
               onMouseDown={(e) => e.preventDefault()}
               onMouseEnter={() => setActive(i)}
               onClick={() => choose(s)}
@@ -276,7 +287,7 @@ export function AiSystemDialog({ system, trigger, employees = [] }: Props) {
                 value={form.role}
                 onValueChange={(v) => set("role", v as typeof form.role)}
               >
-                <SelectTrigger>
+                <SelectTrigger aria-label="Rol">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -297,7 +308,7 @@ export function AiSystemDialog({ system, trigger, employees = [] }: Props) {
                   set("riskLevel", v as typeof form.riskLevel)
                 }
               >
-                <SelectTrigger>
+                <SelectTrigger aria-label="Risiconiveau">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -316,7 +327,7 @@ export function AiSystemDialog({ system, trigger, employees = [] }: Props) {
                 value={form.status}
                 onValueChange={(v) => set("status", v as typeof form.status)}
               >
-                <SelectTrigger>
+                <SelectTrigger aria-label="Status">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -336,7 +347,7 @@ export function AiSystemDialog({ system, trigger, employees = [] }: Props) {
               value={form.oversightEmployeeId}
               onValueChange={(v) => set("oversightEmployeeId", v)}
             >
-              <SelectTrigger>
+              <SelectTrigger aria-label="Menselijk toezicht (Art. 26)">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>

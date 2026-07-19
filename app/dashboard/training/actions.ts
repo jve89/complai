@@ -44,7 +44,8 @@ export async function completeModule(
   const total = asked.length;
   const passed = total > 0 && score / total >= PASS_FRACTION;
 
-  const { company, user } = await getActiveCompany();
+  const { company, user, demo } = await getActiveCompany();
+  if (demo) return { ok: false, error: "In de demo kunt u geen wijzigingen opslaan." };
 
   // E-learning is a paid feature: on the free tier modules can't be completed.
   if (!trainingUnlocked(company.plan)) {

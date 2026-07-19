@@ -132,7 +132,7 @@ export function CorrectiveActionDialog({
             <div className="space-y-2">
               <Label>Betreft AI-systeem (optioneel)</Label>
               <Select value={form.aiSystemId} onValueChange={(v) => set("aiSystemId", v)}>
-                <SelectTrigger>
+                <SelectTrigger aria-label="Betreft AI-systeem (optioneel)">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -148,7 +148,7 @@ export function CorrectiveActionDialog({
             <div className="space-y-2">
               <Label>Maatregel (Art. 20)</Label>
               <Select value={form.actionType} onValueChange={(v) => set("actionType", v as ActionType)}>
-                <SelectTrigger>
+                <SelectTrigger aria-label="Maatregel (Art. 20)">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -217,7 +217,7 @@ export function CorrectiveActionDialog({
             <div className="space-y-2">
               <Label>Status</Label>
               <Select value={form.status} onValueChange={(v) => set("status", v as CorrectiveStatus)}>
-                <SelectTrigger>
+                <SelectTrigger aria-label="Status">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>

@@ -64,6 +64,7 @@ export function PricingTable({ scanId }: { scanId?: string }) {
           type="button"
           role="switch"
           aria-checked={interval === "year"}
+          aria-label="Jaarlijkse facturering"
           onClick={() => setInterval((i) => (i === "month" ? "year" : "month"))}
           className={cn(
             "relative h-6 w-11 shrink-0 cursor-pointer rounded-full transition-colors",

@@ -32,7 +32,8 @@ export async function upsertAiSystem(
     return { ok: false, error: parsed.error.issues[0]?.message ?? "Ongeldige invoer." };
   }
   const { id, ...data } = parsed.data;
-  const { company, user } = await getActiveCompany();
+  const { company, user, demo } = await getActiveCompany();
+  if (demo) return { ok: false, error: "In de demo kunt u geen wijzigingen opslaan." };
   if (!canAdminister(user)) return { ok: false, error: NOT_ADMIN };
 
   // Register is a paid feature: on the free tier existing rows can be viewed and
@@ -93,7 +94,8 @@ export async function upsertAiSystem(
 }
 
 export async function deleteAiSystem(id: string): Promise<ActionResult> {
-  const { company, user } = await getActiveCompany();
+  const { company, user, demo } = await getActiveCompany();
+  if (demo) return { ok: false, error: "In de demo kunt u geen wijzigingen opslaan." };
   if (!canAdminister(user)) return { ok: false, error: NOT_ADMIN };
   try {
     await prisma.aiSystem.deleteMany({ where: { id, companyId: company.id } });

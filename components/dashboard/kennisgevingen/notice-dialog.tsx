@@ -122,7 +122,7 @@ export function NoticeDialog({
           <div className="space-y-2">
             <Label>Soort kennisgeving</Label>
             <Select value={form.type} onValueChange={(v) => set("type", v as NoticeType)}>
-              <SelectTrigger>
+              <SelectTrigger aria-label="Soort kennisgeving">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -155,7 +155,7 @@ export function NoticeDialog({
           <div className="space-y-2">
             <Label>Betreft AI-systeem (optioneel)</Label>
             <Select value={form.aiSystemId} onValueChange={(v) => set("aiSystemId", v)}>
-              <SelectTrigger>
+              <SelectTrigger aria-label="Betreft AI-systeem (optioneel)">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -187,7 +187,7 @@ export function NoticeDialog({
             <div className="space-y-2">
               <Label>Status</Label>
               <Select value={form.status} onValueChange={(v) => set("status", v as NoticeStatus)}>
-                <SelectTrigger>
+                <SelectTrigger aria-label="Status">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -213,7 +213,7 @@ export function NoticeDialog({
           <div className="space-y-2">
             <Label>Hoe verstrekt (optioneel)</Label>
             <Select value={form.method} onValueChange={(v) => set("method", v)}>
-              <SelectTrigger>
+              <SelectTrigger aria-label="Hoe verstrekt (optioneel)">
                 <SelectValue placeholder="Kies een methode" />
               </SelectTrigger>
               <SelectContent>

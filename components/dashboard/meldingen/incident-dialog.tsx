@@ -140,7 +140,7 @@ export function IncidentDialog({
           <div className="space-y-2">
             <Label>Categorie (Art. 3(49))</Label>
             <Select value={form.category} onValueChange={(v) => set("category", v as IncidentCategory)}>
-              <SelectTrigger>
+              <SelectTrigger aria-label="Categorie (Art. 3(49))">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -212,7 +212,7 @@ export function IncidentDialog({
             <div className="space-y-2">
               <Label>Status</Label>
               <Select value={form.status} onValueChange={(v) => set("status", v as IncidentStatus)}>
-                <SelectTrigger>
+                <SelectTrigger aria-label="Status">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>

@@ -38,7 +38,8 @@ export async function upsertComplaint(input: ComplaintInput): Promise<ActionResu
     return { ok: false, error: parsed.error.issues[0]?.message ?? "Ongeldige invoer." };
   }
   const { id, aiSystemId: rawSystemId, resolvedAt, ...rest } = parsed.data;
-  const { company, user } = await getActiveCompany();
+  const { company, user, demo } = await getActiveCompany();
+  if (demo) return { ok: false, error: "In de demo kunt u geen wijzigingen opslaan." };
   if (!canAdminister(user)) return { ok: false, error: NOT_ADMIN };
 
   if (!complaintsUnlocked(company.plan)) {
@@ -81,7 +82,8 @@ export async function upsertComplaint(input: ComplaintInput): Promise<ActionResu
 }
 
 export async function deleteComplaint(id: string): Promise<ActionResult> {
-  const { company, user } = await getActiveCompany();
+  const { company, user, demo } = await getActiveCompany();
+  if (demo) return { ok: false, error: "In de demo kunt u geen wijzigingen opslaan." };
   if (!canAdminister(user)) return { ok: false, error: NOT_ADMIN };
   try {
     await prisma.complaint.deleteMany({ where: { id, companyId: company.id } });

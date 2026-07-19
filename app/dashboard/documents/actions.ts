@@ -23,7 +23,8 @@ export async function generateDocument(
     return { ok: false, error: "Onbekend documenttype." };
   }
 
-  const { company, user } = await getActiveCompany();
+  const { company, user, demo } = await getActiveCompany();
+  if (demo) return { ok: false, error: "In de demo kunt u geen wijzigingen opslaan." };
 
   // Saving a new shared company version is admin-only; managers/medewerkers get
   // a local, non-persisted copy via /api/pdf/document-live instead.
@@ -86,7 +87,8 @@ export async function generateDocument(
 export async function deleteDocumentVersion(
   id: string
 ): Promise<{ ok: boolean; error?: string }> {
-  const { company, user } = await getActiveCompany();
+  const { company, user, demo } = await getActiveCompany();
+  if (demo) return { ok: false, error: "In de demo kunt u geen wijzigingen opslaan." };
   if (!canAdminister(user)) {
     return { ok: false, error: "Alleen de beheerder kan versies verwijderen." };
   }

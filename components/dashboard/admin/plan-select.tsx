@@ -47,6 +47,7 @@ export function PlanSelect({
   return (
     <div className="flex items-center gap-2">
       <select
+        aria-label={`Pakket voor ${companyName}`}
         value={staged}
         onChange={(e) => setStaged(e.target.value)}
         disabled={isPending}
