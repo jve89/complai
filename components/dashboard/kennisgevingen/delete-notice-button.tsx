@@ -19,18 +19,24 @@ import {
 export function DeleteNoticeButton({ id, label }: { id: string; label: string }) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
 
   function confirm() {
+    setError(null);
     startTransition(async () => {
-      await deleteNotice(id);
+      const res = await deleteNotice(id);
+      if (!res.ok) {
+        setError(res.error);
+        return;
+      }
       setOpen(false);
       router.refresh();
     });
   }
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={open} onOpenChange={(o) => { setOpen(o); if (!o) setError(null); }}>
       <DialogTrigger asChild>
         <Button
           variant="ghost"
@@ -49,6 +55,7 @@ export function DeleteNoticeButton({ id, label }: { id: string; label: string })
             worden gemaakt.
           </DialogDescription>
         </DialogHeader>
+        {error && <p className="text-sm text-destructive">{error}</p>}
         <DialogFooter>
           <Button variant="ghost" onClick={() => setOpen(false)} disabled={isPending}>
             Annuleren

@@ -11,11 +11,14 @@ import { rateLimitByIp } from "@/lib/rate-limit";
 export type ContactState = { ok?: boolean; error?: string } | undefined;
 
 const schema = z.object({
-  name: z.string().min(2, "Voer uw naam in."),
-  email: z.string().email("Voer een geldig e-mailadres in."),
-  company: z.string().optional(),
-  subject: z.string().optional(),
-  message: z.string().min(10, "Schrijf een bericht van minimaal 10 tekens."),
+  name: z.string().min(2, "Voer uw naam in.").max(200, "Naam is te lang."),
+  email: z.string().email("Voer een geldig e-mailadres in.").max(320, "E-mailadres is te lang."),
+  company: z.string().max(200, "Bedrijfsnaam is te lang.").optional(),
+  subject: z.string().max(200, "Onderwerp is te lang.").optional(),
+  message: z
+    .string()
+    .min(10, "Schrijf een bericht van minimaal 10 tekens.")
+    .max(5000, "Bericht is te lang (max. 5000 tekens)."),
 });
 
 export async function submitContact(
@@ -30,6 +33,7 @@ export async function submitContact(
 
   const { name, email, company, subject, message } = parsed.data;
 
+  // The DB row is the durable lead record — persist it first.
   try {
     await prisma.contactMessage.create({
       data: {
@@ -40,8 +44,16 @@ export async function submitContact(
         message,
       },
     });
+  } catch (e) {
+    console.error("Contactbericht opslaan mislukt:", e);
+    return { error: "Er ging iets mis bij het versturen. Probeer het later opnieuw." };
+  }
 
-    // Notify the team. In stub mode (no RESEND_API_KEY) this logs to the console.
+  // Notify the team — best-effort, isolated so a mail failure never masks the
+  // already-saved lead. (Pre-launch, Resend runs without a verified domain and
+  // can't deliver to arbitrary CONTACT_TO addresses, so this WILL throw; the
+  // visitor must still see success, else they re-submit → duplicate leads.)
+  try {
     const mail = contactNotificationEmail({
       name,
       email,
@@ -49,16 +61,13 @@ export async function submitContact(
       formSubject: subject,
       message,
     });
-    // Deliver to a mailbox that can actually receive (CONTACT_TO); the EMAIL_FROM
-    // sender address may be send-only. The DB row above is the durable record.
     await sendEmail({
       to: env.contactTo || env.emailFrom,
       subject: mail.subject,
       html: mail.html,
     });
   } catch (e) {
-    console.error("Contactbericht verwerken mislukt:", e);
-    return { error: "Er ging iets mis bij het versturen. Probeer het later opnieuw." };
+    console.error("Contact-notificatie e-mail mislukt (bericht wél opgeslagen):", e);
   }
 
   return { ok: true };

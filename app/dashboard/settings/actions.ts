@@ -99,6 +99,24 @@ export async function updateMemberRole(
   const ctx = await requireAdmin();
   if (!ctx) return { ok: false, error: "Alleen een beheerder kan rollen wijzigen." };
   const { company } = ctx;
+
+  // Never leave a company without a beheerder: block demoting its last admin
+  // (there'd be no in-app way to invite members, manage billing, or edit the
+  // profile — recovery would need ComplAI support).
+  const target = await prisma.user.findFirst({
+    where: { id: userId, companyId: company.id },
+    select: { role: true },
+  });
+  if (!target) return { ok: false, error: "Teamlid niet gevonden." };
+  if (target.role === "admin" && parsed.data !== "admin") {
+    const otherAdmins = await prisma.user.count({
+      where: { companyId: company.id, role: "admin", id: { not: userId } },
+    });
+    if (otherAdmins === 0) {
+      return { ok: false, error: "Er moet minstens één beheerder overblijven." };
+    }
+  }
+
   try {
     const res = await prisma.user.updateMany({
       where: { id: userId, companyId: company.id },
