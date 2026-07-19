@@ -2,7 +2,7 @@ import { renderToBuffer } from "@react-pdf/renderer";
 
 import { prisma } from "@/lib/prisma";
 import { getActiveCompany } from "@/lib/auth";
-import { DEMO_COMPANY_NAME } from "@/lib/demo";
+import { getDemoCompanyId } from "@/lib/demo";
 import { getModule, getPath, moduleCountForPath } from "@/lib/training/content";
 import { trainingUnlocked } from "@/lib/plan";
 import { CertificatePdf } from "@/components/pdf/certificate-pdf";
@@ -24,7 +24,10 @@ export async function GET(
     return new Response("Geen certificaat beschikbaar", { status: 404 });
   }
 
-  if (employee.company.name !== DEMO_COMPANY_NAME) {
+  // Demo certificates are public; real ones need ownership + a paid plan. Match
+  // the demo by its stable id, not the mutable company name (rename-to-bypass).
+  const isDemo = employee.companyId === (await getDemoCompanyId());
+  if (!isDemo) {
     const { company } = await getActiveCompany();
     if (employee.companyId !== company.id) {
       return new Response("Geen certificaat beschikbaar", { status: 404 });

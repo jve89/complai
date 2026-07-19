@@ -8,6 +8,7 @@ import { createClient } from "@/lib/supabase/server";
 import { prisma } from "@/lib/prisma";
 import { isSupabaseConfigured } from "@/lib/env";
 import { applyScanToCompany } from "@/lib/scan/claim";
+import { DEMO_COMPANY_NAME } from "@/lib/demo";
 import { sendWelcome } from "@/lib/email/send";
 import { currentBaseUrl } from "@/lib/request-url";
 import { rateLimitByIp } from "@/lib/rate-limit";
@@ -153,6 +154,10 @@ export async function signup(
     const cn = z
       .string()
       .min(2, "Voer de naam van uw organisatie in.")
+      .refine(
+        (n) => n.trim().toLowerCase() !== DEMO_COMPANY_NAME.toLowerCase(),
+        "Deze bedrijfsnaam is niet beschikbaar."
+      )
       .safeParse(formData.get("companyName"));
     if (!cn.success) return { error: cn.error.issues[0]?.message };
     companyName = cn.data;

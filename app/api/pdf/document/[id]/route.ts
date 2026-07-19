@@ -2,7 +2,7 @@ import { renderToBuffer } from "@react-pdf/renderer";
 
 import { prisma } from "@/lib/prisma";
 import { getActiveCompany } from "@/lib/auth";
-import { DEMO_COMPANY_NAME } from "@/lib/demo";
+import { getDemoCompanyId } from "@/lib/demo";
 import { getDocumentMeta, type DocumentContent, type DocumentType } from "@/lib/documents/templates";
 import { DocumentPdf } from "@/components/pdf/document-pdf";
 
@@ -23,7 +23,10 @@ export async function GET(
     return new Response("Document niet gevonden", { status: 404 });
   }
 
-  const preview = doc.company.name === DEMO_COMPANY_NAME;
+  // Demo docs are public (watermarked preview). Detect the demo by the seeded
+  // company's stable id — NOT its display name, which a tenant could rename to
+  // DEMO_COMPANY_NAME to make its private documents publicly downloadable.
+  const preview = doc.companyId === (await getDemoCompanyId());
   if (!preview) {
     // Real document → enforce ownership (this path may redirect anonymous users
     // to login via getActiveCompany).

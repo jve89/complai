@@ -7,8 +7,11 @@ import { env } from "@/lib/env";
  * Refreshes the Supabase session cookie on every request and enforces auth on
  * protected routes. Returns the (possibly redirected) response.
  */
-export async function updateSession(request: NextRequest) {
-  let supabaseResponse = NextResponse.next({ request });
+export async function updateSession(request: NextRequest, requestHeaders?: Headers) {
+  // Forward the sanitized request headers (middleware strips any spoofed x-demo)
+  // so server components/actions never read a client-supplied x-demo.
+  const headers = requestHeaders ?? request.headers;
+  let supabaseResponse = NextResponse.next({ request: { headers } });
 
   // Without Supabase configured there is nothing to refresh — let requests pass
   // so the marketing site and scan remain usable in unconfigured environments.
@@ -25,7 +28,7 @@ export async function updateSession(request: NextRequest) {
         cookiesToSet.forEach(({ name, value }) =>
           request.cookies.set(name, value)
         );
-        supabaseResponse = NextResponse.next({ request });
+        supabaseResponse = NextResponse.next({ request: { headers } });
         cookiesToSet.forEach(({ name, value, options }) =>
           supabaseResponse.cookies.set(name, value, options)
         );

@@ -7,8 +7,13 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 function csvCell(value: string | null | undefined) {
-  const v = (value ?? "").replace(/"/g, '""');
-  return `"${v}"`;
+  let v = value ?? "";
+  // Neutralise spreadsheet formula injection: a cell beginning with = + - @ (or a
+  // tab/CR) is evaluated as a formula by Excel/LibreOffice even when quoted. User-
+  // controlled fields (name/vendor/description) are prefixed with ' to keep them
+  // inert text. https://owasp.org/www-community/attacks/CSV_Injection
+  if (/^[=+\-@\t\r]/.test(v)) v = `'${v}`;
+  return `"${v.replace(/"/g, '""')}"`;
 }
 
 export async function GET(req: Request) {

@@ -3,6 +3,7 @@
 // company for /demo/* requests (flagged by middleware), so every dashboard page
 // renders exactly as it does for a real customer — just with demo data.
 
+import { cache } from "react";
 import type { Company, Prisma } from "@prisma/client";
 
 import { prisma } from "@/lib/prisma";
@@ -14,6 +15,19 @@ import { modulesForPath, moduleCountForPath } from "@/lib/training/content";
 import type { ScanAnswers } from "@/lib/compliance/questions";
 
 export const DEMO_COMPANY_NAME = "Demo Recruitment B.V.";
+
+/** The seeded demo company's id (or null if it hasn't been created yet), cached
+ * per request. Callers use this to identify demo-owned rows by a STABLE id
+ * instead of the mutable display name — a real tenant that renames itself to
+ * DEMO_COMPANY_NAME must NOT be treated as the demo (auth-bypass otherwise). */
+export const getDemoCompanyId = cache(async (): Promise<string | null> => {
+  const c = await prisma.company.findFirst({
+    where: { name: DEMO_COMPANY_NAME },
+    select: { id: true },
+    orderBy: { createdAt: "asc" },
+  });
+  return c?.id ?? null;
+});
 
 // Simulated e-learning progress per demo employee: how many of their path's
 // modules are completed ("all" = finished). Gives the overview a realistic mix

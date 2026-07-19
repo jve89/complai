@@ -5,6 +5,7 @@ import { z } from "zod";
 
 import { prisma } from "@/lib/prisma";
 import { getActiveCompany, canAdminister, getCurrentUser } from "@/lib/auth";
+import { DEMO_COMPANY_NAME } from "@/lib/demo";
 import { createClient } from "@/lib/supabase/server";
 import { sendEmail } from "@/lib/resend";
 import { inviteEmail } from "@/lib/email/templates";
@@ -15,7 +16,13 @@ import { currentBaseUrl } from "@/lib/request-url";
 export type ActionResult = { ok: true; message?: string } | { ok: false; error: string };
 
 const profileSchema = z.object({
-  name: z.string().min(2, "Bedrijfsnaam is verplicht."),
+  name: z
+    .string()
+    .min(2, "Bedrijfsnaam is verplicht.")
+    .refine(
+      (n) => n.trim().toLowerCase() !== DEMO_COMPANY_NAME.toLowerCase(),
+      "Deze bedrijfsnaam is niet beschikbaar."
+    ),
   size: z.string().optional(),
   sector: z.string().optional(),
   country: z.string().min(2, "Land is verplicht."),
