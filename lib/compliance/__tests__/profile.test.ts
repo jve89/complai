@@ -87,6 +87,21 @@ function check(name: string, cond: boolean, detail = "") {
   check("no use-case pre-checks area 5 for general insurance", !generalInsuranceUseCase);
 }
 
+// ── Row 3a2 — Art. 6(3) derogation claimed on a credit/insurance (5b/5c) system
+//    is overridden (still high) AND the override is explained, not silently
+//    ignored (R4: profiling of natural persons → Art. 6(3) last subparagraph) ──
+{
+  const ans = base({
+    roles: ["deployer"], scopeCriteria: ["established_eu"],
+    annexIII_areas: ["5"], annexIII_subareas: ["5b"], art6_3_carveout: true,
+  });
+  const p = profileOf(ans);
+  const r = classify(ans);
+  console.log("Row 3a2 — Art. 6(3) derogation on credit scoring (5b):");
+  check("still high_risk (credit scoring profiles → no 6(3) derogation)", p.headline === "high_risk", p.headline);
+  check("caveat explains the 6(3) override", r.caveats.some((c) => /6\(3\)/.test(c) && /geldt hier niet/i.test(c)));
+}
+
 // ── Row 3b — Annex III area + valid Art. 6(3) carve-out → high_notify, NOT high_risk ──
 {
   const p = profileOf(base({ roles: ["deployer"], scopeCriteria: ["established_eu"], annexIII_areas: ["4"], art6_3_carveout: true }));

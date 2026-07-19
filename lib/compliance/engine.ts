@@ -211,7 +211,14 @@ export function classify(answers: ScanAnswers): ClassificationResult {
       if (answers.profiling) {
         isHigh = true; // Art. 6(3) final subparagraph: profiling forces high-risk.
       } else if (creditOrInsurance) {
-        isHigh = true; // credit/insurance systems virtually always profile.
+        isHigh = true; // credit scoring / life-health insurance pricing profiles natural persons.
+        if (answers.art6_3_carveout) {
+          // The derogation was claimed but cannot apply here — surface WHY instead
+          // of silently disregarding the answer (traceability).
+          caveats.push(
+            "De Art. 6(3)-uitzondering die u aangaf geldt hier niet: kredietscoring en risico-/premiebepaling bij levens- of zorgverzekeringen beoordelen natuurlijke personen (profilering), en dan blijft het systeem altijd hoog-risico (Art. 6(3), laatste alinea)."
+          );
+        }
       } else if (answers.art6_3_carveout) {
         isHighNotify = true; // Art. 6(3) derogation claimed → documentation/registration only.
         caveats.push(
