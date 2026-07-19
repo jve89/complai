@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useEffect, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowLeft, ArrowRight, Check, Loader2, Pencil } from "lucide-react";
 
@@ -22,6 +22,10 @@ const BOOL_OPTIONS: Option[] = [
   { value: "true", label: "Ja" },
   { value: "false", label: "Nee" },
 ];
+
+/** Per-tab persistence of in-progress scan answers, so a refresh doesn't wipe
+ * the primary conversion path. Cleared on submit. */
+const SCAN_STORAGE_KEY = "complai-scan-progress";
 
 /** Generic "is this step answered?" — used both for the active step and, on the
  * review screen, to route an edit back through any newly-revealed questions. */
@@ -57,6 +61,33 @@ export function ScanWizard({ initialAnswers }: { initialAnswers?: ScanAnswers })
   const [error, setError] = useState<string | null>(null);
   const [returnToReview, setReturnToReview] = useState(false);
   const [isPending, startTransition] = useTransition();
+
+  // Restore in-progress answers on mount (survives a browser refresh). SSR-safe:
+  // the initial render uses initialAnswers, then this rehydrates the real progress.
+  const [restored, setRestored] = useState(false);
+  useEffect(() => {
+    try {
+      const raw = window.sessionStorage.getItem(SCAN_STORAGE_KEY);
+      if (raw) {
+        const saved = JSON.parse(raw) as { answers?: ScanAnswers; index?: number };
+        if (saved.answers) setAnswers((a) => ({ ...a, ...saved.answers }));
+        if (typeof saved.index === "number") setIndex(saved.index);
+      }
+    } catch {
+      /* ignore corrupt / unavailable storage */
+    }
+    setRestored(true);
+  }, []);
+  // Persist on change — gated on `restored` so we never overwrite saved progress
+  // with the empty initial state before rehydration runs.
+  useEffect(() => {
+    if (!restored) return;
+    try {
+      window.sessionStorage.setItem(SCAN_STORAGE_KEY, JSON.stringify({ answers, index }));
+    } catch {
+      /* ignore */
+    }
+  }, [answers, index, restored]);
 
   const steps = visibleSteps(answers);
   const total = steps.length;
@@ -140,6 +171,13 @@ export function ScanWizard({ initialAnswers }: { initialAnswers?: ScanAnswers })
       startTransition(async () => {
         try {
           const { id } = await submitScan(answers);
+          // Scan submitted — clear the saved progress so a completed scan doesn't
+          // rehydrate on a later visit.
+          try {
+            window.sessionStorage.removeItem(SCAN_STORAGE_KEY);
+          } catch {
+            /* ignore */
+          }
           router.push(`/scan/results/${id}`);
         } catch {
           setError("Er ging iets mis bij het verwerken. Probeer het opnieuw.");
