@@ -64,11 +64,12 @@ export const DASHBOARD_NAV: NavItem[] = [
     icon: BellRing,
   },
   {
+    // Visible to everyone: the whole team sees the same roster. Only a
+    // beheerder gets the invite / role / remove controls (gated in the page).
     href: "/dashboard/team",
     label: "Medewerkers",
-    description: "Nodig collega's uit en beheer rollen",
+    description: "Bekijk uw team; beheer rollen als beheerder",
     icon: Users,
-    adminOnly: true,
   },
   {
     href: "/dashboard/meldingen",

@@ -10,16 +10,33 @@ export default async function TeamPage() {
   const { company, user, demo } = await getActiveCompany();
   const canManage = !demo && user?.profile?.role === "admin";
 
-  const members = await prisma.user.findMany({
-    where: { companyId: company.id },
-    orderBy: { createdAt: "asc" },
-  });
+  const [members, pendingInvites] = await Promise.all([
+    prisma.user.findMany({
+      where: { companyId: company.id },
+      orderBy: { createdAt: "asc" },
+    }),
+    // Only admins see/act on pending invites; skip the query otherwise.
+    canManage
+      ? prisma.invite.findMany({
+          where: {
+            companyId: company.id,
+            accepted: false,
+            OR: [{ expiresAt: null }, { expiresAt: { gt: new Date() } }],
+          },
+          orderBy: { createdAt: "desc" },
+        })
+      : Promise.resolve([]),
+  ]);
 
   return (
     <>
       <PageHeader
         title="Medewerkers"
-        description="Nodig collega's uit, beheer hun rol en houd AI-geletterdheid op orde."
+        description={
+          canManage
+            ? "Nodig collega's uit, beheer hun rol en verwijder wie geen toegang meer nodig heeft."
+            : "Uw team en hun rollen. Beheer is voorbehouden aan een beheerder."
+        }
       />
 
       <Card>
@@ -31,7 +48,12 @@ export default async function TeamPage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <TeamSection members={members} readOnly={!canManage} />
+          <TeamSection
+            members={members}
+            pendingInvites={pendingInvites}
+            currentUserId={user?.id}
+            readOnly={!canManage}
+          />
         </CardContent>
       </Card>
     </>

@@ -6,6 +6,7 @@ import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { getActiveCompany, canAdminister, getCurrentUser } from "@/lib/auth";
 import { DEMO_COMPANY_NAME } from "@/lib/demo";
+import { deleteAuthUsers } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import { sendEmail } from "@/lib/resend";
 import { inviteEmail } from "@/lib/email/templates";
@@ -251,6 +252,74 @@ export async function inviteMember(input: {
         ? `Uitnodiging klaargezet voor ${email} (e-mail is gelogd; voeg RESEND_API_KEY toe om echt te versturen).`
         : `Uitnodiging verzonden naar ${email}.`,
   };
+}
+
+/**
+ * Permanently removes a colleague: their Supabase auth login + User row +
+ * linked e-learning record. Admin-only, scoped to the caller's own company.
+ * Cannot remove yourself, nor the company's last beheerder (that would leave
+ * the org with no one able to manage it). Scans they ran stay (attributed to
+ * nobody) and any high-risk oversight assignment is cleared — both via
+ * onDelete: SetNull, so no company data is lost.
+ */
+export async function removeMember(userId: string): Promise<ActionResult> {
+  const ctx = await requireAdmin();
+  if (!ctx) return { ok: false, error: "Alleen een beheerder kan collega's verwijderen." };
+  const { company, user } = ctx;
+
+  if (userId === user.id) {
+    return { ok: false, error: "U kunt uzelf niet verwijderen." };
+  }
+
+  const target = await prisma.user.findFirst({
+    where: { id: userId, companyId: company.id },
+    select: { role: true, email: true },
+  });
+  if (!target) return { ok: false, error: "Collega niet gevonden." };
+
+  // Never leave the company without a beheerder.
+  if (target.role === "admin") {
+    const otherAdmins = await prisma.user.count({
+      where: { companyId: company.id, role: "admin", id: { not: userId } },
+    });
+    if (otherAdmins === 0) {
+      return { ok: false, error: "Er moet minstens één beheerder overblijven." };
+    }
+  }
+
+  console.error(
+    `[team-audit] ${user.email} verwijdert collega ${target.email} (${userId}) uit ${company.name}`
+  );
+  // DB rows first, atomically; then the irreversible external auth deletion —
+  // so a mid-sequence failure can't orphan a roster row that can never log in.
+  try {
+    await prisma.$transaction([
+      prisma.employee.deleteMany({ where: { userId } }),
+      prisma.user.delete({ where: { id: userId } }),
+    ]);
+  } catch {
+    return { ok: false, error: "Collega verwijderen mislukt." };
+  }
+  await deleteAuthUsers([userId]);
+
+  revalidatePath("/dashboard/team");
+  return { ok: true, message: "Collega verwijderd." };
+}
+
+/** Intrekken van een openstaande uitnodiging. Admin-only, scoped to the
+ * caller's company so one company can't touch another's invites. */
+export async function revokeInvite(inviteId: string): Promise<ActionResult> {
+  const ctx = await requireAdmin();
+  if (!ctx) return { ok: false, error: "Alleen een beheerder kan uitnodigingen intrekken." };
+  const { company } = ctx;
+
+  const res = await prisma.invite.deleteMany({
+    where: { id: inviteId, companyId: company.id, accepted: false },
+  });
+  if (res.count === 0) return { ok: false, error: "Uitnodiging niet gevonden." };
+
+  revalidatePath("/dashboard/team");
+  return { ok: true, message: "Uitnodiging ingetrokken." };
 }
 
 // ── Personal account (self-service, every signed-in user) ───────────────────
