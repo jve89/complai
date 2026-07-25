@@ -4,12 +4,13 @@ import { useState, useTransition } from "react";
 import { Loader2, ShieldCheck } from "lucide-react";
 
 import { setSuperAdmin } from "@/app/dashboard/admin/actions";
-import { Button } from "@/components/ui/button";
+import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
 
 /**
- * Grant/revoke super-admin from the Alle personen table. `fixed` = granted via
- * the env allowlist (can't be changed here); `isSelf` = the current user.
+ * Grant/revoke super-admin from the Alle personen table via an on/off switch.
+ * `fixed` = granted via the env allowlist (can't be changed here); `isSelf` =
+ * the current user. Both render a read-only badge instead of the switch.
  */
 export function SuperAdminToggle({
   userId,
@@ -42,8 +43,7 @@ export function SuperAdminToggle({
     );
   }
 
-  function toggle() {
-    const next = !on;
+  function toggle(next: boolean) {
     const ok = confirm(
       next
         ? `${name} super-admin maken? Zij krijgen dan toegang tot álle klanten.`
@@ -58,20 +58,20 @@ export function SuperAdminToggle({
   }
 
   return (
-    <Button
-      type="button"
-      size="sm"
-      variant={on ? "secondary" : "ghost"}
-      onClick={toggle}
-      disabled={isPending}
-      className={on ? "gap-1" : "gap-1 text-muted-foreground"}
-    >
-      {isPending ? (
-        <Loader2 className="h-4 w-4 animate-spin" />
-      ) : (
-        <ShieldCheck className="h-4 w-4" />
+    <span className="inline-flex items-center gap-2">
+      <Switch
+        checked={on}
+        onCheckedChange={toggle}
+        disabled={isPending}
+        aria-label={
+          on
+            ? `Super-admin-rechten van ${name} intrekken`
+            : `${name} super-admin maken`
+        }
+      />
+      {isPending && (
+        <Loader2 className="h-3.5 w-3.5 animate-spin text-muted-foreground" />
       )}
-      {on ? "Super-admin" : "Maak super-admin"}
-    </Button>
+    </span>
   );
 }

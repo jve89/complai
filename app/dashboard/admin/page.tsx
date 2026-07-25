@@ -17,6 +17,7 @@ import { ResetButton } from "@/components/dashboard/admin/reset-button";
 import { AdminSearch } from "@/components/dashboard/admin/admin-search";
 import { RoleSelect } from "@/components/dashboard/admin/role-select";
 import { SuperAdminToggle } from "@/components/dashboard/admin/super-admin-toggle";
+import { InfoHint } from "@/components/ui/info-hint";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -278,34 +279,49 @@ export default async function AdminPage({
                         )}
                       </TableCell>
                       <TableCell>
-                        <div className="flex flex-col gap-1">
+                        <div className="flex items-center gap-1.5">
                           <PlanSelect
                             companyId={c.id}
                             companyName={c.name}
                             plan={TIER_ORDER[tierRank(c.plan)]}
                           />
                           {c.stripeSubscriptionId && !isSelf && (
-                            <span className="text-[11px] text-amber-600">
-                              heeft een lopend Stripe-abonnement — handmatige wijziging
-                              wordt door de volgende webhook overschreven
-                            </span>
+                            <InfoHint label="Waarom wordt een handmatige wijziging overschreven?">
+                              Deze organisatie heeft een lopend Stripe-abonnement. Een
+                              handmatige pakketwijziging hier wordt door de volgende
+                              webhook overschreven.
+                            </InfoHint>
                           )}
                         </div>
                       </TableCell>
                       <TableCell className="text-right">
-                        <div className="flex items-center justify-end gap-1">
-                          {!isSelf && (
-                            <form action={startImpersonation}>
-                              <input type="hidden" name="companyId" value={c.id} />
-                              <Button type="submit" size="sm" variant="outline">
-                                <LogIn className="h-4 w-4" /> Open dashboard
-                              </Button>
-                            </form>
-                          )}
-                          {!isDemo && <ResetButton id={c.id} name={c.name} />}
-                          {!isSelf && !isDemo && (
-                            <DeleteButton id={c.id} name={c.name} kind="organisatie" />
-                          )}
+                        {/* Fixed-width slots so the action buttons line up in
+                            the same columns across every row, even when some
+                            actions are hidden (own org / demo). */}
+                        <div className="ml-auto grid w-fit grid-cols-[160px_2.25rem_2.25rem] items-center gap-1">
+                          <div>
+                            {!isSelf && (
+                              <form action={startImpersonation}>
+                                <input type="hidden" name="companyId" value={c.id} />
+                                <Button
+                                  type="submit"
+                                  size="sm"
+                                  variant="outline"
+                                  className="w-full"
+                                >
+                                  <LogIn className="h-4 w-4" /> Open dashboard
+                                </Button>
+                              </form>
+                            )}
+                          </div>
+                          <div className="flex justify-center">
+                            {!isDemo && <ResetButton id={c.id} name={c.name} />}
+                          </div>
+                          <div className="flex justify-center">
+                            {!isSelf && !isDemo && (
+                              <DeleteButton id={c.id} name={c.name} kind="organisatie" />
+                            )}
+                          </div>
                         </div>
                       </TableCell>
                     </TableRow>
