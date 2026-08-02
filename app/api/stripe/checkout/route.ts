@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 
 import { stripe, PLANS, planIdToTier, priceIdFor } from "@/lib/stripe";
+import { env } from "@/lib/env";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser, canAdminister } from "@/lib/auth";
 import { ensureStripeCustomer } from "@/lib/billing";
@@ -83,6 +84,20 @@ async function createCheckout(
     customer: customerId,
     line_items: [{ price: priceId, quantity: 1 }],
     allow_promotion_codes: true,
+    // Business VAT invoicing (reverse charge): let the buyer enter their BTW
+    // number + business address, which Stripe VIES-validates and prints on a
+    // proper VAT invoice. Gated so it only activates once Stripe Tax is live in
+    // the dashboard (automatic_tax would otherwise error the session).
+    // `customer_update.address` is mandatory alongside automatic_tax + an
+    // existing `customer`; `name: "auto"` saves the business name they enter.
+    ...(env.stripeTaxEnabled
+      ? {
+          automatic_tax: { enabled: true },
+          tax_id_collection: { enabled: true },
+          billing_address_collection: "required" as const,
+          customer_update: { name: "auto" as const, address: "auto" as const },
+        }
+      : {}),
     // No free trial: the card is charged on signup, so the paid deliverables
     // can't be extracted for free and then cancelled.
     success_url: `${appUrl}/dashboard?checkout=success`,

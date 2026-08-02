@@ -10,6 +10,11 @@ export const env = {
   supabaseAnonKey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
   stripeSecretKey: process.env.STRIPE_SECRET_KEY,
   stripeWebhookSecret: process.env.STRIPE_WEBHOOK_SECRET,
+  // Turns on Stripe Tax + BTW/address collection at checkout (reverse-charge
+  // VAT invoices). Kept behind a flag so the code can ship before Stripe Tax is
+  // activated in the dashboard — enabling automatic_tax before that errors the
+  // checkout. Set STRIPE_TAX_ENABLED=1 in Vercel once the dashboard is ready.
+  stripeTaxEnabled: process.env.STRIPE_TAX_ENABLED === "1",
   resendApiKey: process.env.RESEND_API_KEY,
   emailFrom: process.env.EMAIL_FROM ?? "ComplAI <onboarding@resend.dev>",
   // Where contact-form notifications are delivered. Must be a mailbox that can
