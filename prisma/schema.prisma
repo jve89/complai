@@ -99,6 +99,7 @@ model StripeEvent {
 model Invite {
   id        String   @id @default(cuid())
   email     String
+  name      String?  // optional name the admin prefilled; pre-fills signup, which stays authoritative
   role      String   @default("employee") // admin | manager | employee
   token     String   @unique
   accepted  Boolean  @default(false)

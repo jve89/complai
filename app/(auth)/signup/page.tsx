@@ -34,7 +34,7 @@ export default async function SignupPage({
   const interval = searchParams.interval === "year" ? "year" : "month";
   const chosenPlan = planId ? PLANS.find((p) => p.id === planId) : undefined;
 
-  let invite: { email: string; role: string; company: string } | null = null;
+  let invite: { email: string; name: string | null; role: string; company: string } | null = null;
   let inviteInvalid = false;
   if (inviteToken) {
     const rec = await prisma.invite.findUnique({
@@ -43,7 +43,7 @@ export default async function SignupPage({
     });
     const expired = rec?.expiresAt ? rec.expiresAt < new Date() : false;
     if (rec && !rec.accepted && !expired) {
-      invite = { email: rec.email, role: rec.role, company: rec.company.name };
+      invite = { email: rec.email, name: rec.name, role: rec.role, company: rec.company.name };
     } else {
       inviteInvalid = true;
     }
@@ -111,6 +111,7 @@ export default async function SignupPage({
           scanId={scanId}
           inviteToken={invite ? inviteToken : undefined}
           inviteEmail={invite?.email}
+          inviteName={invite?.name ?? undefined}
           plan={chosenPlan ? planId : undefined}
           interval={chosenPlan ? interval : undefined}
         />
