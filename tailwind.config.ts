@@ -50,30 +50,37 @@ const config: Config = {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
-        // Brand palette — indigo/violet. `navy` is kept as the token name for
-        // dark surfaces (sidebar/footer/auth) but is now a deep indigo "ink".
+        // Brand palette — blue (#1257E0) primary + mint (#00C4A7) accent, on a
+        // deep-navy ink. `navy` is the token for dark surfaces (sidebar/footer/
+        // auth); `violet` is kept as the token name but now holds the mint accent
+        // (so existing blue→mint gradients keep working).
         navy: {
-          DEFAULT: "#1e1b4b",
-          50: "#f5f3ff",
-          100: "#ede9fe",
-          800: "#312e81",
-          900: "#1e1b4b",
-          950: "#11103a",
+          DEFAULT: "#071A2C",
+          50: "#EEF4F8",
+          100: "#D9E6EF",
+          800: "#0E2C46",
+          900: "#071A2C",
+          950: "#04101B",
         },
         brand: {
-          DEFAULT: "#6366f1",
-          50: "#eef2ff",
-          100: "#e0e7ff",
-          400: "#818cf8",
-          500: "#6366f1",
-          600: "#4f46e5",
-          700: "#4338ca",
+          DEFAULT: "#1257E0",
+          50: "#EAF1FF",
+          100: "#D4E2FF",
+          200: "#AFC9FF",
+          300: "#7FA6F5",
+          400: "#4C86F0",
+          500: "#1257E0",
+          600: "#0F49BE",
+          700: "#0B3FAE",
+          900: "#0B2A6B",
         },
         violet: {
-          DEFAULT: "#8b5cf6",
-          400: "#a78bfa",
-          500: "#8b5cf6",
-          600: "#7c3aed",
+          DEFAULT: "#00C4A7",
+          50: "#DCF7F1",
+          100: "#B8EFE4",
+          400: "#2CD0B6",
+          500: "#00C4A7",
+          600: "#009E88",
         },
       },
       borderRadius: {

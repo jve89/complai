@@ -2,8 +2,8 @@
 // the brand palette. Every template returns { subject, html }; the senders in
 // lib/email/send.ts pick the recipient and never throw.
 
-const BRAND = "#6366f1";
-const INK = "#1e1b4b";
+const BRAND = "#1257E0";
+const INK = "#071A2C";
 
 export interface EmailContent {
   subject: string;

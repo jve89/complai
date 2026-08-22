@@ -4,7 +4,7 @@ import type { ComplianceProfile } from "@/lib/compliance/types";
 import { hasPendingPublication, PENDING_PUBLICATION_NOTE } from "@/lib/compliance/timeline";
 
 const NAVY = "#0f172a";
-const BRAND = "#6366f1"; // indigo
+const BRAND = "#1257E0"; // indigo
 const MUTED = "#64748b";
 
 const HEADLINE_LABEL: Record<ComplianceProfile["headline"], string> = {

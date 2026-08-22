@@ -5,33 +5,33 @@
 @layer base {
   :root {
     --background: 0 0% 100%;
-    --foreground: 257 24% 14%;
+    --foreground: 209 72% 10%;
 
     --card: 0 0% 100%;
-    --card-foreground: 257 24% 14%;
+    --card-foreground: 209 72% 10%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 257 24% 14%;
+    --popover-foreground: 209 72% 10%;
 
-    /* Indigo brand as primary */
-    --primary: 239 84% 67%;
+    /* Blue brand (#1257E0) as primary */
+    --primary: 220 85% 47%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 250 60% 97%;
-    --secondary-foreground: 257 24% 14%;
+    --secondary: 200 40% 96%;
+    --secondary-foreground: 209 72% 10%;
 
-    --muted: 250 40% 96%;
-    --muted-foreground: 250 8% 46%;
+    --muted: 200 40% 96%;
+    --muted-foreground: 207 22% 38%;
 
-    --accent: 252 100% 97%;
-    --accent-foreground: 245 58% 51%;
+    --accent: 220 100% 95%;
+    --accent-foreground: 221 88% 36%;
 
     --destructive: 0 72% 51%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 250 30% 91%;
-    --input: 250 30% 91%;
-    --ring: 239 84% 67%;
+    --border: 203 30% 89%;
+    --input: 203 30% 89%;
+    --ring: 220 85% 47%;
 
     --radius: 0.6rem;
   }

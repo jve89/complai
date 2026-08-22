@@ -13,7 +13,7 @@ import {
 } from "@/lib/meldingen/labels";
 
 const NAVY = "#0f172a";
-const BRAND = "#6366f1";
+const BRAND = "#1257E0";
 const MUTED = "#64748b";
 
 const styles = StyleSheet.create({

@@ -44,12 +44,16 @@ Tailwind + shadcn/ui · Supabase auth · Prisma 6 → Postgres · @react-pdf/ren
 
 - **All UI copy in Dutch (NL).** Marketing copy has been reworked to be original
   (the earlier source-mirroring rewrite is done); the site is indexable.
-- Colors: **indigo `#6366f1` / violet `#8b5cf6` brand on a light theme.** Tailwind
-  tokens: `brand` (indigo), `violet`, and `navy` — note `navy` is now a deep
-  indigo ink `#1e1b4b` for dark surfaces (sidebar/footer/auth), not slate-navy.
-  Green/amber/red are semantic status colors only (success/warning/danger), not
-  brand. Marketing pages are light; the hero is a light section with an
-  indigo→violet gradient headline.
+- Colors: **blue `#1257E0` brand + mint `#00C4A7` accent on a light theme** (the
+  house style — one blue across the whole app incl. the dashboard; the earlier
+  indigo/violet is retired). Tailwind tokens: `brand` (blue), `violet` (now holds
+  the **mint** accent, so blue→mint gradients keep working), and `navy` — a deep
+  navy ink `#071A2C` for dark surfaces (sidebar/footer/auth). Set at the token
+  source (`app/globals.css` `:root` + `tailwind.config.ts`), so components use
+  `brand-*`/`navy-*`/shadcn tokens, never hardcoded hex. Green/amber/red are
+  semantic status colors only (success/warning/danger), not brand. The redesigned
+  marketing homepage carries its own scoped palette under `.hp`
+  (`app/(marketing)/home.css`), matched to these same values.
 - RSC by default; client components only for interactive bits. Mutations use
   **server actions**, scoped to `getActiveCompany().company.id`.
 - Dashboard pages set `export const dynamic = "force-dynamic"`.

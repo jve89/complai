@@ -153,9 +153,10 @@
 .hp .mock-foot{margin-top:16px; padding:13px 14px; border-radius:14px; background:var(--ink); color:#fff; display:flex; align-items:center; gap:11px; font-size:13.5px}
 .hp .mock-foot .d{margin-left:auto; font-family:var(--mono); color:var(--mint); font-weight:500}
 .hp .float-tag{
-  position:absolute; background:#fff; border:1px solid var(--line); border-radius:14px;
-  padding:10px 14px; box-shadow:var(--shadow-m); font-size:13px; font-weight:600;
-  display:flex; align-items:center; gap:9px; animation:hp-bob 6s ease-in-out infinite;
+  position:absolute; background:#fff; border:1px solid var(--line); border-radius:16px;
+  padding:12px 20px; box-shadow:var(--shadow-m); font-size:13px; font-weight:600;
+  display:flex; align-items:center; gap:11px; animation:hp-bob 6s ease-in-out infinite;
+  white-space:nowrap;
 }
 .hp .float-tag.a{bottom:-18px; left:-26px}
 .hp .float-tag.b{top:22px; right:-30px; animation-delay:-3s}

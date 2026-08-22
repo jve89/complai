@@ -116,7 +116,7 @@ const startSteps = [
 ];
 
 const features = [
-  { icon: ShieldCheck, title: "Compliance-dashboard", text: "Uw gereedheidsscore, de stand per verplichting, wat er nog openstaat en welke deadlines eraan komen — alles op één scherm.", cls: "f f-wide f-dark" },
+  { icon: ShieldCheck, title: "Compliance-dashboard", text: "Uw gereedheidsscore, de stand per verplichting, wat er nog openstaat en welke deadlines eraan komen — alles op één scherm.", cls: "f f-wide" },
   { icon: Database, title: "AI-register", text: "Al uw AI-systemen bij elkaar, met per systeem een automatische risico-suggestie op basis van Bijlage III die u zelf bevestigt.", cls: "f f-wide" },
   { icon: ScanSearch, title: "Schaduw-AI-check", text: "Breng AI in kaart die nog nergens is vastgelegd. Juist dat gemis valt bij een controle als eerste op.", cls: "f" },
   { icon: FileText, title: "Documentgenerator", text: "Beleid, risicobeoordeling, FRIA en transparantieverklaring, meteen ingevuld met uw eigen gegevens.", cls: "f" },
