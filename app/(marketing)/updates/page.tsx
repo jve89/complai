@@ -16,8 +16,10 @@ export const metadata: Metadata = {
   alternates: { canonical: "/updates" },
 };
 
-// Re-check "Nieuw" badges hourly; the entries themselves ship with the code.
-export const revalidate = 3600;
+// Rendered per request (not prerendered at build): the update feed is DB-backed
+// and published self-serve, so it must reflect new entries immediately — and the
+// build must never depend on the database being reachable.
+export const dynamic = "force-dynamic";
 
 export default async function UpdatesPage() {
   const now = new Date();
