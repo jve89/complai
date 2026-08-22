@@ -24,6 +24,7 @@ export function AuthForm({
   scanId,
   inviteToken,
   inviteEmail,
+  inviteName,
   plan,
   interval,
 }: {
@@ -32,6 +33,7 @@ export function AuthForm({
   scanId?: string;
   inviteToken?: string;
   inviteEmail?: string;
+  inviteName?: string;
   plan?: string;
   interval?: string;
 }) {
@@ -48,7 +50,15 @@ export function AuthForm({
         <>
           <div className="space-y-2">
             <Label htmlFor="name">Naam</Label>
-            <Input id="name" name="name" placeholder="Voor- en achternaam" required />
+            {/* Prefilled from the invite when the admin provided a name; the
+                invitee can still edit it, and their submitted value wins. */}
+            <Input
+              id="name"
+              name="name"
+              placeholder="Voor- en achternaam"
+              defaultValue={inviteName}
+              required
+            />
           </div>
           {!isInvite && (
             <div className="space-y-2">

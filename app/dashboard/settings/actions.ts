@@ -185,6 +185,9 @@ export async function inviteMember(input: {
   if (!rl.ok) return { ok: false, error: rl.error };
   const { company } = ctx;
   const email = parsed.data.email.toLowerCase();
+  // Optional: the admin may prefill the invitee's name. Stored to prefill the
+  // signup form; the invitee's own entry there stays authoritative.
+  const name = parsed.data.name?.trim() || null;
 
   // Don't invite someone who is already a member.
   const existing = await prisma.user.findUnique({ where: { email } });
@@ -219,7 +222,7 @@ export async function inviteMember(input: {
   const expiresAt = new Date(Date.now() + 14 * 24 * 60 * 60 * 1000); // 14 days
   try {
     await prisma.invite.create({
-      data: { email, role: parsed.data.role, token, companyId: company.id, expiresAt },
+      data: { email, name, role: parsed.data.role, token, companyId: company.id, expiresAt },
     });
   } catch {
     return { ok: false, error: "Uitnodiging aanmaken mislukt." };
