@@ -126,24 +126,21 @@ export function HomeEffects() {
     const laws = Array.from(document.querySelectorAll<HTMLElement>("[data-law]"));
     const todos = Array.from(document.querySelectorAll<HTMLElement>("[data-todo]"));
     const trCount = document.getElementById("trCount");
-    const trPct = document.getElementById("trPct");
     function updateTranslate() {
       if (!stage) return;
       if (window.innerWidth <= 860) {
         todos.forEach((t) => t.classList.add("on"));
         laws.forEach((l) => l.classList.remove("fade"));
         if (trCount) trCount.textContent = String(todos.length);
-        if (trPct) trPct.textContent = "100";
         return;
       }
       const r = stage.getBoundingClientRect();
       const total = r.height - window.innerHeight;
       const p = Math.max(0, Math.min(1, -r.top / (total || 1)));
-      const active = Math.min(todos.length, Math.floor(p * (todos.length + 0.35)));
+      const active = Math.min(todos.length, Math.floor(p * (todos.length + 0.4)));
       todos.forEach((t, i) => t.classList.toggle("on", i < active));
       laws.forEach((l, i) => l.classList.toggle("fade", i < active));
       if (trCount) trCount.textContent = String(active);
-      if (trPct) trPct.textContent = String(Math.round(p * 100));
     }
 
     // ---- Scroll-progress bar ----
@@ -177,13 +174,17 @@ export function HomeEffects() {
     });
 
     // ---- FAQ accordion ----
+    // Each button sits inside an <h3>, so the answer panel (.a) is the sibling
+    // of that <h3>, not of the button.
     const faqButtons = Array.from(document.querySelectorAll<HTMLButtonElement>(".hp .q button"));
+    const panelFor = (btn: HTMLButtonElement) =>
+      btn.parentElement?.nextElementSibling as HTMLElement | null;
     const onFaqClick = (btn: HTMLButtonElement) => () => {
-      const panel = btn.nextElementSibling as HTMLElement | null;
+      const panel = panelFor(btn);
       const open = btn.getAttribute("aria-expanded") === "true";
       faqButtons.forEach((b) => {
         b.setAttribute("aria-expanded", "false");
-        const p = b.nextElementSibling as HTMLElement | null;
+        const p = panelFor(b);
         if (p) p.style.maxHeight = "";
       });
       if (!open && panel) {

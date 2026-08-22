@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Script from "next/script";
 import { Inter, Bricolage_Grotesque, Instrument_Sans, JetBrains_Mono } from "next/font/google";
 import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
@@ -79,6 +80,11 @@ export default function RootLayout({
       <body
         className={`${inter.variable} ${bricolage.variable} ${instrument.variable} ${jetbrains.variable} font-sans antialiased`}
       >
+        {/* Flag JS before paint so the homepage's reveal animations run without a
+            content-flash, and content stays visible when JS is disabled. */}
+        <Script id="js-flag" strategy="beforeInteractive">
+          {`document.documentElement.classList.add("js")`}
+        </Script>
         {children}
         <CookieConsent />
         {/* Vercel telemetry — cookieless, production-only, no consent needed. */}

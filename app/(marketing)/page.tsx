@@ -2,25 +2,21 @@ import Link from "next/link";
 import type { CSSProperties } from "react";
 import type { Metadata } from "next";
 import {
-  AlertTriangle,
-  ArrowRight,
   BarChart3,
   BookOpen,
-  Check,
+  CalendarDays,
   Clock,
   Database,
   Euro,
+  EyeOff,
   FileText,
   GraduationCap,
-  Languages,
-  Package,
+  Lock,
+  Mail,
   Plus,
-  Scale,
   ScanSearch,
-  Search,
   ShieldCheck,
   Sparkles,
-  UserPlus,
   Users,
 } from "lucide-react";
 
@@ -36,83 +32,46 @@ export const metadata: Metadata = { alternates: { canonical: "/" } };
 // Stagger delay for scroll-reveal, as a typed CSS custom property.
 const rd = (ms: number): CSSProperties => ({ "--d": `${ms}ms` }) as CSSProperties;
 
-const trust = [
-  { icon: Scale, text: "Gebaseerd op Verordening (EU) 2024/1689" },
-  { icon: Clock, text: "Deadlines volgens de EU-tijdlijn (Art. 113)" },
-  { icon: Languages, text: "Volledig in het Nederlands" },
-  { icon: ShieldCheck, text: "Uw antwoorden blijven binnen de EU" },
+const basis = [
+  { icon: ShieldCheck, title: "De wettekst zelf", text: "Verordening (EU) 2024/1689, niet een samenvatting van een samenvatting." },
+  { icon: Clock, title: "De officiële tijdlijn", text: "Toepassingsdata volgens Art. 113, inclusief wijzigingen uit de Digital Omnibus." },
+  { icon: Lock, title: "Uw gegevens blijven in de EU", text: "Verwerking binnen de EU. De scan werkt zonder account." },
+  { icon: FileText, title: "Geen juridisch advies", text: "Beslissingsondersteuning die uw dossier opbouwt. Dat zeggen we liever vooraf." },
 ];
 
 const milestones = [
-  {
-    date: "2 februari 2025",
-    tag: { label: "Geldt nu", cls: "tag-now" },
-    title: "AI-geletterdheid en verboden praktijken",
-    text: "Iedereen die met AI werkt moet aantoonbaar weten hoe die AI werkt en welke risico's eraan kleven (Art. 4). De praktijken uit Art. 5 mogen niet meer.",
-  },
-  {
-    date: "2 augustus 2025",
-    tag: { label: "Geldt nu", cls: "tag-now" },
-    title: "Regels voor AI-modellen voor algemene doeleinden",
-    text: "Aanbieders van GPAI-modellen vallen onder eigen documentatie- en transparantieverplichtingen. Gebruikt u zulke modellen, dan raakt dat uw leveranciersafspraken.",
-  },
-  {
-    date: "2 december 2026",
-    tag: { label: "Bijna", cls: "tag-soon" },
-    title: "Transparantie richting uw klanten",
-    text: "Chatbots moeten zich kenbaar maken als AI en AI-gegenereerde content moet herkenbaar zijn (Art. 50). Dit raakt juist de mkb-websites die vandaag al een AI-assistent draaien.",
-  },
-  {
-    date: "2 december 2027",
-    tag: { label: "Volgt", cls: "tag-next" },
-    title: "De zware hoog-risicoverplichtingen",
-    text: "De verplichtingen voor Bijlage III-systemen — denk aan werving, kredietbeoordeling of toegang tot voorzieningen. Met de Digital Omnibus verschoven van augustus 2026.",
-  },
-  {
-    date: "Doorlopend",
-    tag: { label: "Bij overtreding", cls: "tag-next" },
-    title: "Boetes tot € 35 miljoen of 7% van de wereldomzet",
-    text: "Voor mkb en start-ups geldt het laagste van de twee plafonds (Art. 99). Het toezicht in Nederland ligt bij bestaande toezichthouders zoals de AP, RDI, DNB, AFM en IGJ.",
-  },
+  { date: "2 februari 2025", tag: { label: "Geldt nu", cls: "tag-now" }, title: "AI-geletterdheid en verboden praktijken", text: "Iedereen die met AI werkt moet aantoonbaar weten hoe die AI werkt en welke risico's eraan kleven (Art. 4). De praktijken uit Art. 5 mogen niet meer." },
+  { date: "2 augustus 2025", tag: { label: "Geldt nu", cls: "tag-now" }, title: "Regels voor AI-modellen voor algemene doeleinden", text: "Aanbieders van GPAI-modellen vallen onder eigen documentatie- en transparantieverplichtingen. Gebruikt u zulke modellen, dan raakt dat uw leveranciersafspraken." },
+  { date: "2 december 2026", tag: { label: "Bijna", cls: "tag-soon" }, title: "Transparantie richting uw klanten", text: "Chatbots moeten zich kenbaar maken als AI en AI-gegenereerde content moet herkenbaar zijn (Art. 50). Dit raakt juist de mkb-websites die vandaag al een AI-assistent draaien." },
+  { date: "2 december 2027", tag: { label: "Volgt", cls: "tag-next" }, title: "De zware hoog-risicoverplichtingen", text: "De verplichtingen voor Bijlage III-systemen — denk aan werving, kredietbeoordeling of toegang tot voorzieningen. Met de Digital Omnibus verschoven van augustus 2026." },
+  { date: "Vandaag", tag: { label: "Uw echte risico", cls: "tag-now" }, title: "De boete is niet wat u als eerste raakt", text: "De plafonds lopen op tot € 35 miljoen of 7% van de wereldomzet, en voor mkb en start-ups geldt het laagste van de twee (Art. 99). Maar de eerste die om uw AI-beleid vraagt is zelden een toezichthouder. Het is een klant in een leveranciersvragenlijst, een verzekeraar bij verlenging, of een aanbesteding met een uitsluitingscriterium. Die geven u geen jaar de tijd." },
 ];
 
 const laws = [
-  "Artikel 4 — Aanbieders en gebruiksverantwoordelijken van AI-systemen nemen maatregelen om, zoveel mogelijk, te zorgen voor een toereikend niveau van AI-geletterdheid bij hun personeel en andere personen die namens hen betrokken zijn bij de werking en het gebruik van AI-systemen.",
-  "Artikel 6, lid 2 — AI-systemen als bedoeld in bijlage III worden als AI-systemen met een hoog risico beschouwd, tenzij het AI-systeem geen significant risico op schade voor de gezondheid, de veiligheid of de grondrechten van natuurlijke personen inhoudt.",
-  "Artikel 27 — Voorafgaand aan het gebruik van een AI-systeem met een hoog risico verrichten bepaalde gebruiksverantwoordelijken een beoordeling van het effect op de grondrechten dat het gebruik van een dergelijk systeem kan opleveren.",
-  "Artikel 50 — Aanbieders zorgen ervoor dat AI-systemen die bedoeld zijn om rechtstreeks met natuurlijke personen te interageren, zo worden ontworpen dat de betrokkenen worden geïnformeerd dat zij met een AI-systeem interageren, tenzij dit duidelijk is.",
+  "Artikel 4 — Aanbieders en gebruiksverantwoordelijken van AI-systemen nemen maatregelen om, zoveel mogelijk, te zorgen voor een toereikend niveau van AI-geletterdheid bij hun personeel en andere personen die namens hen betrokken zijn bij de werking en het gebruik van AI-systemen, rekening houdend met hun technische kennis, ervaring, onderwijs en opleiding en de context waarin de AI-systemen zullen worden gebruikt.",
+  "Artikel 6, lid 2 — AI-systemen als bedoeld in bijlage III worden als AI-systemen met een hoog risico beschouwd, tenzij het AI-systeem geen significant risico op schade voor de gezondheid, de veiligheid of de grondrechten van natuurlijke personen inhoudt, mede doordat het de uitkomst van de besluitvorming niet wezenlijk beïnvloedt.",
+  "Artikel 27 — Voorafgaand aan het gebruik van een AI-systeem met een hoog risico verrichten gebruiksverantwoordelijken die publiekrechtelijke instanties zijn, of private entiteiten die openbare diensten verlenen, een beoordeling van het effect op de grondrechten dat het gebruik van een dergelijk systeem kan opleveren.",
+  "Artikel 50 — Aanbieders zorgen ervoor dat AI-systemen die bedoeld zijn om rechtstreeks met natuurlijke personen te interageren, zodanig worden ontworpen en ontwikkeld dat de betrokken natuurlijke personen worden geïnformeerd dat zij interageren met een AI-systeem, tenzij dit duidelijk is voor een normaal geïnformeerde persoon.",
 ];
 
 const todos = [
-  {
-    title: "Zet uw team op een leerpad",
-    text: "E-learning per rol, met toets en certificaat als bewijs voor Art. 4.",
-  },
-  {
-    title: "Classificeer elk AI-systeem",
-    text: "Het register geeft per systeem een risico-suggestie op basis van Bijlage III, die u zelf bevestigt.",
-  },
-  {
-    title: "Genereer uw FRIA",
-    text: "De grondrechtenbeoordeling, vooringevuld met uw eigen organisatiegegevens.",
-  },
-  {
-    title: "Meld AI in uw klantcontact",
-    text: "Kant-en-klare transparantieverklaring voor uw chatbot en gegenereerde content.",
-  },
+  { title: "Zet uw team op een leerpad", text: "E-learning per rol, met toets en certificaat als bewijs voor Art. 4." },
+  { title: "Classificeer elk AI-systeem", text: "Het register geeft per systeem een risico-suggestie op basis van Bijlage III, die u zelf bevestigt." },
+  { title: "Genereer uw FRIA", text: "De grondrechtenbeoordeling, vooringevuld met uw eigen organisatiegegevens." },
+  { title: "Meld AI in uw klantcontact", text: "Kant-en-klare transparantieverklaring voor uw chatbot en gegenereerde content." },
 ];
 
 const pains = [
-  { icon: AlertTriangle, title: "Regels die niemand overziet", text: "Honderden pagina's wettekst, vol risicoklassen en uitzonderingen. Waar begint u?" },
+  { icon: FileText, title: "Regels die niemand overziet", text: "Honderden pagina's wettekst, vol risicoklassen en uitzonderingen. Waar begint u?" },
   { icon: Clock, title: "De tijd dringt", text: "De verplichtingen treden gefaseerd in werking. Wie te lang wacht, loopt achter de feiten aan." },
   { icon: Euro, title: "Advies is prijzig", text: "Een extern adviestraject kost al snel duizenden euro's, terwijl veel van dat werk zich laat standaardiseren." },
-  { icon: ScanSearch, title: "Geen zicht op wat er draait", text: "Welke AI draait er eigenlijk binnen uw organisatie? En wie draagt waarvoor de verantwoordelijkheid?" },
+  { icon: EyeOff, title: "Geen zicht op wat er draait", text: "Welke AI draait er eigenlijk binnen uw organisatie? En wie draagt waarvoor de verantwoordelijkheid?" },
 ];
 
 const startSteps = [
-  { num: "01 — gratis", icon: Search, title: "Doe de risicoscan", text: "Zie in vijf minuten welke verplichtingen uit de AI Act op uw organisatie van toepassing zijn. Zonder account.", cta: { label: "Start de scan", href: "/scan" } },
-  { num: "02 — vanaf € 19,99", icon: Package, title: "Kies uw pakket", text: "Van een eenvoudige start tot een volledig documentendossier. U zegt maandelijks op en betaalt geen opstartkosten.", cta: { label: "Bekijk pakketten", href: "/pricing" } },
-  { num: "03 — zonder betaalgegevens", icon: UserPlus, title: "Maak een gratis account", text: "Een eigen compliance-omgeving. Uw collega's nodigt u later in een paar klikken uit.", cta: { label: "Registreer gratis", href: "/signup" } },
+  { num: "01 — gratis", title: "Doe de risicoscan", text: "Zie in vijf minuten welke verplichtingen uit de AI Act op uw organisatie van toepassing zijn. Zonder account.", cta: { label: "Start de scan", href: "/scan" } },
+  { num: "02 — vanaf € 19,99", title: "Kies uw pakket", text: "Van een eenvoudige start tot een volledig documentendossier. U zegt maandelijks op en betaalt geen opstartkosten.", cta: { label: "Bekijk pakketten", href: "/pricing" } },
+  { num: "03 — zonder betaalgegevens", title: "Maak een gratis account", text: "Een eigen compliance-omgeving. Uw collega's nodigt u later in een paar klikken uit.", cta: { label: "Registreer gratis", href: "/signup" } },
 ];
 
 const features = [
@@ -120,7 +79,7 @@ const features = [
   { icon: Database, title: "AI-register", text: "Al uw AI-systemen bij elkaar, met per systeem een automatische risico-suggestie op basis van Bijlage III die u zelf bevestigt.", cls: "f f-wide" },
   { icon: ScanSearch, title: "Schaduw-AI-check", text: "Breng AI in kaart die nog nergens is vastgelegd. Juist dat gemis valt bij een controle als eerste op.", cls: "f" },
   { icon: FileText, title: "Documentgenerator", text: "Beleid, risicobeoordeling, FRIA en transparantieverklaring, meteen ingevuld met uw eigen gegevens.", cls: "f" },
-  { icon: GraduationCap, title: "E-learning & certificaten", text: "Leerpaden per rol, met toetsen en certificaten, zodat u AI-geletterdheid (Art. 4) kunt aantonen.", cls: "f" },
+  { icon: GraduationCap, title: "E-learning & certificaten", text: "Leerpaden per rol, met toetsen en certificaten, zodat u AI-geletterdheid kunt aantonen.", cls: "f" },
   { icon: BarChart3, title: "Governance", text: "Kwartaalchecks plus meldingen zodra documenten verlopen of certificaten ontbreken.", cls: "f" },
   { icon: BookOpen, title: "Kennisbank", text: "De AI Act in begrijpelijk Nederlands: risiconiveaus, rollen, deadlines en boetes.", cls: "f" },
   { icon: Users, title: "Team & rollen", text: "Nodig collega's uit als beheerder, manager of medewerker, elk met een passend leerpad.", cls: "f" },
@@ -138,14 +97,40 @@ const comparison = [
   { label: "Groeit mee met de wet", self: false, consultant: false, complai: true },
 ];
 
-const faqs = [
-  { q: "Wat houdt de EU AI Act in?", a: "Het is de eerste brede Europese wet met regels voor zowel het bouwen als het inzetten van AI. Toepassingen worden ingedeeld op risico — van minimaal tot verboden — en aan elk niveau hangen eigen plichten. Praktisch komt het neer op het in kaart brengen van uw AI-gebruik, het bijspijkeren van AI-kennis bij uw medewerkers en openheid naar iedereen die met de AI te maken krijgt." },
-  { q: "Raakt de wet mijn organisatie ook?", a: "Vrijwel zeker wel. Gebruikt of levert u AI — een tekstassistent, een chatbot, een selectietool of een voorspelmodel — dan valt u onder de wet, hoe groot of klein uw organisatie ook is. De scan toont u in enkele minuten welke plichten juist voor u van toepassing zijn." },
-  { q: "Tegen wanneer moet ik dit op orde hebben?", a: "De invoering gebeurt gefaseerd. De regels voor verboden toepassingen (Art. 5) en AI-geletterdheid (Art. 4) gelden inmiddels. De transparantie-eisen (Art. 50) en de plichten voor hoog-risico systemen volgen daarna. ComplAI houdt de voor u relevante data automatisch bij." },
-  { q: "Moet ik hiervoor een adviesbureau inschakelen?", a: "Voor de meeste mkb-bedrijven is dat niet nodig. ComplAI vertaalt de wet naar concrete stappen, levert de vereiste documenten als sjablonen die u met uw eigen gegevens invult, en biedt e-learning met certificaten — tegen een fractie van de kosten van een adviestraject." },
-  { q: "Wat gebeurt er met mijn gegevens?", a: "Uw scans, documenten en accountgegevens bewaren wij versleuteld en binnen de EU (Supabase, regio eu-west-1). Wij werken uitsluitend met zorgvuldig gekozen subverwerkers onder een verwerkersovereenkomst en geven uw gegevens niet aan derden voor hún eigen doeleinden." },
-  { q: "Is de risicoscan echt kosteloos?", a: "Ja. U doorloopt de volledige scan zonder account en downloadt daarna een PDF-rapport met uw score. Met een gratis account bewaart u die resultaten en volgt u relevante wetswijzigingen in het dashboard. Het AI-register en de documenten zijn beschikbaar vanaf het pakket Basis." },
+// Plan feature bullets, in PLANS order (Scan · Basis · Compliance · Audit).
+const planBullets: string[][] = [
+  ["Risicoscan met pdf-rapport", "Dashboard met uw status", "Bericht bij wetswijziging"],
+  ["Alles uit Scan", "AI-register", "AI-beleid en transparantieverklaring", "E-learning voor Art. 4"],
+  ["Alles uit Basis", "Risicobeoordeling per systeem", "FRIA-generator", "Kwartaalchecks en meldingen"],
+  ["Alles uit Compliance", "Volledig documentendossier", "Export voor auditor of klant", "Uitgebreid rollenbeheer"],
 ];
+
+const contactWays = [
+  { icon: Mail, href: "/contact", title: "Stuur ons een bericht", sub: "Antwoord binnen één werkdag" },
+  { icon: CalendarDays, href: "/demo", title: "Plan een gesprek van 20 minuten", sub: "Online, samen door het platform" },
+  { icon: BookOpen, href: "/kennisbank", title: "Eerst zelf lezen", sub: "De kennisbank, in gewoon Nederlands" },
+];
+
+const faqs = [
+  { q: "Wij gebruiken alleen een chatbot en wat AI in bestaande software. Telt dat ook?", a: "Ja. U bent dan gebruiksverantwoordelijke, en dat is precies de rol waar Art. 4 op ziet: u moet kunnen aantonen dat de mensen die ermee werken weten wat het doet en waar het misgaat. Draait er een AI-assistent in uw klantcontact, dan komt daar per 2 december 2026 de transparantieplicht uit Art. 50 bij. U hoeft geen AI te bouwen om onder de wet te vallen — gebruiken is genoeg." },
+  { q: "Raakt de wet mijn organisatie ook?", a: "Bijna zeker, ongeacht uw omvang. Vaak zit AI verstopt in software die u al jaren gebruikt: slimme zoeksuggesties, automatische categorisering van facturen, leadscoring in uw CRM of cv-selectie in uw recruitmenttool. De gratis scan brengt dat gebruik in kaart en zegt welke rol u heeft: aanbieder of gebruiksverantwoordelijke." },
+  { q: "Tegen wanneer moet ik dit op orde hebben?", a: "Deels nu al. AI-geletterdheid (Art. 4) en de verboden praktijken (Art. 5) gelden sinds 2 februari 2025. De transparantieplicht rond chatbots en gegenereerde content volgt op 2 december 2026 en de zware hoog-risicoverplichtingen uit Bijlage III op 2 december 2027." },
+  { q: "Moet ik hiervoor een adviesbureau inschakelen?", a: "Voor de meeste mkb-organisaties niet. Het register, het beleid, de standaarddocumenten en de scholing laten zich standaardiseren — daar is ComplAI voor gebouwd. Werkt u met echt hoog-risico toepassingen, dan is dit dossier een stevige basis waarop uw jurist verder bouwt, tegen minder uren." },
+  { q: "Wat gebeurt er met mijn gegevens?", a: "Uw antwoorden en documenten blijven binnen de EU. De scan werkt zonder account, dus u geeft pas gegevens af op het moment dat u zelf een omgeving aanmaakt. In de verwerkersovereenkomst staat precies wat wij wel en niet met uw gegevens doen." },
+  { q: "Is de risicoscan echt kosteloos?", a: "Ja. Geen account, geen betaalgegevens, geen proefperiode die stilzwijgend doorloopt. U vult de scan in en krijgt uw risicocategorie, uw rol, de deadlines die voor u gelden en een stappenplan als pdf." },
+  { q: "En wat houdt de EU AI Act nu precies in?", a: "De AI Act (Verordening (EU) 2024/1689) is de eerste brede Europese wet voor kunstmatige intelligentie. Systemen worden ingedeeld naar risico — van minimaal tot onaanvaardbaar — en per categorie gelden andere verplichtingen. De wet werkt rechtstreeks door in Nederland; er komt geen aparte Nederlandse wet die u er nog naast moet leggen." },
+];
+
+const Arrow = ({ size = 16 }: { size?: number }) => (
+  <svg width={size} height={size} viewBox="0 0 16 16" fill="none" aria-hidden="true">
+    <path d="M2 8h11M9 4l4 4-4 4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+  </svg>
+);
+const Tick = ({ size = 12 }: { size?: number }) => (
+  <svg width={size} height={size} viewBox="0 0 12 12" fill="none" aria-hidden="true">
+    <path d="M2 6.2l2.6 2.6L10 3.4" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
+  </svg>
+);
 
 export default function LandingPage() {
   return (
@@ -155,75 +140,57 @@ export default function LandingPage() {
 
       {/* HERO */}
       <section className="hero">
-        <div className="hero-bg">
+        <div className="hero-bg" aria-hidden="true">
           <span className="blob blob-1" />
           <span className="blob blob-2" />
           <span className="blob blob-3" />
         </div>
-        <div className="grid-lines" />
+        <div className="grid-lines" aria-hidden="true" />
         <div className="wrap hero-grid">
           <div data-reveal>
-            <div className="status-pill">
-              <span className="dot-live" /> De AI-wet geldt al
+            <p className="status-pill">
+              <span className="dot-live" aria-hidden="true" /> Van kracht sinds 2 februari 2025
               <span className="badge" id="daysSince">dag —</span>
-            </div>
+            </p>
             <h1 className="h1">
-              De AI-wet,<br />vertaald naar wat <em className="hl">ú moet doen</em>.
+              U gebruikt al AI.<br />Alleen kunt u dat<br /><em className="hl">niet aantonen</em>.
             </h1>
             <p className="lede">
-              Honderden pagina&apos;s Europese wettekst worden hier één lijst met
-              afvinkbare stappen. Doe de gratis scan en zie binnen vijf minuten uw
-              risicocategorie, uw rol en de deadlines die voor uw organisatie gelden.
+              Sinds 2 februari 2025 moet u kunnen laten zien dat uw mensen begrijpen waar
+              ze mee werken. Niet dát ze het begrijpen — dat u het kunt bewijzen. De meeste
+              mkb-organisaties ontdekken pas dat dat bewijs ontbreekt op het moment dat een
+              klant, een verzekeraar of een aanbesteding erom vraagt.
             </p>
             <div className="hero-cta">
-              <Link href="/scan" className="btn btn-primary btn-lg">
-                Start gratis risicoscan <ArrowRight size={16} />
-              </Link>
-              <Link href="#vertaling" className="btn btn-ghost btn-lg">Bekijk hoe het werkt</Link>
+              <Link href="/scan" className="btn btn-primary btn-lg">Doe de gratis scan <Arrow /></Link>
+              <Link href="#vertaling" className="btn btn-ghost btn-lg">Zie eerst hoe het werkt</Link>
             </div>
-            <div className="hero-note">
-              <span><i className="check-i"><Check size={9} /></i> In 5 minuten klaar</span>
-              <span><i className="check-i"><Check size={9} /></i> Zonder account</span>
-              <span><i className="check-i"><Check size={9} /></i> Met pdf-rapport</span>
-            </div>
+            <p className="hero-note">
+              <span><i className="check-i"><Tick size={9} /></i> 5 minuten</span>
+              <span><i className="check-i"><Tick size={9} /></i> Geen account, geen betaalgegevens</span>
+              <span><i className="check-i"><Tick size={9} /></i> Pdf die u kunt doorsturen</span>
+            </p>
+            <p className="hero-human">
+              Liever eerst iemand spreken? <Link href="#contact">Plan een gesprek van 20 minuten</Link> — zonder verkooppraat.
+            </p>
           </div>
 
           <div className="mock" data-reveal="scale" style={rd(160)}>
+            <span className="mock-label">Voorbeeldweergave van het dashboard</span>
             <div className="mock-card">
-              <div className="mock-top"><i /><i /><i /><span className="t">complai — dashboard</span></div>
+              <div className="mock-top" aria-hidden="true"><i /><i /><i /><span className="t">complai — dashboard</span></div>
               <div className="gauge-row">
                 <div className="gauge">
-                  <svg width="104" height="104" viewBox="0 0 104 104">
+                  <svg width="104" height="104" viewBox="0 0 104 104" aria-hidden="true">
                     <circle cx="52" cy="52" r="44" fill="none" stroke="#E8EFF4" strokeWidth="10" />
-                    <circle
-                      id="gaugeArc"
-                      cx="52"
-                      cy="52"
-                      r="44"
-                      fill="none"
-                      stroke="url(#g1)"
-                      strokeWidth="10"
-                      strokeLinecap="round"
-                      strokeDasharray="276.5"
-                      strokeDashoffset="276.5"
-                      style={{ transition: "stroke-dashoffset 1.8s cubic-bezier(.22,.9,.28,1)" }}
-                    />
-                    <defs>
-                      <linearGradient id="g1" x1="0" y1="0" x2="1" y2="1">
-                        <stop offset="0" stopColor="#1257E0" />
-                        <stop offset="1" stopColor="#00C4A7" />
-                      </linearGradient>
-                    </defs>
+                    <circle id="gaugeArc" cx="52" cy="52" r="44" fill="none" stroke="url(#g1)" strokeWidth="10" strokeLinecap="round" strokeDasharray="276.5" strokeDashoffset="276.5" style={{ transition: "stroke-dashoffset 1.8s cubic-bezier(.22,.9,.28,1)" }} />
+                    <defs><linearGradient id="g1" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stopColor="#1257E0" /><stop offset="1" stopColor="#00C4A7" /></linearGradient></defs>
                   </svg>
-                  <div className="gauge-val"><span id="gaugeNum">0</span><small>%</small></div>
+                  <p className="gauge-val"><span id="gaugeNum">0</span><small>%</small></p>
                 </div>
                 <div>
-                  <div style={{ fontFamily: "var(--display)", fontSize: 19, fontWeight: 600, letterSpacing: "-.02em" }}>
-                    Gereedheidsscore
-                  </div>
-                  <p className="small" style={{ marginTop: 6, maxWidth: "24ch" }}>
-                    4 van de 9 verplichtingen zijn afgerond. Nog 2 punten vragen deze maand actie.
-                  </p>
+                  <p style={{ fontFamily: "var(--display)", fontSize: 19, fontWeight: 600, letterSpacing: "-.02em" }}>Gereedheidsscore</p>
+                  <p className="small" style={{ marginTop: 6, maxWidth: "24ch" }}>4 van de 9 verplichtingen afgerond. Twee punten vragen deze maand actie.</p>
                 </div>
               </div>
               <div className="mock-rows">
@@ -232,21 +199,24 @@ export default function LandingPage() {
                 <div className="mrow" style={{ animationDelay: ".86s" }}><span className="chip chip-busy">Bezig</span> Transparantieverklaring <span className="art">Art. 50</span></div>
                 <div className="mrow" style={{ animationDelay: "1.04s" }}><span className="chip chip-todo">Open</span> FRIA-beoordeling <span className="art">Art. 27</span></div>
               </div>
-              <div className="mock-foot">
-                <span className="dot-live" /> Eerstvolgende deadline <span className="d" id="mockDeadline">—</span>
-              </div>
+              <p className="mock-foot">
+                <span className="dot-still" aria-hidden="true" /> Eerstvolgende deadline <span className="d" id="mockDeadline">—</span>
+              </p>
             </div>
-            <div className="float-tag a"><span className="chip chip-ok">Nieuw</span> 2 schaduw-AI-tools gevonden</div>
-            <div className="float-tag b">🇳🇱 Volledig in het Nederlands</div>
+            <div className="float-tag a" aria-hidden="true"><span className="chip chip-ok">Nieuw</span> 2 schaduw-AI-tools gevonden</div>
+            <div className="float-tag b" aria-hidden="true">Volledig in het Nederlands</div>
           </div>
         </div>
       </section>
 
-      {/* TRUST */}
-      <div className="trust">
-        <div className="wrap trust-in">
-          {trust.map((t) => (
-            <div className="trust-item" key={t.text}><t.icon size={16} /> {t.text}</div>
+      {/* WAAROP DIT IS GEBASEERD */}
+      <div className="basis">
+        <div className="wrap basis-in">
+          {basis.map((b) => (
+            <div className="basis-item" key={b.title}>
+              <b.icon size={20} aria-hidden="true" />
+              <div><b>{b.title}</b><span>{b.text}</span></div>
+            </div>
           ))}
         </div>
       </div>
@@ -255,31 +225,28 @@ export default function LandingPage() {
       <section className="section clock" id="klok">
         <div className="wrap">
           <div style={{ maxWidth: 760 }} data-reveal>
-            <span className="eyebrow">Art. 113 — toepassingsdata</span>
+            <p className="eyebrow">Art. 113 — toepassingsdata</p>
             <h2 className="h2">De invoering is niet aanstaande. Die is begonnen.</h2>
-            <p className="lede">
-              Twee verplichtingen gelden vandaag al, de rest komt in fases. Elke maand
-              wachten is een maand die u straks in weken moet inhalen.
-            </p>
+            <p className="lede">Twee verplichtingen gelden vandaag al. De rest komt in fases — en elke fase vraagt werk dat zich niet in een weekend laat inhalen.</p>
           </div>
 
           <div className="counters" data-reveal style={rd(120)}>
             <div className="counter red">
-              <div className="n" id="cSince">0</div>
-              <div className="l">dagen dat AI-geletterdheid (Art. 4) en het verbod uit Art. 5 al gelden</div>
+              <p className="n" id="cSince">0</p>
+              <p className="l">dagen dat AI-geletterdheid (Art. 4) en het verbod uit Art. 5 al gelden</p>
             </div>
             <div className="counter mint">
-              <div className="n" id="cUntil">0</div>
-              <div className="l">dagen tot de eerstvolgende deadline: <span id="nextLabel">—</span></div>
+              <p className="n" id="cUntil">0</p>
+              <p className="l">dagen tot de eerstvolgende deadline: <span id="nextLabel">—</span></p>
             </div>
           </div>
 
           <div className="rail" id="rail">
-            <div className="rail-line"><div className="rail-fill" id="railFill" /></div>
+            <div className="rail-line" aria-hidden="true"><div className="rail-fill" id="railFill" /></div>
             {milestones.map((m) => (
               <article className="mile" data-mile data-reveal key={m.title}>
-                <span className="mile-dot" />
-                <div className="mile-date">{m.date} <span className={`tag ${m.tag.cls}`}>{m.tag.label}</span></div>
+                <span className="mile-dot" aria-hidden="true" />
+                <p className="mile-date">{m.date} <span className={`tag ${m.tag.cls}`}>{m.tag.label}</span></p>
                 <h3>{m.title}</h3>
                 <p>{m.text}</p>
               </article>
@@ -287,29 +254,19 @@ export default function LandingPage() {
           </div>
 
           <div className="clock-foot">
-            <p>
-              Digital Omnibus — aangenomen door de Raad; publicatie in het Publicatieblad
-              in afwachting. Tot publicatie geldt formeel de oorspronkelijke datum uit
-              Art. 113. Wetgeving en deadlines kunnen wijzigen; wij houden de data in het
-              platform actueel. Dit is beslissingsondersteuning, geen juridisch advies.
-            </p>
-            <Link href="/scan" className="btn btn-mint">
-              Zie welke datum voor ú telt <ArrowRight size={16} />
-            </Link>
+            <p>Digital Omnibus — aangenomen door de Raad; publicatie in het Publicatieblad in afwachting. Tot publicatie geldt formeel de oorspronkelijke datum uit Art. 113. Wetgeving en deadlines kunnen wijzigen; wij werken de data in het platform bij. Dit is beslissingsondersteuning, geen juridisch advies.</p>
+            <Link href="/scan" className="btn btn-mint">Zie welke datum voor ú telt <Arrow /></Link>
           </div>
         </div>
       </section>
 
       {/* WET → CHECKLIST */}
       <section className="translate" id="vertaling">
-        <div className="wrap" style={{ paddingTop: "clamp(72px,10vw,140px)" }}>
-          <div style={{ maxWidth: 720 }} data-reveal>
-            <span className="eyebrow">De kern van ComplAI</span>
-            <h2 className="h2" style={{ margin: "18px 0" }}>Links de wettekst. Rechts uw takenlijst.</h2>
-            <p className="lede">
-              Dit is precies wat het platform doet: het leest de verordening zo dat u hem
-              niet hoeft te lezen. Scroll verder en zie de vertaling gebeuren.
-            </p>
+        <div className="wrap" style={{ paddingTop: "clamp(72px,10vw,132px)" }}>
+          <div className="section-head" data-reveal>
+            <p className="eyebrow">De kern van ComplAI</p>
+            <h2 className="h2">Links de wettekst. Rechts uw takenlijst.</h2>
+            <p className="lede">113 artikelen en 13 bijlagen. Daar staan voor uw organisatie een handvol concrete taken in — de rest gaat over iemand anders. Scroll verder en zie de vertaling gebeuren.</p>
           </div>
         </div>
 
@@ -317,26 +274,25 @@ export default function LandingPage() {
           <div className="tr-sticky">
             <div className="wrap">
               <div className="tr-grid">
-                <div className="law" id="lawCard">
-                  <div className="law-head"><span>Verordening (EU) 2024/1689</span><span>PB L, 12.7.2024</span></div>
+                <div className="law">
+                  <p className="law-head"><span>Verordening (EU) 2024/1689</span><span>PB L, 12.7.2024</span></p>
                   {laws.map((l, i) => (<p data-law key={i}>{l}</p>))}
-                  <div className="law-seal">— 458 blz. —</div>
+                  <p className="law-seal">— 113 artikelen · 13 bijlagen —</p>
                 </div>
-
                 <div>
                   <div className="todo-head">
-                    <span className="eyebrow">Uw stappenplan</span>
+                    <p className="eyebrow">Uw stappenplan</p>
                     <h3 className="h3" style={{ marginTop: 14 }}>Vier taken, met eigenaar en datum</h3>
                   </div>
-                  <div className="todos" id="todos">
+                  <div className="todos">
                     {todos.map((t) => (
                       <div className="todo" data-todo key={t.title}>
-                        <span className="box"><Check size={12} /></span>
-                        <div><b>{t.title}</b><span>{t.text}</span></div>
+                        <span className="box" aria-hidden="true"><Tick /></span>
+                        <p><b>{t.title}</b><span>{t.text}</span></p>
                       </div>
                     ))}
                   </div>
-                  <div className="tr-progress"><span id="trCount">0</span>/4 vertaald · <span id="trPct">0</span>%</div>
+                  <p className="tr-progress"><span id="trCount">0</span>/4 vertaald</p>
                 </div>
               </div>
             </div>
@@ -347,14 +303,14 @@ export default function LandingPage() {
       {/* PIJNPUNTEN */}
       <section className="section">
         <div className="wrap">
-          <div style={{ maxWidth: 640 }} data-reveal>
-            <span className="eyebrow">Herkenbaar?</span>
-            <h2 className="h2" style={{ marginTop: 18 }}>Vier redenen waarom dit blijft liggen</h2>
+          <div className="section-head" data-reveal>
+            <p className="eyebrow">Herkenbaar?</p>
+            <h2 className="h2">Vier redenen waarom dit al maanden op uw lijstje staat</h2>
           </div>
           <div className="pain-grid">
             {pains.map((p, i) => (
               <div className="pain" data-reveal style={rd(i * 80)} key={p.title}>
-                <div className="pain-ico"><p.icon size={20} /></div>
+                <div className="pain-ico" aria-hidden="true"><p.icon size={20} /></div>
                 <h3>{p.title}</h3>
                 <p>{p.text}</p>
               </div>
@@ -366,9 +322,9 @@ export default function LandingPage() {
       {/* STAPPEN */}
       <section className="section" style={{ background: "var(--mist)" }} id="hoe-het-werkt">
         <div className="wrap">
-          <div style={{ maxWidth: 640 }} data-reveal>
-            <span className="eyebrow">In drie stappen aan de slag</span>
-            <h2 className="h2" style={{ margin: "18px 0 16px" }}>De volgorde bepaalt u zelf</h2>
+          <div className="section-head" data-reveal>
+            <p className="eyebrow">In drie stappen aan de slag</p>
+            <h2 className="h2">De volgorde bepaalt u zelf</h2>
             <p className="lede">Waar u ook start, alles komt samen in uw eigen dashboard.</p>
           </div>
           <div className="steps">
@@ -377,7 +333,7 @@ export default function LandingPage() {
                 <span className="num">{s.num}</span>
                 <h3 className="h3">{s.title}</h3>
                 <p>{s.text}</p>
-                <Link href={s.cta.href} className="link-arrow">{s.cta.label} <ArrowRight size={14} /></Link>
+                <Link href={s.cta.href} className="link-arrow">{s.cta.label} <Arrow size={14} /></Link>
               </div>
             ))}
           </div>
@@ -388,20 +344,17 @@ export default function LandingPage() {
       <section className="section" id="functies">
         <div className="wrap">
           <div className="feat-head">
-            <div style={{ maxWidth: 620 }} data-reveal>
-              <span className="eyebrow">Uw hele compliance op één plek</span>
-              <h2 className="h2" style={{ marginTop: 18 }}>Negen onderdelen, één werkomgeving</h2>
+            <div className="section-head" data-reveal>
+              <p className="eyebrow">Uw hele compliance op één plek</p>
+              <h2 className="h2" style={{ marginBottom: 0 }}>Alles wat u straks moet kunnen laten zien, op één plek</h2>
             </div>
-            <Link href="/demo" className="link-arrow" data-reveal style={rd(120)}>
-              Bekijk de demo <ArrowRight size={14} />
-            </Link>
+            <Link href="/demo" className="link-arrow" data-reveal style={rd(120)}>Bekijk de demo <Arrow size={14} /></Link>
           </div>
-
           <div className="bento">
             {features.map((f, i) => (
               <div className={f.cls} data-reveal style={rd((i % 3) * 80)} key={f.title}>
-                <span className="f-glow" />
-                <div className="f-ico"><f.icon size={18} /></div>
+                <span className="f-glow" aria-hidden="true" />
+                <div className="f-ico" aria-hidden="true"><f.icon size={18} /></div>
                 <h3>{f.title}</h3>
                 <p>{f.text}</p>
               </div>
@@ -413,51 +366,80 @@ export default function LandingPage() {
       {/* VERGELIJKING */}
       <section className="section" style={{ background: "var(--mist)" }}>
         <div className="wrap">
-          <div style={{ maxWidth: 660 }} data-reveal>
-            <span className="eyebrow">Zelf uitpluizen, adviseur of ComplAI?</span>
-            <h2 className="h2" style={{ margin: "18px 0 16px" }}>Hetzelfde resultaat, zonder de kosten en de wachttijd</h2>
+          <div className="section-head" data-reveal>
+            <p className="eyebrow">Zelf uitpluizen, adviseur of ComplAI?</p>
+            <h2 className="h2">Hetzelfde resultaat, zonder de kosten en de wachttijd</h2>
           </div>
           <div className="cmp-wrap" data-reveal style={rd(120)}>
-            <table>
-              <thead><tr><th>&nbsp;</th><th>Zelf doen</th><th>Consultant</th><th>ComplAI</th></tr></thead>
-              <tbody>
-                {comparison.map((row) => (
-                  <tr key={row.label}>
-                    <td>{row.label}</td>
-                    <Cell value={row.self} cost={row.cost} />
-                    <Cell value={row.consultant} cost={row.cost} />
-                    <Cell value={row.complai} cost={row.cost} />
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+            <div className="cmp-scroll" tabIndex={0} role="region" aria-label="Vergelijking van drie manieren om AI Act-compliant te worden">
+              <table>
+                <thead><tr><th scope="col"><span className="sr-only">Onderdeel</span></th><th scope="col">Zelf doen</th><th scope="col">Consultant</th><th scope="col">ComplAI</th></tr></thead>
+                <tbody>
+                  {comparison.map((row) => (
+                    <tr key={row.label}>
+                      <th scope="row">{row.label}</th>
+                      <Cell value={row.self} cost={row.cost} />
+                      <Cell value={row.consultant} cost={row.cost} />
+                      <Cell value={row.complai} cost={row.cost} />
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
+          <p className="tiny" style={{ marginTop: 16 }} data-reveal>Een consultant blijft zinvol bij echt hoog-risico toepassingen. Dan levert dit dossier het voorwerk, tegen minder uren.</p>
         </div>
       </section>
 
       {/* PRIJZEN */}
       <section className="section" id="prijzen">
         <div className="wrap">
-          <div style={{ maxWidth: 660 }} data-reveal>
-            <span className="eyebrow">Prijzen</span>
-            <h2 className="h2" style={{ margin: "18px 0 16px" }}>Een pakket dat bij uw organisatie past</h2>
-            <p className="lede">De scan is gratis en vraagt geen account. Betaalt u per jaar, dan krijgt u twee maanden gratis.</p>
+          <div className="section-head" data-reveal>
+            <p className="eyebrow">Prijzen</p>
+            <h2 className="h2">Minder per maand dan één uur adviseur</h2>
+            <p className="lede">De scan is gratis en vraagt geen account. U zegt maandelijks op. Betaalt u per jaar, dan krijgt u twee maanden gratis.</p>
           </div>
           <div className="plans">
             {PLANS.map((plan, i) => (
               <div className={plan.highlighted ? "plan best" : "plan"} data-reveal style={rd(i * 90)} key={plan.id}>
-                <div className="name">{plan.name}</div>
-                <div className="price">€{formatEuro(plan.monthly)}<small>/mnd</small></div>
-                <div className="terms">{plan.monthly === 0 ? "geen abonnement nodig" : "maandelijks opzegbaar"}</div>
-                <p>{plan.tagline}</p>
+                <p className="name">{plan.name}</p>
+                <p className="price">€{formatEuro(plan.monthly)}<small>/mnd</small></p>
+                <p className="terms">{plan.monthly === 0 ? "geen abonnement nodig" : "maandelijks opzegbaar"}</p>
+                <ul>
+                  {(planBullets[i] ?? []).map((b) => (
+                    <li key={b}><Tick size={13} /> {b}</li>
+                  ))}
+                </ul>
                 <Link href="/pricing" className={plan.highlighted ? "btn btn-primary" : "btn btn-ghost"}>Bekijk pakket</Link>
               </div>
             ))}
           </div>
-          <p className="tiny" style={{ marginTop: 22 }} data-reveal>
-            Alle pakketten en de volledige functievergelijking vindt u op de{" "}
-            <Link href="/pricing" style={{ color: "var(--blue)", fontWeight: 600 }}>prijzenpagina</Link>.
+          <p className="plan-foot" data-reveal>
+            <span>Alle bedragen exclusief btw.</span>
+            <span>Geen opstartkosten.</span>
+            <span>Overstappen tussen pakketten kan elk moment.</span>
+            <Link href="/pricing" className="link-arrow">Volledige functievergelijking <Arrow size={14} /></Link>
           </p>
+        </div>
+      </section>
+
+      {/* CONTACT */}
+      <section className="section" id="contact" style={{ paddingTop: 0 }}>
+        <div className="wrap">
+          <div className="contact" data-reveal>
+            <div>
+              <h2 className="h2">Liever eerst een mens dan een formulier?</h2>
+              <p>Twijfelt u of dit voor uw organisatie de juiste route is, dan zeggen we dat liever in twintig minuten dan na drie maanden abonnement. U spreekt iemand die de verordening kent, niet een verkoper met een script.</p>
+            </div>
+            <div className="contact-ways">
+              {contactWays.map((w) => (
+                <Link className="way" href={w.href} key={w.title}>
+                  <span className="way-ico" aria-hidden="true"><w.icon size={18} /></span>
+                  <span><b>{w.title}</b><span>{w.sub}</span></span>
+                </Link>
+              ))}
+            </div>
+          </div>
         </div>
       </section>
 
@@ -465,12 +447,12 @@ export default function LandingPage() {
       <section className="section" id="faq" style={{ background: "var(--mist)" }}>
         <div className="wrap faq">
           <div style={{ textAlign: "center", marginBottom: 20 }} data-reveal>
-            <span className="eyebrow" style={{ justifyContent: "center" }}>Veelgestelde vragen</span>
-            <h2 className="h2" style={{ marginTop: 18 }}>Kort antwoord op de vragen die het vaakst komen</h2>
+            <p className="eyebrow" style={{ justifyContent: "center" }}>Veelgestelde vragen</p>
+            <h2 className="h2" style={{ marginTop: 18 }}>De vragen die het vaakst binnenkomen</h2>
           </div>
           {faqs.map((f) => (
             <div className="q" data-reveal key={f.q}>
-              <button aria-expanded="false"><span>{f.q}</span><span className="pm"><Plus size={12} /></span></button>
+              <h3><button aria-expanded="false"><span>{f.q}</span><span className="pm" aria-hidden="true"><Plus size={12} /></span></button></h3>
               <div className="a"><p>{f.a}</p></div>
             </div>
           ))}
@@ -481,13 +463,14 @@ export default function LandingPage() {
       <section className="section">
         <div className="wrap">
           <div className="final" data-reveal="scale">
-            <span className="eyebrow">Vijf minuten</span>
-            <h2 className="h2">In vijf minuten weet u precies waar u staat</h2>
-            <p>
-              Doe de gratis risicoscan en ontvang direct uw compliance-score met concrete
-              vervolgstappen. Zonder account, zonder advieskosten.
-            </p>
-            <Link href="/scan" className="btn btn-mint btn-lg">Start gratis risicoscan <ArrowRight size={16} /></Link>
+            <p className="eyebrow">Vijf minuten</p>
+            <h2 className="h2">Vijf minuten nu. Of weken, als iemand er straks om vraagt.</h2>
+            <p>Doe de gratis risicoscan en ontvang direct uw risicocategorie, uw rol en de deadlines die voor u gelden — met een stappenplan dat u kunt doorsturen naar uw directie.</p>
+            <div className="final-cta">
+              <Link href="/scan" className="btn btn-mint btn-lg">Doe de gratis scan <Arrow /></Link>
+              <Link href="#contact" className="btn btn-line btn-lg">Eerst iemand spreken</Link>
+            </div>
+            <p className="final-note">Geen account · geen betaalgegevens · u kunt op elk moment stoppen</p>
           </div>
         </div>
       </section>
@@ -499,5 +482,13 @@ function Cell({ value, cost }: { value: string | boolean; cost?: boolean }) {
   if (typeof value === "string") {
     return <td className={cost ? "cost" : undefined}>{value}</td>;
   }
-  return <td>{value ? <span className="yes">✓</span> : <span className="no">—</span>}</td>;
+  return (
+    <td>
+      {value ? (
+        <span className="yes">✓<span className="sr-only">inbegrepen</span></span>
+      ) : (
+        <span className="no">—<span className="sr-only">niet inbegrepen</span></span>
+      )}
+    </td>
+  );
 }
