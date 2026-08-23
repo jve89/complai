@@ -4,7 +4,6 @@ import type { Metadata } from "next";
 import {
   BarChart3,
   BookOpen,
-  CalendarDays,
   Clock,
   Database,
   Euro,
@@ -12,7 +11,6 @@ import {
   FileText,
   GraduationCap,
   Lock,
-  Mail,
   Plus,
   ScanSearch,
   ShieldCheck,
@@ -74,16 +72,33 @@ const startSteps = [
   { num: "03 — zonder betaalgegevens", title: "Maak een gratis account", text: "Een eigen compliance-omgeving. Uw collega's nodigt u later in een paar klikken uit.", cta: { label: "Registreer gratis", href: "/signup" } },
 ];
 
-const features = [
-  { icon: ShieldCheck, title: "Compliance-dashboard", text: "Uw gereedheidsscore, de stand per verplichting, wat er nog openstaat en welke deadlines eraan komen — alles op één scherm.", cls: "f f-wide" },
-  { icon: Database, title: "AI-register", text: "Al uw AI-systemen bij elkaar, met per systeem een automatische risico-suggestie op basis van Bijlage III die u zelf bevestigt.", cls: "f f-wide" },
-  { icon: ScanSearch, title: "Schaduw-AI-check", text: "Breng AI in kaart die nog nergens is vastgelegd. Juist dat gemis valt bij een controle als eerste op.", cls: "f" },
-  { icon: FileText, title: "Documentgenerator", text: "Beleid, risicobeoordeling, FRIA en transparantieverklaring, meteen ingevuld met uw eigen gegevens.", cls: "f" },
-  { icon: GraduationCap, title: "E-learning & certificaten", text: "Leerpaden per rol, met toetsen en certificaten, zodat u AI-geletterdheid kunt aantonen.", cls: "f" },
-  { icon: BarChart3, title: "Governance", text: "Kwartaalchecks plus meldingen zodra documenten verlopen of certificaten ontbreken.", cls: "f" },
-  { icon: BookOpen, title: "Kennisbank", text: "De AI Act in begrijpelijk Nederlands: risiconiveaus, rollen, deadlines en boetes.", cls: "f" },
-  { icon: Users, title: "Team & rollen", text: "Nodig collega's uit als beheerder, manager of medewerker, elk met een passend leerpad.", cls: "f" },
-  { icon: Sparkles, title: "Meegroeien met de wet", text: "Naarmate de AI Act stap voor stap in werking treedt, werken wij de deadlines en verplichtingen in het platform bij. U werkt altijd met de meest actuele stand.", cls: "f f-wide" },
+// Grouped into three obligation-themes so it reads as three clear areas, not a
+// wall of nine equal tiles.
+const featureGroups = [
+  {
+    title: "Weet wat er geldt",
+    items: [
+      { icon: ShieldCheck, title: "Compliance-dashboard", text: "Uw gereedheidsscore, de stand per verplichting en de deadlines die eraan komen — op één scherm." },
+      { icon: Database, title: "AI-register", text: "Al uw AI-systemen bij elkaar, met een automatische risico-suggestie op basis van Bijlage III." },
+      { icon: ScanSearch, title: "Schaduw-AI-check", text: "Breng AI in kaart die nog nergens is vastgelegd — juist dat gemis valt bij een controle als eerste op." },
+    ],
+  },
+  {
+    title: "Leg vast & toon aan",
+    items: [
+      { icon: FileText, title: "Documentgenerator", text: "Beleid, risicobeoordeling, FRIA en transparantieverklaring, ingevuld met uw eigen gegevens." },
+      { icon: GraduationCap, title: "E-learning & certificaten", text: "Leerpaden per rol met toetsen en certificaten — uw bewijs van AI-geletterdheid (Art. 4)." },
+      { icon: BarChart3, title: "Governance", text: "Kwartaalchecks plus meldingen zodra documenten verlopen of certificaten ontbreken." },
+    ],
+  },
+  {
+    title: "Blijf actueel & werk samen",
+    items: [
+      { icon: BookOpen, title: "Kennisbank", text: "De AI Act in begrijpelijk Nederlands: risiconiveaus, rollen, deadlines en boetes." },
+      { icon: Sparkles, title: "Meegroeit met de wet", text: "Wij werken de deadlines en verplichtingen bij — u werkt altijd met de actuele stand." },
+      { icon: Users, title: "Team & rollen", text: "Nodig collega's uit als beheerder, manager of medewerker, elk met een passend leerpad." },
+    ],
+  },
 ];
 
 const comparison = [
@@ -103,12 +118,6 @@ const planBullets: string[][] = [
   ["Alles uit Scan", "AI-register", "AI-beleid en transparantieverklaring", "E-learning voor Art. 4"],
   ["Alles uit Basis", "Risicobeoordeling per systeem", "FRIA-generator", "Kwartaalchecks en meldingen"],
   ["Alles uit Compliance", "Volledig documentendossier", "Export voor auditor of klant", "Uitgebreid rollenbeheer"],
-];
-
-const contactWays = [
-  { icon: Mail, href: "/contact", title: "Stuur ons een bericht", sub: "Antwoord binnen één werkdag" },
-  { icon: CalendarDays, href: "/demo", title: "Plan een gesprek van 20 minuten", sub: "Online, samen door het platform" },
-  { icon: BookOpen, href: "/kennisbank", title: "Eerst zelf lezen", sub: "De kennisbank, in gewoon Nederlands" },
 ];
 
 const faqs = [
@@ -350,13 +359,16 @@ export default function LandingPage() {
             </div>
             <Link href="/demo" className="link-arrow" data-reveal style={rd(120)}>Bekijk de demo <Arrow size={14} /></Link>
           </div>
-          <div className="bento">
-            {features.map((f, i) => (
-              <div className={f.cls} data-reveal style={rd((i % 3) * 80)} key={f.title}>
-                <span className="f-glow" aria-hidden="true" />
-                <div className="f-ico" aria-hidden="true"><f.icon size={18} /></div>
-                <h3>{f.title}</h3>
-                <p>{f.text}</p>
+          <div className="fgroups">
+            {featureGroups.map((g, gi) => (
+              <div className="fgroup" data-reveal style={rd(gi * 90)} key={g.title}>
+                <p className="fgroup-title">{g.title}</p>
+                {g.items.map((f) => (
+                  <div className="frow" key={f.title}>
+                    <span className="f-ico" aria-hidden="true"><f.icon size={18} /></span>
+                    <div><b>{f.title}</b><span>{f.text}</span></div>
+                  </div>
+                ))}
               </div>
             ))}
           </div>
@@ -431,13 +443,9 @@ export default function LandingPage() {
               <h2 className="h2">Liever eerst een mens dan een formulier?</h2>
               <p>Twijfelt u of dit voor uw organisatie de juiste route is, dan zeggen we dat liever in twintig minuten dan na drie maanden abonnement. U spreekt iemand die de verordening kent, niet een verkoper met een script.</p>
             </div>
-            <div className="contact-ways">
-              {contactWays.map((w) => (
-                <Link className="way" href={w.href} key={w.title}>
-                  <span className="way-ico" aria-hidden="true"><w.icon size={18} /></span>
-                  <span><b>{w.title}</b><span>{w.sub}</span></span>
-                </Link>
-              ))}
+            <div className="contact-cta">
+              <Link href="/contact" className="btn btn-primary">Stuur ons een bericht <Arrow size={16} /></Link>
+              <Link href="/demo" className="btn btn-ghost">Plan een gesprek van 20 minuten</Link>
             </div>
           </div>
         </div>

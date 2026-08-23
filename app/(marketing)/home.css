@@ -274,6 +274,18 @@
 .hp .f-glow{position:absolute; width:200px; height:200px; border-radius:50%; background:var(--mint); filter:blur(70px); opacity:0; right:-40px; top:-40px; transition:opacity .5s}
 .hp .f:hover .f-glow{opacity:.14}
 
+/* Functies — three themed groups (declutter: geen muur van 9 gelijke tegels) */
+.hp .fgroups{display:grid; grid-template-columns:repeat(3,1fr); gap:32px; margin-top:50px}
+.hp .fgroup-title{font-family:var(--mono); font-size:11.5px; font-weight:500; letter-spacing:.14em; text-transform:uppercase; color:var(--blue); margin-bottom:4px}
+.hp .frow{display:flex; gap:14px; align-items:flex-start; padding:18px 0; border-top:1px solid var(--line)}
+.hp .frow .f-ico{margin-bottom:0}
+.hp .frow b{display:block; font-family:var(--display); font-size:16px; font-weight:600; letter-spacing:-.02em; margin-bottom:3px}
+.hp .frow > div > span{display:block; font-size:14px; color:var(--muted); line-height:1.5}
+
+/* Contact — versoberd tot één knoppenrij i.p.v. drie tegels */
+.hp .contact-cta{display:flex; gap:12px; flex-wrap:wrap}
+@media (max-width:900px){ .hp .fgroups{grid-template-columns:1fr; gap:8px} }
+
 /* Vergelijking */
 .hp .cmp-wrap{margin-top:44px; border:1px solid var(--line); border-radius:var(--r-l); overflow:hidden; background:#fff; box-shadow:var(--shadow-s)}
 .hp .cmp-scroll{overflow-x:auto}
