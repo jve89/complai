@@ -35,11 +35,15 @@ export function HomeEffects() {
     document.querySelectorAll("[data-reveal]").forEach((el) => io.observe(el));
     cleanups.push(() => io.disconnect());
 
-    // Safety net: reveal everything if the observer never fires (or if later
-    // logic in this effect throws before the loop registers).
+    // Vangnet: grijp alleen in als de observer aantoonbaar niet werkt. Heeft na
+    // 1200 ms geen enkel blok .is-in gekregen, dan is er iets mis en onthullen we
+    // alles. Werkt de observer wel, dan laten we de rest aan hem over zodat de
+    // scroll-reveal intact blijft.
     const revealFallback = window.setTimeout(() => {
-      document.querySelectorAll("[data-reveal]:not(.is-in)")
-        .forEach((el) => el.classList.add("is-in"));
+      const all = document.querySelectorAll("[data-reveal]");
+      const anyRevealed = document.querySelector("[data-reveal].is-in");
+      if (anyRevealed) return;
+      all.forEach((el) => el.classList.add("is-in"));
     }, 1200);
     cleanups.push(() => window.clearTimeout(revealFallback));
 
