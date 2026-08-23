@@ -91,10 +91,13 @@ export function userLimit(plan: string | null | undefined): number {
   return USER_LIMIT[TIER_ORDER[tierRank(plan)]];
 }
 
-/** E-learning (modules, quizzes, certificates) is a paid feature from Compliance
- * (groei) — Basis and below see the learning paths as a teaser but can't start
+/** E-learning (modules, quizzes, certificates) is a paid feature from Basis
+ * (starter). AI-geletterdheid (Art. 4) is the ONE duty that binds nearly every
+ * AI-using organisation — provider AND deployer alike — so its in-product proof
+ * (e-learning + certificate) must be reachable at the entry package the scan
+ * recommends. Free (Scan) sees the learning paths as a teaser but can't start
  * modules or earn certificates. */
-export const TRAINING_MIN_TIER: TierId = "groei";
+export const TRAINING_MIN_TIER: TierId = "starter";
 
 export function trainingUnlocked(plan: string | null | undefined): boolean {
   return tierRank(plan) >= tierRank(TRAINING_MIN_TIER);

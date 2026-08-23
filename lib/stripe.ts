@@ -66,6 +66,7 @@ export const PLANS: Plan[] = [
     tagline: "Om uw eerste verplichtingen nu op orde te brengen.",
     features: [
       "Alles uit Scan",
+      "E-learning & certificaten (bewijs voor Art. 4)",
       "AI-register (max. 3 systemen)",
       "AI-beleid & transparantieverklaring",
       "Tot 5 gebruikers",
@@ -85,7 +86,6 @@ export const PLANS: Plan[] = [
       "AI-register (max. 10 systemen)",
       "FRIA, DPIA, risicobeoordeling & beoordelingsdossier",
       "Incidentmelding, klachten, logbewaring & kennisgevingen",
-      "E-learning met certificaten",
       "Tot 25 gebruikers",
     ],
   },

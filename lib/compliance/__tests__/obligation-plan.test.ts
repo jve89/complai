@@ -28,18 +28,18 @@ console.log("obligationPlan — minTier mapping (derived from real gates):");
   const r = plan(
     [
       ob("ART_50_CHATBOT", { required: false }), // document → transparency → starter
-      ob("ART_4_LITERACY"), // training → groei
+      ob("ART_4_LITERACY"), // training → starter (e-learning is Basis)
       ob("ART_27_FRIA"), // document → fria → groei
       ob("ART_5_PROHIBITED"), // process → null
     ],
     "groei"
   );
   const byCode = Object.fromEntries(r.rows.map((x) => [x.code, x]));
-  check("Art. 4 (training) → minTier groei", byCode.ART_4_LITERACY.minTier === "groei", String(byCode.ART_4_LITERACY.minTier));
+  check("Art. 4 (training) → minTier starter", byCode.ART_4_LITERACY.minTier === "starter", String(byCode.ART_4_LITERACY.minTier));
   check("Art. 50 chatbot (document) → minTier starter", byCode.ART_50_CHATBOT.minTier === "starter", String(byCode.ART_50_CHATBOT.minTier));
   check("Art. 27 FRIA (document) → minTier groei", byCode.ART_27_FRIA.minTier === "groei", String(byCode.ART_27_FRIA.minTier));
   check("Art. 5 (process) → minTier null", byCode.ART_5_PROHIBITED.minTier === null, String(byCode.ART_5_PROHIBITED.minTier));
-  check("minTierLabel resolves (groei → Compliance)", byCode.ART_4_LITERACY.minTierLabel === "Compliance", String(byCode.ART_4_LITERACY.minTierLabel));
+  check("minTierLabel resolves (starter → Basis)", byCode.ART_4_LITERACY.minTierLabel === "Basis", String(byCode.ART_4_LITERACY.minTierLabel));
   check("recommendedTierLabel passthrough (groei → Compliance)", r.recommendedTierLabel === "Compliance", r.recommendedTierLabel);
 }
 
@@ -68,7 +68,7 @@ console.log("obligationPlan — integration with a real scan:");
   const r = obligationPlan(profile);
   const art4 = r.rows.find((x) => x.code === "ART_4_LITERACY");
   check("a plain AI-using deployer carries the Art. 4 obligation", !!art4);
-  check("Art. 4 is training, gated at Compliance (groei)", !!art4 && art4.evidenceKind === "training" && art4.minTier === "groei");
+  check("Art. 4 is training, gated at Basis (starter)", !!art4 && art4.evidenceKind === "training" && art4.minTier === "starter");
   check("recommendedTier resolves to a real pakket", ["Scan", "Basis", "Compliance", "Audit"].includes(r.recommendedTierLabel), r.recommendedTierLabel);
 }
 
