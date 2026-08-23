@@ -73,6 +73,7 @@ Remaining: **Pricing/Stripe**, **Settings**.
 
 **Source of truth:** `docs/regulatory/ai-act-verbatim-reference.md` (verbatim text of Regulation (EU) 2024/1689).
 **Correctness spec:** `docs/regulatory/ai-act-correctness-spec.md` (known bugs + required test cases).
+Bevindingen uit de klantreis-controle van 23-08-2026: `docs/scan-findings-2026-08-23.md`.
 
 Rules:
 
