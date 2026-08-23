@@ -165,9 +165,17 @@
   position:absolute; background:#fff; border:1px solid var(--line); border-radius:16px;
   padding:12px 20px; box-shadow:var(--shadow-m); font-size:13px; font-weight:600;
   display:flex; align-items:center; gap:11px; white-space:nowrap;
+  animation:hp-bob 6s ease-in-out infinite;
+  transition:transform .22s ease, box-shadow .22s ease;
 }
-.hp .float-tag.a{bottom:-18px; left:-26px}
-.hp .float-tag.b{top:52px; right:-30px}
+.hp .float-tag .flag{font-size:15px; line-height:1}
+.hp .float-tag:hover{animation:none; transform:translateY(-6px) scale(1.03); box-shadow:var(--shadow-l)}
+.hp .float-tag.a{bottom:-18px; left:-26px; animation-delay:-1s}
+.hp .float-tag.b{top:52px; right:-30px; animation-delay:-3s}
+.hp .float-tag.c{top:-20px; left:-14px; animation-delay:-2s}
+.hp .float-tag.d{bottom:72px; right:-24px; animation-delay:-4.5s}
+@keyframes hp-bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-9px)}}
+@media (prefers-reduced-motion:reduce){ .hp .float-tag{animation:none} }
 
 /* "Waarop dit is gebaseerd" strip */
 .hp .basis{border-block:1px solid var(--line); background:var(--mist)}
@@ -275,7 +283,10 @@
 .hp .f:hover .f-glow{opacity:.14}
 
 /* Functies — three themed groups (declutter: geen muur van 9 gelijke tegels) */
-.hp .fgroups{display:grid; grid-template-columns:repeat(3,1fr); gap:32px; margin-top:50px}
+/* Subgrid so the four row-bands (titel + 3 regels) share their height across all
+   three kolommen — de scheidingslijnen (frow border-top) staan zo altijd recht. */
+.hp .fgroups{display:grid; grid-template-columns:repeat(3,1fr); grid-template-rows:auto auto auto auto; gap:0 32px; margin-top:50px}
+.hp .fgroup{display:grid; grid-row:1 / span 4; grid-template-rows:subgrid; row-gap:0}
 .hp .fgroup-title{font-family:var(--mono); font-size:11.5px; font-weight:500; letter-spacing:.14em; text-transform:uppercase; color:var(--blue); margin-bottom:4px}
 .hp .frow{display:flex; gap:14px; align-items:flex-start; padding:18px 0; border-top:1px solid var(--line)}
 .hp .frow .f-ico{margin-bottom:0}
@@ -284,7 +295,11 @@
 
 /* Contact — versoberd tot één knoppenrij i.p.v. drie tegels */
 .hp .contact-cta{display:flex; gap:12px; flex-wrap:wrap}
-@media (max-width:900px){ .hp .fgroups{grid-template-columns:1fr; gap:8px} }
+@media (max-width:900px){
+  .hp .fgroups{display:block; margin-top:32px}
+  .hp .fgroup{display:block}
+  .hp .fgroup + .fgroup{margin-top:8px}
+}
 
 /* Vergelijking */
 .hp .cmp-wrap{margin-top:44px; border:1px solid var(--line); border-radius:var(--r-l); overflow:hidden; background:#fff; box-shadow:var(--shadow-s)}
@@ -361,6 +376,7 @@
 @media (max-width:1080px){
   .hp .hero-grid{grid-template-columns:1fr; gap:48px}
   .hp .float-tag.b{right:-8px} .hp .float-tag.a{left:-8px}
+  .hp .float-tag.c{left:-4px} .hp .float-tag.d{right:-6px}
   .hp .basis-in{grid-template-columns:1fr 1fr; gap:22px}
   .hp .bento{grid-template-columns:repeat(4,1fr)}
   .hp .pain-grid{grid-template-columns:repeat(2,1fr)}

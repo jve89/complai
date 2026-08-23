@@ -45,11 +45,14 @@ const milestones = [
   { date: "Vandaag", tag: { label: "Uw echte risico", cls: "tag-now" }, title: "De boete is niet wat u als eerste raakt", text: "De plafonds lopen op tot € 35 miljoen of 7% van de wereldomzet, en voor mkb en start-ups geldt het laagste van de twee (Art. 99). Maar de eerste die om uw AI-beleid vraagt is zelden een toezichthouder. Het is een klant in een leveranciersvragenlijst, een verzekeraar bij verlenging, of een aanbesteding met een uitsluitingscriterium. Die geven u geen jaar de tijd." },
 ];
 
+// Verbatim fragmenten uit Verordening (EU) 2024/1689 (NL-versie, PB L, 12.7.2024).
+// Ingekort waar aangegeven met "[…]" zodat het eerlijk als fragment leest. Art. 6
+// draagt bewust "lid 2 en 3": de hoofdregel (lid 2) én de uitzondering (lid 3).
 const laws = [
-  "Artikel 4 — Aanbieders en gebruiksverantwoordelijken van AI-systemen nemen maatregelen om, zoveel mogelijk, te zorgen voor een toereikend niveau van AI-geletterdheid bij hun personeel en andere personen die namens hen betrokken zijn bij de werking en het gebruik van AI-systemen, rekening houdend met hun technische kennis, ervaring, onderwijs en opleiding en de context waarin de AI-systemen zullen worden gebruikt.",
-  "Artikel 6, lid 2 — AI-systemen als bedoeld in bijlage III worden als AI-systemen met een hoog risico beschouwd, tenzij het AI-systeem geen significant risico op schade voor de gezondheid, de veiligheid of de grondrechten van natuurlijke personen inhoudt, mede doordat het de uitkomst van de besluitvorming niet wezenlijk beïnvloedt.",
-  "Artikel 27 — Voorafgaand aan het gebruik van een AI-systeem met een hoog risico verrichten gebruiksverantwoordelijken die publiekrechtelijke instanties zijn, of private entiteiten die openbare diensten verlenen, een beoordeling van het effect op de grondrechten dat het gebruik van een dergelijk systeem kan opleveren.",
-  "Artikel 50 — Aanbieders zorgen ervoor dat AI-systemen die bedoeld zijn om rechtstreeks met natuurlijke personen te interageren, zodanig worden ontworpen en ontwikkeld dat de betrokken natuurlijke personen worden geïnformeerd dat zij interageren met een AI-systeem, tenzij dit duidelijk is voor een normaal geïnformeerde persoon.",
+  "Artikel 4 — Aanbieders en gebruiksverantwoordelijken van AI-systemen nemen maatregelen om, zoveel mogelijk, te zorgen voor een toereikend niveau van AI-geletterdheid bij hun personeel en andere personen die namens hen betrokken zijn bij de werking en het gebruik van AI-systemen, rekening houdend met hun technische kennis, ervaring, onderwijs en opleiding en de context waarin de AI-systemen zullen worden gebruikt […].",
+  "Artikel 6, lid 2 en 3 — AI-systemen als bedoeld in bijlage III worden als AI-systemen met een hoog risico beschouwd. In afwijking daarvan geldt een systeem niet als hoog risico wanneer het geen significant risico op schade voor de gezondheid, de veiligheid of de grondrechten van natuurlijke personen inhoudt, mede doordat het de uitkomst van de besluitvorming niet wezenlijk beïnvloedt.",
+  "Artikel 27 — Voorafgaand aan het gebruik van een AI-systeem met een hoog risico verrichten gebruiksverantwoordelijken die publiekrechtelijke instanties zijn, of private entiteiten die openbare diensten verlenen, [en gebruiksverantwoordelijken als bedoeld in bijlage III, punten 5 b) en c),] een beoordeling van het effect op de grondrechten dat het gebruik van een dergelijk systeem kan opleveren.",
+  "Artikel 50 — Aanbieders zorgen ervoor dat AI-systemen die bedoeld zijn om rechtstreeks met natuurlijke personen te interageren, zodanig worden ontworpen en ontwikkeld dat de betrokken natuurlijke personen worden geïnformeerd dat zij interageren met een AI-systeem, tenzij dit duidelijk is voor een normaal geïnformeerde, oplettende en omzichtige natuurlijke persoon […].",
 ];
 
 const todos = [
@@ -57,6 +60,15 @@ const todos = [
   { title: "Classificeer elk AI-systeem", text: "Het register geeft per systeem een risico-suggestie op basis van Bijlage III, die u zelf bevestigt." },
   { title: "Genereer uw FRIA", text: "De grondrechtenbeoordeling, vooringevuld met uw eigen organisatiegegevens." },
   { title: "Meld AI in uw klantcontact", text: "Kant-en-klare transparantieverklaring voor uw chatbot en gegenereerde content." },
+];
+
+// Zwevende tegels over de dashboard-weergave in de hero. Tekst hier aanpassen —
+// pos (a/b/c/d) bepaalt de plek (zie .float-tag.* in home.css).
+const floatTags: { pos: "a" | "b" | "c" | "d"; chip?: string; flag?: boolean; text: string }[] = [
+  { pos: "a", chip: "Nieuw", text: "2 schaduw-AI-tools gevonden" },
+  { pos: "b", flag: true, text: "Volledig in het Nederlands" },
+  { pos: "c", chip: "Klaar", text: "Certificaat AI-geletterdheid" },
+  { pos: "d", text: "Elke deadline bewaakt" },
 ];
 
 const pains = [
@@ -158,17 +170,18 @@ export default function LandingPage() {
         <div className="wrap hero-grid">
           <div data-reveal>
             <p className="status-pill">
-              <span className="dot-live" aria-hidden="true" /> Van kracht sinds 2 februari 2025
+              <span className="dot-live" aria-hidden="true" /> EU AI Act — van kracht sinds 2 februari 2025
               <span className="badge" id="daysSince">dag —</span>
             </p>
             <h1 className="h1">
               U gebruikt al AI.<br />Alleen kunt u dat<br /><em className="hl">niet aantonen</em>.
             </h1>
             <p className="lede">
-              Sinds 2 februari 2025 moet u kunnen laten zien dat uw mensen begrijpen waar
-              ze mee werken. Niet dát ze het begrijpen — dat u het kunt bewijzen. De meeste
-              mkb-organisaties ontdekken pas dat dat bewijs ontbreekt op het moment dat een
-              klant, een verzekeraar of een aanbesteding erom vraagt.
+              De EU AI Act (Verordening (EU) 2024/1689) is Europese wetgeving en geldt sinds
+              2 februari 2025. Die verplicht u om te kunnen laten zien dat uw mensen begrijpen
+              waar ze mee werken — niet dát ze het begrijpen, maar dat u het kunt bewijzen. De
+              meeste mkb-organisaties ontdekken pas dat dat bewijs ontbreekt op het moment dat
+              een klant, een verzekeraar of een aanbesteding erom vraagt.
             </p>
             <div className="hero-cta">
               <Link href="/scan" className="btn btn-primary btn-lg">Doe de gratis scan <Arrow /></Link>
@@ -179,13 +192,9 @@ export default function LandingPage() {
               <span><i className="check-i"><Tick size={9} /></i> Geen account, geen betaalgegevens</span>
               <span><i className="check-i"><Tick size={9} /></i> Pdf die u kunt doorsturen</span>
             </p>
-            <p className="hero-human">
-              Liever eerst iemand spreken? <Link href="#contact">Plan een gesprek van 20 minuten</Link> — zonder verkooppraat.
-            </p>
           </div>
 
           <div className="mock" data-reveal="scale" style={rd(160)}>
-            <span className="mock-label">Voorbeeldweergave van het dashboard</span>
             <div className="mock-card">
               <div className="mock-top" aria-hidden="true"><i /><i /><i /><span className="t">complai — dashboard</span></div>
               <div className="gauge-row">
@@ -212,8 +221,13 @@ export default function LandingPage() {
                 <span className="dot-still" aria-hidden="true" /> Eerstvolgende deadline <span className="d" id="mockDeadline">—</span>
               </p>
             </div>
-            <div className="float-tag a" aria-hidden="true"><span className="chip chip-ok">Nieuw</span> 2 schaduw-AI-tools gevonden</div>
-            <div className="float-tag b" aria-hidden="true">Volledig in het Nederlands</div>
+            {floatTags.map((t) => (
+              <div className={`float-tag ${t.pos}`} aria-hidden="true" key={t.pos}>
+                {t.flag ? <span className="flag">🇳🇱</span> : null}
+                {t.chip ? <span className="chip chip-ok">{t.chip}</span> : null}
+                {t.text}
+              </div>
+            ))}
           </div>
         </div>
       </section>
@@ -440,12 +454,11 @@ export default function LandingPage() {
         <div className="wrap">
           <div className="contact" data-reveal>
             <div>
-              <h2 className="h2">Liever eerst een mens dan een formulier?</h2>
-              <p>Twijfelt u of dit voor uw organisatie de juiste route is, dan zeggen we dat liever in twintig minuten dan na drie maanden abonnement. U spreekt iemand die de verordening kent, niet een verkoper met een script.</p>
+              <h2 className="h2">Nog twijfels of dit bij uw organisatie past?</h2>
+              <p>Stel gerust uw vraag voordat u iets afsluit. U krijgt antwoord van iemand die de verordening kent — geen verkoper met een script.</p>
             </div>
             <div className="contact-cta">
               <Link href="/contact" className="btn btn-primary">Stuur ons een bericht <Arrow size={16} /></Link>
-              <Link href="/demo" className="btn btn-ghost">Plan een gesprek van 20 minuten</Link>
             </div>
           </div>
         </div>
