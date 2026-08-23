@@ -119,15 +119,18 @@ export function ScanWizard({ initialAnswers }: { initialAnswers?: ScanAnswers })
   }
 
   function toggleMulti(value: string) {
-    const arr = Array.isArray(current) ? (current as string[]) : [];
-    let nextArr: string[];
-    if (value === "none" || value === "geen")
-      nextArr = arr.includes(value) ? [] : [value];
-    else
-      nextArr = arr.includes(value)
-        ? arr.filter((v) => v !== value)
-        : [...arr.filter((v) => v !== "none" && v !== "geen"), value];
-    update(step.field, nextArr);
+    setAnswers((a) => {
+      const cur = (a as unknown as Record<string, unknown>)[step.field];
+      const arr = Array.isArray(cur) ? (cur as string[]) : [];
+      let nextArr: string[];
+      if (value === "none" || value === "geen")
+        nextArr = arr.includes(value) ? [] : [value];
+      else
+        nextArr = arr.includes(value)
+          ? arr.filter((v) => v !== value)
+          : [...arr.filter((v) => v !== "none" && v !== "geen"), value];
+      return { ...a, [step.field]: nextArr };
+    });
   }
 
   function isSelected(value: string): boolean {
