@@ -173,10 +173,10 @@
 .hp .float-tag:hover{animation:none; transform:translateY(-6px) scale(1.03); box-shadow:var(--shadow-l)}
 /* Symmetrisch: c/b als bovenpaar (zelfde top), a/d als onderpaar (zelfde bottom),
    links en rechts met dezelfde overhang — zo hebben alle vier dezelfde marge. */
-.hp .float-tag.c{top:-22px; left:-24px; animation-delay:-2s}
-.hp .float-tag.b{top:-22px; right:-24px; animation-delay:-3s}
-.hp .float-tag.a{bottom:-22px; left:-24px; animation-delay:-1s}
-.hp .float-tag.d{bottom:-22px; right:-24px; animation-delay:-4.5s}
+.hp .float-tag.ft-c{top:-22px; left:-24px; animation-delay:-2s}
+.hp .float-tag.ft-b{top:-22px; right:-24px; animation-delay:-3s}
+.hp .float-tag.ft-a{bottom:-22px; left:-24px; animation-delay:-1s}
+.hp .float-tag.ft-d{bottom:-22px; right:-24px; animation-delay:-4.5s}
 @keyframes hp-bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-9px)}}
 @media (prefers-reduced-motion:reduce){ .hp .float-tag{animation:none} }
 
@@ -378,8 +378,8 @@
 /* Responsive */
 @media (max-width:1080px){
   .hp .hero-grid{grid-template-columns:1fr; gap:48px}
-  .hp .float-tag.b{right:-8px} .hp .float-tag.a{left:-8px}
-  .hp .float-tag.c{left:-4px} .hp .float-tag.d{right:-6px}
+  .hp .float-tag.ft-b{right:-8px} .hp .float-tag.ft-a{left:-8px}
+  .hp .float-tag.ft-c{left:-4px} .hp .float-tag.ft-d{right:-6px}
   .hp .basis-in{grid-template-columns:1fr 1fr; gap:22px}
   .hp .bento{grid-template-columns:repeat(4,1fr)}
   .hp .pain-grid{grid-template-columns:repeat(2,1fr)}

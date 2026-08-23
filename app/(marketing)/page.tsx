@@ -222,7 +222,7 @@ export default function LandingPage() {
               </p>
             </div>
             {floatTags.map((t) => (
-              <div className={`float-tag ${t.pos}`} aria-hidden="true" key={t.pos}>
+              <div className={`float-tag ft-${t.pos}`} aria-hidden="true" key={t.pos}>
                 {t.flag ? <span className="flag">🇳🇱</span> : <Tick size={13} />}
                 {t.text}
               </div>
