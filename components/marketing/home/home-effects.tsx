@@ -18,6 +18,31 @@ export function HomeEffects() {
     const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     const bar = barRef.current;
 
+    const cleanups: Array<() => void> = [];
+
+    // ---- Scroll-reveal (registered first, before any other logic) ----
+    const io = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((e) => {
+          if (e.isIntersecting) {
+            e.target.classList.add("is-in");
+            io.unobserve(e.target);
+          }
+        });
+      },
+      { threshold: 0.16, rootMargin: "0px 0px -8% 0px" }
+    );
+    document.querySelectorAll("[data-reveal]").forEach((el) => io.observe(el));
+    cleanups.push(() => io.disconnect());
+
+    // Safety net: reveal everything if the observer never fires (or if later
+    // logic in this effect throws before the loop registers).
+    const revealFallback = window.setTimeout(() => {
+      document.querySelectorAll("[data-reveal]:not(.is-in)")
+        .forEach((el) => el.classList.add("is-in"));
+    }, 1200);
+    cleanups.push(() => window.clearTimeout(revealFallback));
+
     // ---- Dates & counters (ComplAI-vetted milestones) ----
     const DAY = 864e5;
     const today = new Date();
@@ -55,23 +80,6 @@ export function HomeEffects() {
       }
       requestAnimationFrame(tick);
     }
-
-    const cleanups: Array<() => void> = [];
-
-    // ---- Scroll-reveal ----
-    const io = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((e) => {
-          if (e.isIntersecting) {
-            e.target.classList.add("is-in");
-            io.unobserve(e.target);
-          }
-        });
-      },
-      { threshold: 0.16, rootMargin: "0px 0px -8% 0px" }
-    );
-    document.querySelectorAll("[data-reveal]").forEach((el) => io.observe(el));
-    cleanups.push(() => io.disconnect());
 
     // ---- Counters ----
     const counterIO = new IntersectionObserver(
