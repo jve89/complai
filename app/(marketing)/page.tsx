@@ -64,11 +64,11 @@ const todos = [
 
 // Zwevende tegels over de dashboard-weergave in de hero. Tekst hier aanpassen —
 // pos (a/b/c/d) bepaalt de plek (zie .float-tag.* in home.css).
-const floatTags: { pos: "a" | "b" | "c" | "d"; chip?: string; flag?: boolean; text: string }[] = [
-  { pos: "a", text: "2 verborgen AI-tools ontdekt" },
-  { pos: "b", flag: true, text: "Volledig in het Nederlands" },
-  { pos: "c", chip: "Klaar", text: "Certificaat AI-geletterdheid" },
-  { pos: "d", text: "Elke deadline bewaakt" },
+const floatTags: { pos: "a" | "b" | "c" | "d"; flag?: boolean; text: string }[] = [
+  { pos: "a", text: "Documenten in één klik" },
+  { pos: "b", flag: true, text: "Voor het Nederlandse mkb" },
+  { pos: "c", text: "E-learning met certificaat" },
+  { pos: "d", text: "AI-register inbegrepen" },
 ];
 
 const pains = [
@@ -223,8 +223,7 @@ export default function LandingPage() {
             </div>
             {floatTags.map((t) => (
               <div className={`float-tag ${t.pos}`} aria-hidden="true" key={t.pos}>
-                {t.flag ? <span className="flag">🇳🇱</span> : null}
-                {t.chip ? <span className="chip chip-ok">{t.chip}</span> : null}
+                {t.flag ? <span className="flag">🇳🇱</span> : <Tick size={13} />}
                 {t.text}
               </div>
             ))}

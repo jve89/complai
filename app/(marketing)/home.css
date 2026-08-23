@@ -169,11 +169,14 @@
   transition:transform .22s ease, box-shadow .22s ease;
 }
 .hp .float-tag .flag{font-size:15px; line-height:1}
+.hp .float-tag svg{color:var(--mint); flex:none}
 .hp .float-tag:hover{animation:none; transform:translateY(-6px) scale(1.03); box-shadow:var(--shadow-l)}
-.hp .float-tag.a{bottom:64px; left:-26px; animation-delay:-1s}
-.hp .float-tag.b{top:52px; right:-30px; animation-delay:-3s}
-.hp .float-tag.c{top:-20px; left:-14px; animation-delay:-2s}
-.hp .float-tag.d{bottom:72px; right:-24px; animation-delay:-4.5s}
+/* Symmetrisch: c/b als bovenpaar (zelfde top), a/d als onderpaar (zelfde bottom),
+   links en rechts met dezelfde overhang — zo hebben alle vier dezelfde marge. */
+.hp .float-tag.c{top:-22px; left:-24px; animation-delay:-2s}
+.hp .float-tag.b{top:-22px; right:-24px; animation-delay:-3s}
+.hp .float-tag.a{bottom:-22px; left:-24px; animation-delay:-1s}
+.hp .float-tag.d{bottom:-22px; right:-24px; animation-delay:-4.5s}
 @keyframes hp-bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-9px)}}
 @media (prefers-reduced-motion:reduce){ .hp .float-tag{animation:none} }
 
