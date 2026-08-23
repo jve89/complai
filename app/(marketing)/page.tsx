@@ -65,7 +65,7 @@ const todos = [
 // Zwevende tegels over de dashboard-weergave in de hero. Tekst hier aanpassen —
 // pos (a/b/c/d) bepaalt de plek (zie .float-tag.* in home.css).
 const floatTags: { pos: "a" | "b" | "c" | "d"; chip?: string; flag?: boolean; text: string }[] = [
-  { pos: "a", chip: "Nieuw", text: "2 schaduw-AI-tools gevonden" },
+  { pos: "a", text: "2 verborgen AI-tools ontdekt" },
   { pos: "b", flag: true, text: "Volledig in het Nederlands" },
   { pos: "c", chip: "Klaar", text: "Certificaat AI-geletterdheid" },
   { pos: "d", text: "Elke deadline bewaakt" },

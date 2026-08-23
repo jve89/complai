@@ -170,7 +170,7 @@
 }
 .hp .float-tag .flag{font-size:15px; line-height:1}
 .hp .float-tag:hover{animation:none; transform:translateY(-6px) scale(1.03); box-shadow:var(--shadow-l)}
-.hp .float-tag.a{bottom:-18px; left:-26px; animation-delay:-1s}
+.hp .float-tag.a{bottom:64px; left:-26px; animation-delay:-1s}
 .hp .float-tag.b{top:52px; right:-30px; animation-delay:-3s}
 .hp .float-tag.c{top:-20px; left:-14px; animation-delay:-2s}
 .hp .float-tag.d{bottom:72px; right:-24px; animation-delay:-4.5s}
